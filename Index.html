@@ -169,6 +169,36 @@ input[type=number]{-moz-appearance:textfield}
 .add-ex-btn:active{background:#f9fafb}
 /* Custom section badge */
 .sc-Custom{color:#a1a1aa;border-color:#2a2a2a;background:#1a1a1a}
+
+/* === TABS === */
+.tabs{display:flex;background:#111111;border-bottom:1px solid #1f1f1f;padding:0 16px}
+.tab{flex:1;padding:10px 0;font-size:.8rem;font-weight:600;color:#52525b;background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;letter-spacing:.02em}
+.tab.on{color:#f4f4f5;border-bottom-color:#14b8a6}
+/* === OVERVIEW === */
+#overview{display:none;padding:12px 16px 48px;background:#0a0a0a;min-height:100vh}
+.ov-section{margin-bottom:28px}
+.ov-sec-hdr{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#52525b;padding:16px 0 8px;border-bottom:1px solid #1f1f1f;margin-bottom:10px}
+.ov-mv{background:#111111;border:1px solid #1f1f1f;border-radius:12px;margin-bottom:8px;overflow:hidden}
+.ov-mv-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;cursor:pointer}
+.ov-mv-name{font-size:.85rem;font-weight:600;color:#e4e4e7}
+.ov-mv-count{font-size:.65rem;color:#52525b;background:#1a1a1a;padding:2px 7px;border-radius:999px}
+.ov-mv-body{display:none;border-top:1px solid #1f1f1f}
+.ov-mv-body.open{display:block}
+.ov-entry{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid #1a1a1a}
+.ov-entry:last-child{border-bottom:none}
+.ov-entry-left{flex:1;min-width:0}
+.ov-entry-week{font-size:.72rem;font-weight:600;color:#a1a1aa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ov-entry-detail{font-size:.65rem;color:#3f3f46;margin-top:2px}
+.ov-entry-right{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.ov-input{width:52px;text-align:right;font-size:.8rem;border:1px solid #2a2a2a;border-radius:7px;padding:4px 6px;background:#1a1a1a;color:#e4e4e7}
+.ov-input:focus{outline:none;border-color:#14b8a6;background:#1f2d2b}
+.ov-reps{width:38px;text-align:right;font-size:.75rem;border:1px solid #2a2a2a;border-radius:7px;padding:4px 4px;background:#1a1a1a;color:#a1a1aa}
+.ov-reps:focus{outline:none;border-color:#14b8a6;background:#1f2d2b}
+.ov-unit{font-size:.6rem;color:#3f3f46;width:18px}
+.ov-x{font-size:.6rem;color:#3f3f46}
+.ov-hist-btn{width:26px;height:26px;border-radius:6px;background:#1a1a1a;border:1px solid #2a2a2a;font-size:.7rem;color:#52525b;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
+.ov-edit-btn{width:26px;height:26px;border-radius:6px;background:#1a1a1a;border:1px solid #2a2a2a;font-size:.75rem;color:#52525b;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
+.ov-chev{font-size:.6rem;color:#3f3f46}
 </style>
 
 </head>
@@ -263,6 +293,10 @@ input[type=number]{-moz-appearance:textfield}
     <div class="sub">Men's Open &middot; 6 days/week &middot; Marathon Oct 26 &middot; Hyrox Dec 5</div>
     <div class="hint">Tap any session &middot; tick movements &middot; track weights and paces</div>
   </div>
+  <div class="tabs">
+    <button class="tab on" id="tabCal" onclick="switchTab('cal')">Calendar</button>
+    <button class="tab" id="tabOv" onclick="switchTab('ov')">Programme Overview</button>
+  </div>
 
   <div class="sect">
     <button class="tbtn" id="raceToggle">Show race calendar</button>
@@ -279,6 +313,7 @@ input[type=number]{-moz-appearance:textfield}
   <div class="frow" id="filters"></div>
   <div class="ctxt" id="wcount"></div>
   <div class="weeks" id="weeks"></div>
+  <div id="overview"></div>
 </div>
 
 <script>
@@ -462,30 +497,53 @@ function buildInput(m, idx, key, val, st) {
   return buildInputHtml(m, idx, key, val, '', st ? st.v : {});
 }
 
-function buildSections(mvs, key, st, ctx, wi, di) {
-  if (!mvs || !mvs.length) return "";
+function buildSections(mvs, key, st, ctx, wi, di, custom) {
   ctx = ctx || "";
   var ov = (wi !== undefined && di !== undefined) ? loadOverrides(wi, di) : {};
-  var sections = [];
-  mvs.forEach(function(m, i) {
+
+  // Build ordered section map from built-in movements
+  var secOrder = [];
+  var secMap = {};
+  (mvs || []).forEach(function(m, i) {
     var m2 = applyOverride(m, ov, i);
-    var last = sections[sections.length - 1];
-    if (!last || last.name !== m2.sc) sections.push({name: m2.sc, items: [{m:m2,i:i}]});
-    else last.items.push({m:m2,i:i});
+    var sec = m2.sc;
+    if (!secMap[sec]) { secMap[sec] = []; secOrder.push(sec); }
+    secMap[sec].push({type:'builtin', m:m2, i:i});
   });
+
+  // Merge custom movements into existing sections or append new ones
+  (custom || []).forEach(function(m, ci) {
+    var sec = m.sc || 'Custom';
+    if (!secMap[sec]) { secMap[sec] = []; secOrder.push(sec); }
+    secMap[sec].push({type:'custom', m:m, ci:ci});
+  });
+
+  if (!secOrder.length) return "";
   var html = "";
-  sections.forEach(function(sec) {
-    html += '<div class="sblk"><div class="sbadge sc-'+esc(sec.name)+'">'+esc(sec.name)+'</div><div class="sitems">';
-    sec.items.forEach(function(x) {
-      var done = !!(st.c && st.c[x.i]);
-      var val = (st.v && st.v[x.i]) || "";
-      var repsIdx = 'r_'+x.i;
-      html += '<div class="mvrow'+(done?" dn":"")+'" data-idx="'+x.i+'">';
-      html += '<button class="chkbtn'+(done?" on":"")+'" data-key="'+esc(key)+'" data-idx="'+x.i+'" data-nm="'+esc(x.m.nm)+'" data-ctx="'+esc(ctx)+'" onclick="onCheck(this)">'+(done?"\u2713":"")+'</button>';
-      html += '<div class="minfo"><div class="mname'+(done?" x":"")+'">'+esc(x.m.nm)+'</div>'+(x.m.st?'<div class="msets">'+esc(x.m.st)+'</div>':"")+'</div>';
-      html += buildInputHtml(x.m, x.i, key, val, ctx, st.v);
-      if (wi !== undefined) html += '<button class="edit-btn" data-wi="'+wi+'" data-di="'+di+'" data-idx="'+x.i+'" onclick="openEdit(this)" title="Edit">&#9998;</button>';
-      html += "</div>";
+  secOrder.forEach(function(sec) {
+    html += '<div class="sblk"><div class="sbadge sc-'+esc(sec)+'">'+esc(sec)+'</div><div class="sitems">';
+    secMap[sec].forEach(function(x) {
+      if (x.type === 'builtin') {
+        var done = !!(st.c && st.c[x.i]);
+        var val = (st.v && st.v[x.i]) || "";
+        html += '<div class="mvrow'+(done?" dn":"")+'" data-idx="'+x.i+'">';
+        html += '<button class="chkbtn'+(done?" on":"")+'" data-key="'+esc(key)+'" data-idx="'+x.i+'" data-nm="'+esc(x.m.nm)+'" data-ctx="'+esc(ctx)+'" onclick="onCheck(this)">'+(done?"\u2713":"")+'</button>';
+        html += '<div class="minfo"><div class="mname'+(done?" x":"")+'">'+esc(x.m.nm)+'</div>'+(x.m.st?'<div class="msets">'+esc(x.m.st)+'</div>':"")+'</div>';
+        html += buildInputHtml(x.m, x.i, key, val, ctx, st.v);
+        if (wi !== undefined) html += '<button class="edit-btn" data-wi="'+wi+'" data-di="'+di+'" data-idx="'+x.i+'" onclick="openEdit(this)" title="Edit">&#9998;</button>';
+        html += "</div>";
+      } else {
+        var customIdx = 'c_'+x.ci;
+        var done = !!(st.c && st.c[customIdx]);
+        var val = (st.v && st.v[customIdx]) || '';
+        html += '<div class="mvrow'+(done?' dn':'')+'" data-idx="'+customIdx+'">';
+        html += '<button class="chkbtn'+(done?' on':'')+'" data-key="'+esc(key)+'" data-idx="'+customIdx+'" data-nm="'+esc(x.m.nm)+'" data-ctx="'+esc(ctx||'')+'" onclick="onCheck(this)">'+(done?'\u2713':'')+'</button>';
+        html += '<div class="minfo"><div class="mname'+(done?' x':'')+'" >'+esc(x.m.nm)+'</div>'+(x.m.st?'<div class="msets">'+esc(x.m.st)+'</div>':'')+'</div>';
+        if (x.m.tr) html += buildInputHtml(x.m, customIdx, key, val, ctx||'', st.v);
+        html += '<button class="edit-btn" data-wi="'+wi+'" data-di="'+di+'" data-idx="'+customIdx+'" onclick="openEdit(this)" title="Edit">&#9998;</button>';
+        html += '<button class="del-cust" data-wi="'+wi+'" data-di="'+di+'" data-ci="'+x.ci+'" onclick="deleteCustomEx(this)" style="font-size:.65rem;color:#ef4444;background:none;border:none;padding:2px 4px;flex-shrink:0;cursor:pointer">&#10005;</button>';
+        html += '</div>';
+      }
     });
     html += "</div></div>";
   });
@@ -512,8 +570,7 @@ function buildDay(day, wi, di, week) {
   var ctx = week ? week.lbl : "";
   var custom = loadCustom(wi, di);
   html += '<div class="dbody" id="db-'+key+'">'
-    + buildSections(mvs, key, st, ctx, wi, di)
-    + buildCustomSections(custom, wi, di, key, st, ctx)
+    + buildSections(mvs, key, st, ctx, wi, di, custom)
     + '<button class="add-ex-btn" data-wi="'+wi+'" data-di="'+di+'" onclick="openAdd(this)"><span>+</span> Add exercise</button>'
     + (doneCount>0 ? '<button class="resetbtn" data-key="'+key+'" onclick="onResetBtn(this)">Reset session</button>' : "")
     + '</div>';
@@ -791,8 +848,7 @@ function refreshDayBody(wi, di, ctx) {
   if (!day) return;
   var st = loadState(key);
   var custom = loadCustom(wi, di);
-  body.innerHTML = buildSections(day.mvs||[], key, st, ctx, wi, di) +
-    buildCustomSections(custom, wi, di, key, st, ctx) +
+  body.innerHTML = buildSections(day.mvs||[], key, st, ctx, wi, di, custom) +
     '<button class="add-ex-btn" data-wi="'+wi+'" data-di="'+di+'" onclick="openAdd(this)"><span>+</span> Add exercise</button>' +
     (Object.keys(st.c||{}).length>0?'<button class="resetbtn" data-key="'+key+'" onclick="onResetBtn(this)">Reset session</button>':'');
   updateProgress(key);
@@ -884,7 +940,6 @@ function submitEdit() {
     tr: document.getElementById('editTrack').value || null
   };
   saveOverrides(editingWi, editingDi, ov);
-  // If custom, also update the custom array directly
   if (editingIsCustom) {
     var ci = parseInt(String(editingIdx).replace('c_',''), 10);
     var customs = loadCustom(editingWi, editingDi);
@@ -896,6 +951,10 @@ function submitEdit() {
   closeEdit();
   var ctx = weeks[editingWi] ? weeks[editingWi].lbl : '';
   refreshDayBody(editingWi, editingDi, ctx);
+  if (typeof currentTab !== 'undefined' && currentTab === 'ov') {
+    var ovEl = document.getElementById('overview');
+    if (ovEl) { ovEl.innerHTML = ''; delete ovEl.dataset.built; buildOverview(); ovEl.dataset.built = '1'; }
+  }
 }
 
 // Merge overrides into a movement object
@@ -903,6 +962,7 @@ function applyOverride(m, ov, idx) {
   if (!ov || !ov[idx]) return m;
   return Object.assign({}, m, ov[idx]);
 }
+
 
 // ── Init ───────────────────────────────────────────────────────────────────────
 window.addEventListener("DOMContentLoaded", function() {
@@ -930,6 +990,145 @@ window.addEventListener("DOMContentLoaded", function() {
     this.textContent = racesVisible ? "Hide race calendar" : "Show race calendar";
   };
 });
+</script>
+
+<script>
+// === TAB SWITCHING ===
+var currentTab = 'cal';
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tabCal').classList.toggle('on', tab === 'cal');
+  document.getElementById('tabOv').classList.toggle('on', tab === 'ov');
+  var calEls = ['weeks','filters','wcount'];
+  calEls.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = tab === 'cal' ? '' : 'none';
+  });
+  var sectEl = document.querySelector('.sect');
+  if (sectEl) sectEl.style.display = tab === 'cal' ? '' : 'none';
+  var ovEl = document.getElementById('overview');
+  if (tab === 'ov') {
+    ovEl.style.display = 'block';
+    if (!ovEl.dataset.built) { buildOverview(); ovEl.dataset.built = '1'; }
+  } else {
+    ovEl.style.display = 'none';
+  }
+}
+
+// === OVERVIEW ===
+var OV_ORDER = ['Run','Intervals','Stations','Strength','Erg','Conditioning','Simulation','Custom'];
+
+function buildOverview() {
+  var mvMap = {};
+  weeks.forEach(function(week, wi) {
+    week.days.forEach(function(day, di) {
+      if (!day.mvs || !day.mvs.length) return;
+      var ov = loadOverrides(wi, di);
+      day.mvs.forEach(function(m, idx) {
+        var m2 = applyOverride(m, ov, idx);
+        if (!m2.tr) return;
+        var nm = m2.nm;
+        if (!mvMap[nm]) mvMap[nm] = { sec: m2.sc, un: m2.un, tr: m2.tr, entries: [] };
+        mvMap[nm].entries.push({
+          wi: wi, di: di, idx: idx,
+          weekLbl: week.lbl, dates: week.dt,
+          sets: m2.st, tgt: m2.tgt, tr: m2.tr, un: m2.un
+        });
+      });
+    });
+  });
+
+  var sections = {};
+  Object.keys(mvMap).forEach(function(nm) {
+    var sec = mvMap[nm].sec || 'Custom';
+    if (!sections[sec]) sections[sec] = [];
+    sections[sec].push(nm);
+  });
+
+  var html = '';
+  OV_ORDER.forEach(function(sec) {
+    if (!sections[sec] || !sections[sec].length) return;
+    html += '<div class="ov-section"><div class="ov-sec-hdr">' + esc(sec) + '</div>';
+    sections[sec].forEach(function(nm) { html += buildOvMv(nm, mvMap[nm]); });
+    html += '</div>';
+  });
+  Object.keys(sections).forEach(function(sec) {
+    if (OV_ORDER.indexOf(sec) === -1) {
+      html += '<div class="ov-section"><div class="ov-sec-hdr">' + esc(sec) + '</div>';
+      sections[sec].forEach(function(nm) { html += buildOvMv(nm, mvMap[nm]); });
+      html += '</div>';
+    }
+  });
+  document.getElementById('overview').innerHTML = html;
+}
+
+function ovBid(nm) {
+  return 'ovb_' + nm.toLowerCase().replace(/[^a-z0-9]/g, '_').substring(0, 30);
+}
+
+function buildOvMv(nm, info) {
+  var bid = ovBid(nm);
+  var h = '<div class="ov-mv">';
+  h += '<div class="ov-mv-hdr" onclick="toggleOvMv(\'' + bid + '\')">'; 
+  h += '<span class="ov-mv-name">' + esc(nm) + '</span>';
+  h += '<div style="display:flex;align-items:center;gap:6px">';
+  h += '<span class="ov-mv-count">' + info.entries.length + ' sessions</span>';
+  h += '<span class="ov-chev" id="chev-' + bid + '">&#9660;</span>';
+  h += '</div></div>';
+  h += '<div class="ov-mv-body" id="' + bid + '">';
+  info.entries.forEach(function(e) { h += buildOvEntry(nm, e); });
+  h += '</div></div>';
+  return h;
+}
+
+function toggleOvMv(bid) {
+  var body = document.getElementById(bid);
+  var chev = document.getElementById('chev-' + bid);
+  if (!body) return;
+  var open = body.classList.contains('open');
+  body.classList.toggle('open', !open);
+  if (chev) chev.innerHTML = open ? '&#9660;' : '&#9650;';
+}
+
+function buildOvEntry(nm, e) {
+  var sk = 'hx_w' + e.wi + 'd' + e.di;
+  var st = loadState(sk);
+  var idx = String(e.idx);
+  var rIdx = 'r_' + idx;
+  var val = (st.v && st.v[idx]) || '';
+  var rVal = (st.v && st.v[rIdx]) || '';
+
+  var h = '<div class="ov-entry">';
+  h += '<div class="ov-entry-left">';
+  h += '<div class="ov-entry-week">' + esc(e.dates) + '</div>';
+  h += '<div class="ov-entry-detail">' + esc(e.weekLbl.replace(/ - Wk.*/, '')) + (e.sets ? ' &nbsp;' + esc(e.sets) : '') + '</div>';
+  h += '</div>';
+  h += '<div class="ov-entry-right">';
+
+  if (e.tr === 'weight') {
+    h += '<input type="number" inputmode="decimal" class="ov-input" value="' + esc(val) + '" placeholder="' + esc(e.tgt || 'kg') + '"'
+       + ' data-key="' + esc(sk) + '" data-idx="' + idx + '" data-reps-idx="' + rIdx + '"'
+       + ' data-nm="' + esc(nm) + '" data-ctx="' + esc(e.weekLbl) + '"'
+       + ' onchange="onInput(this)" oninput="onInput(this)" onblur="onBlur(this)">';
+    h += '<span class="ov-unit">kg</span>';
+    h += '<span class="ov-x">&times;</span>';
+    h += '<input type="number" inputmode="decimal" class="ov-reps" value="' + esc(rVal) + '" placeholder="reps"'
+       + ' data-key="' + esc(sk) + '" data-idx="' + rIdx + '" data-paired-idx="' + idx + '"'
+       + ' data-nm="' + esc(nm) + '" data-ctx="' + esc(e.weekLbl) + '"'
+       + ' onchange="onRepsInput(this)" oninput="onRepsInput(this)" onblur="onRepsBlur(this)">';
+  } else if (e.tr === 'pace' || e.tr === 'time') {
+    h += '<input type="text" inputmode="decimal" class="ov-input" value="' + esc(val) + '" placeholder="' + (e.tr === 'pace' ? '1:45' : 'hh:mm') + '"'
+       + ' data-key="' + esc(sk) + '" data-idx="' + idx + '"'
+       + ' data-nm="' + esc(nm) + '" data-ctx="' + esc(e.weekLbl) + '"'
+       + ' onchange="onInput(this)" oninput="onInput(this)" onblur="onBlur(this)">';
+    h += '<span class="ov-unit">' + esc((e.un || '').split(' ')[0]) + '</span>';
+  }
+
+  h += '<button class="ov-hist-btn" data-nm="' + esc(nm) + '" onclick="showHistFromBtn(this)" title="History">&#128202;</button>';
+  h += '<button class="ov-edit-btn" data-wi="' + e.wi + '" data-di="' + e.di + '" data-idx="' + idx + '" onclick="openEdit(this)" title="Edit">&#9998;</button>';
+  h += '</div></div>';
+  return h;
+}
 </script>
 
 <script>
