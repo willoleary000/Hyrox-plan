@@ -1,1 +1,513 @@
+<!DOCTYPE html>
 
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#111827"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Hyrox Plan"/>
+<link rel="manifest" href="/manifest.json"/>
+<link rel="apple-touch-icon" href="/icon.svg"/>
+<title>Hyrox + Dublin</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f3f4f6;min-height:100vh}
+button{font-family:inherit;cursor:pointer;border:none;background:none;padding:0}
+input{font-family:inherit}
+input:focus{outline:2px solid #14b8a6;outline-offset:0}
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+input[type=number]{-moz-appearance:textfield}
+
+.app{padding-bottom:48px}
+.hdr{background:#111827;color:#fff;padding:20px 16px 16px}
+.hdr h1{font-size:1.2rem;font-weight:700}
+.hdr .sub{font-size:.72rem;color:#9ca3af;margin-top:3px}
+.hdr .hint{font-size:.67rem;color:#6b7280;margin-top:5px}
+
+.sect{padding:10px 16px}
+.tbtn{font-size:.72rem;color:#6b7280;text-decoration:underline}
+.races{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.rrow{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:10px}
+.rrow.b{background:#fff;border:1px solid #fecaca}
+.rrow.b .rn{color:#991b1b;font-size:.85rem;font-weight:700}
+.rrow.b .rd{color:#ef4444;font-size:.68rem;margin-left:6px;opacity:.7}
+.rrow.b .rdt{color:#dc2626;font-size:.68rem;font-weight:500}
+.rrow.m{background:#059669}
+.rrow.a{background:#dc2626}
+.rrow.m .rn,.rrow.a .rn{color:#fff;font-size:.85rem;font-weight:700}
+.rrow.m .rd,.rrow.a .rd{color:rgba(255,255,255,.7);font-size:.68rem;margin-left:6px}
+.rrow.m .rdt,.rrow.a .rdt{color:rgba(255,255,255,.8);font-size:.68rem;font-weight:500}
+
+.frow{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px 6px}
+.fbtn{font-size:.68rem;padding:4px 11px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;color:#374151;font-weight:500}
+.fbtn.on{color:#fff;border-color:transparent}
+.fb-all.on{background:#374151}.fb-deload.on{background:#64748b}
+.fb-phase1.on{background:#2563eb}.fb-phase2.on{background:#7c3aed}
+.fb-phase3.on{background:#f59e0b}.fb-taper1.on{background:#059669}
+.fb-recovery.on{background:#6b7280}.fb-phase4.on{background:#db2777}
+.fb-taper2.on{background:#0891b2}
+
+.ctxt{font-size:.68rem;color:#9ca3af;padding:2px 16px 8px}
+.weeks{padding:0 16px}
+
+.wcard{border-radius:14px;overflow:hidden;margin-bottom:18px;border:1px solid}
+.wcard.hidden{display:none}
+.whdr{padding:12px 14px}
+.wtop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.wlbl{font-size:.85rem;font-weight:700;color:#fff;line-height:1.3}
+.wdt{font-size:.68rem;color:rgba(255,255,255,.7);margin-top:2px}
+.wnote{font-size:.67rem;color:rgba(255,255,255,.65);margin-top:6px;line-height:1.4}
+.rbadge{font-size:.6rem;background:#ef4444;color:#fff;border-radius:999px;padding:2px 8px;font-weight:700;flex-shrink:0;margin-top:2px}
+.days{padding:10px;display:flex;flex-direction:column;gap:7px}
+
+.dcard{border-radius:10px;border:1px solid;overflow:hidden;transition:background .15s}
+.dcard.alldone{border-color:#6ee7b7 !important;background:#f0fdf4 !important}
+.dhdr{display:flex;align-items:center;gap:8px;padding:9px 11px;cursor:pointer;-webkit-user-select:none;user-select:none}
+.ddot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.dtxt{flex:1;min-width:0}
+.dlbl{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.55}
+.dtitle{font-size:.72rem;font-weight:600;line-height:1.3;margin-top:1px}
+.dmeta{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.dprog{font-size:.68rem;font-weight:600;color:#6b7280}
+.dprog.dn{color:#059669}
+.dchev{font-size:.6rem;opacity:.3}
+.dbody{display:none;padding:0 11px 11px;border-top:1px solid #f3f4f6}
+.dbody.open{display:block}
+
+.sblk{margin-top:10px}
+.sbadge{display:inline-flex;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 8px;border-radius:999px;border:1px solid;margin-bottom:3px}
+.sitems{background:#fff;border:1px solid #f3f4f6;border-radius:9px;overflow:hidden}
+
+.mvrow{display:flex;align-items:center;gap:7px;padding:8px;border-bottom:1px solid #f3f4f6}
+.mvrow:last-child{border-bottom:none}
+.mvrow.dn{opacity:.5}
+.chkbtn{width:24px;height:24px;border-radius:6px;border:2px solid #d1d5db;background:#fff;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#fff}
+.chkbtn.on{background:#14b8a6;border-color:#14b8a6}
+.minfo{flex:1;min-width:0}
+.mname{font-size:.78rem;line-height:1.3;color:#1f2937}
+.mname.x{text-decoration:line-through;color:#9ca3af}
+.msets{font-size:.67rem;color:#6b7280;margin-top:1px}
+.iwrap{display:flex;align-items:center;gap:3px;flex-shrink:0}
+.minput{width:50px;text-align:right;font-size:.78rem;border:1px solid #d1d5db;border-radius:7px;padding:3px 5px;background:#fff;color:#1f2937}
+.minput.wide{width:60px}
+.munit{font-size:.6rem;color:#9ca3af;width:26px;line-height:1.2}
+.resetbtn{margin-top:10px;font-size:.67rem;color:#9ca3af;text-decoration:underline}
+
+/* Phase colours */
+.ph-deload .whdr{background:#64748b}.ph-deload{background:#f8fafc;border-color:#e2e8f0}
+.ph-phase1 .whdr{background:#2563eb}.ph-phase1{background:#f0f9ff;border-color:#bae6fd}
+.ph-phase2 .whdr{background:#7c3aed}.ph-phase2{background:#faf5ff;border-color:#e9d5ff}
+.ph-phase3 .whdr{background:#f59e0b}.ph-phase3{background:#fffbeb;border-color:#fde68a}
+.ph-taper1 .whdr{background:#059669}.ph-taper1{background:#ecfdf5;border-color:#a7f3d0}
+.ph-recovery .whdr{background:#6b7280}.ph-recovery{background:#f9fafb;border-color:#e5e7eb}
+.ph-phase4 .whdr{background:#db2777}.ph-phase4{background:#fdf2f8;border-color:#fbcfe8}
+.ph-taper2 .whdr{background:#0891b2}.ph-taper2{background:#ecfeff;border-color:#a5f3fc}
+
+/* Day type colours */
+.dt-combo{border-color:#99f6e4;background:#f0fdfa}
+.dt-combo .ddot{background:#14b8a6}.dt-combo .dlbl,.dt-combo .dtitle{color:#0f766e}
+.dt-run-easy{border-color:#bae6fd;background:#f0f9ff}
+.dt-run-easy .ddot{background:#38bdf8}.dt-run-easy .dlbl,.dt-run-easy .dtitle{color:#0369a1}
+.dt-run-quality{border-color:#c7d2fe;background:#eef2ff}
+.dt-run-quality .ddot{background:#818cf8}.dt-run-quality .dlbl,.dt-run-quality .dtitle{color:#4338ca}
+.dt-long-run{border-color:#bfdbfe;background:#eff6ff}
+.dt-long-run .ddot{background:#60a5fa}.dt-long-run .dlbl,.dt-long-run .dtitle{color:#1d4ed8}
+.dt-strength{border-color:#fed7aa;background:#fff7ed}
+.dt-strength .ddot{background:#fb923c}.dt-strength .dlbl,.dt-strength .dtitle{color:#c2410c}
+.dt-erg{border-color:#e9d5ff;background:#faf5ff}
+.dt-erg .ddot{background:#c084fc}.dt-erg .dlbl,.dt-erg .dtitle{color:#7e22ce}
+.dt-rest{border-color:#e5e7eb;background:#f9fafb}
+.dt-rest .ddot{background:#d1d5db}.dt-rest .dlbl,.dt-rest .dtitle{color:#6b7280}
+.dt-race{border-color:#fecaca;background:#fef2f2}
+.dt-race .ddot{background:#f87171}.dt-race .dlbl,.dt-race .dtitle{color:#b91c1c}
+
+/* Section badge colours */
+.sc-Run{color:#0369a1;border-color:#bae6fd;background:#f0f9ff}
+.sc-Intervals{color:#4338ca;border-color:#c7d2fe;background:#eef2ff}
+.sc-Strength{color:#c2410c;border-color:#fed7aa;background:#fff7ed}
+.sc-Stations{color:#0f766e;border-color:#99f6e4;background:#f0fdfa}
+.sc-Erg{color:#7e22ce;border-color:#e9d5ff;background:#faf5ff}
+.sc-Conditioning{color:#6d28d9;border-color:#ddd6fe;background:#f5f3ff}
+.sc-Simulation{color:#b91c1c;border-color:#fecaca;background:#fef2f2}
+.sc-Race{color:#b91c1c;border-color:#fecaca;background:#fef2f2}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <div class="hdr">
+    <h1>Hyrox + Dublin</h1>
+    <div class="sub">Men's Open &middot; 6 days/week &middot; Marathon Oct 26 &middot; Hyrox Dec 5</div>
+    <div class="hint">Tap any session &middot; tick movements &middot; track weights and paces</div>
+  </div>
+
+  <div class="sect">
+    <button class="tbtn" id="raceToggle">Show race calendar</button>
+    <div class="races" id="raceList" style="display:none">
+      <div class="rrow b"><div><span class="rn">Hackney Half</span><span class="rd">21.1k</span></div><span class="rdt">Sun 17 May</span></div>
+      <div class="rrow b"><div><span class="rn">Brands Hatch 10k</span><span class="rd">10k</span></div><span class="rdt">Fri 3 Jul</span></div>
+      <div class="rrow b"><div><span class="rn">Saucony London 10k</span><span class="rd">10k</span></div><span class="rdt">Sun 12 Jul</span></div>
+      <div class="rrow b"><div><span class="rn">The Big Half</span><span class="rd">21.1k</span></div><span class="rdt">Sun 6 Sep</span></div>
+      <div class="rrow m"><div><span class="rn">Dublin Marathon</span><span class="rd">42.2k</span></div><span class="rdt">Sun 26 Oct</span></div>
+      <div class="rrow a"><div><span class="rn">HYROX</span><span class="rd">A Race</span></div><span class="rdt">Sat 5 Dec</span></div>
+    </div>
+  </div>
+
+  <div class="frow" id="filters"></div>
+  <div class="ctxt" id="wcount"></div>
+  <div class="weeks" id="weeks"></div>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+var activePhase = "all";
+var racesVisible = false;
+
+// ── Data builders ─────────────────────────────────────────────────────────────
+function mv(sc, nm, st, tgt, un, tr) {
+  return { sc: sc, nm: nm, st: st || "", tgt: tgt || "", un: un || "", tr: tr || null };
+}
+function akm(m) { return "~" + Math.round(m / 6) + "km"; }
+function run(m, n) { return mv("Run", "Easy Run", m + " min  .  " + akm(m), "", n || "Zone 2"); }
+function lrun(d, n) { var km = Math.round(parseInt(d) / 6); return mv("Run", "Long Run", d + "  .  ~" + km + "km", "", n || "Zone 2", "time"); }
+function mrun(km) { return mv("Run", "Marathon Pace Run", km + "km continuous", "", "@ marathon pace", "time"); }
+function wup() { return mv("Run", "Warm-up", "10 min easy  .  ~2km"); }
+function cdown() { return mv("Run", "Cool-down", "10 min easy  .  ~2km"); }
+function strd() { return mv("Run", "Strides", "4-6 strides", "", "short, sharp"); }
+function jog(m) { return mv("Run", "Easy Jog", m + " min  .  " + akm(m), "", "Zone 2"); }
+function raceM(nm, d) { return mv("Race", nm + " - " + d, "race", "", "finish time hh:mm:ss", "time"); }
+function i800(n) { return mv("Intervals", n + "x800m", "90s rest", "", "@ 5km effort", "pace"); }
+function i1k(n, nt) { return mv("Intervals", n + "x1,000m", "2 min rest", "", "@ " + (nt || "Hyrox race pace"), "pace"); }
+function i3k(n) { return mv("Intervals", n + "x3km", "3 min rest", "", "@ marathon pace", "pace"); }
+function mi1k(n) { return mv("Intervals", n + "x1,000m", "2 min rest", "", "@ marathon pace +10s", "pace"); }
+function s(nm, S, R) { return mv("Strength", nm, S + "x" + R, "", "kg", "weight"); }
+function fSq(S,R){return s("Front Squat",S,R);}
+function rdl(S,R){return s("Romanian Deadlift",S,R);}
+function pp(S,R){return s("Push Press",S,R);}
+function brow(S,R){return s("Bent-over Row",S,R);}
+function bSq(S,R){return s("Back Squat",S,R);}
+function dl(S,R){return s("Deadlift",S,R);}
+function spr(S,R){return s("DB Shoulder Press",S,R);}
+function pups(S,R){return s("Weighted Pull-ups",S,R);}
+function bss(S,R){return s("Bulgarian Split Squat",S,R+" each leg");}
+function tdl(S,R){return s("Trap Bar Deadlift",S,R);}
+function dbb(S,R){return s("DB Bench Press",S,R);}
+function fp(S,R){return s("Face Pulls",S,R);}
+function dbr(S,R){return s("Incline DB Row",S,R);}
+function gob(S,R){return s("Goblet Squat",S,R);}
+function cor(){return mv("Strength","Core: Dead Bugs + Pallof Press","3 rounds");}
+function sqm(S,R){return s("Squat maintenance",S,R);}
+function him(S,R){return s("Hinge maintenance",S,R);}
+function upm(S,R){return s("Upper Push-pull",S,R);}
+function sll(S,R){return s("Single-leg Work",S,R+" each");}
+function upu(S,R){return s("Upper Pull",S,R);}
+function FC(kg,dist){return mv("Stations","Farmers Carry",(dist||200)+"m",""+kg,"kg per hand","weight");}
+function SB(kg,dist){return mv("Stations","Sandbag Lunges",(dist||100)+"m",""+kg,"kg","weight");}
+function WB(reps,kg){var k=kg||6;return mv("Stations","Wall Balls","x"+reps+"  .  "+k+"kg  .  3.0m target",""+k,"kg","weight");}
+function SP(kg,n){return mv("Stations","Sled Push",(n||4)+"x50m",""+kg,"kg total","weight");}
+function SPL(kg,n){return mv("Stations","Sled Pull",(n||4)+"x50m",""+kg,"kg total","weight");}
+function ski(n,d){return mv("Erg","Ski Erg",n+"x"+d+"m","","/500m pace","pace");}
+function rowe(n,d){return mv("Erg","Row Erg",n+"x"+d+"m","","/500m pace","pace");}
+function skiE(n,d){return mv("Erg","Ski Erg - easy",n+"x"+d+"m","","/500m pace","pace");}
+function rowE(n,d){return mv("Erg","Row Erg - easy",n+"x"+d+"m","","/500m pace","pace");}
+function bbj(n,r){return mv("Conditioning","Burpee Broad Jumps",n+"x"+(r||15)+" reps");}
+function kbs(n,r,kg){return mv("Conditioning","KB Swings",n+"x"+r,""+kg,"kg","weight");}
+function box(n,r){return mv("Conditioning","Box Jumps",n+"x"+r);}
+function wbc(n,r){return mv("Conditioning","Wall Balls",n+"x"+r+"  .  6kg","6","kg","weight");}
+function fcc(kg,d){return mv("Conditioning","Farmers Carry",d+"m",""+kg,"kg per hand","weight");}
+function simT(){return mv("Simulation","Total Time","","","hh:mm:ss","time");}
+
+function CP1(m,c,sb,w){return [run(m),fSq(4,8),rdl(4,8),pp(3,10),brow(3,10),FC(c),SB(sb),WB(w)];}
+function CP2(m,w){return [run(m),bSq(4,6),dl(4,5),spr(4,8),pups(4,6),FC(24),SB(20),WB(w||80)];}
+function CP2D(m){return [run(m),bSq(3,6),dl(3,5),FC(24),SB(20),WB(60)];}
+function CP3(m,w,sd){return [run(m),sqm(3,5),him(3,5),upm(3,8),FC(24),SB(20,sd||50),WB(w||50)];}
+function SL1(pk,pl){return [bss(4,8),tdl(4,6),dbb(3,10),fp(3,15),SP(pk),SPL(pl)];}
+function SL2(pk,pl){return [rdl(4,8),dbr(4,10),gob(3,12),cor(),SP(pk),SPL(pl)];}
+function SL3(pk,pl,n){return [sll(2,10),upu(2,10),cor(),SP(pk||152,n||3),SPL(pl||103,n||3)];}
+var E1=[ski(4,500),rowe(4,500),bbj(3,15),kbs(3,20,20),box(3,15)];
+var E1L=[ski(3,500),rowe(3,500),bbj(2,10),kbs(2,15,20)];
+var E2=[ski(2,1000),rowe(2,1000),bbj(3,15),fcc(24,50),wbc(3,20)];
+var E2L=[ski(2,500),rowe(2,500),bbj(2,10),wbc(2,15)];
+var E3=[skiE(2,1000),rowE(2,1000),bbj(2,10),wbc(2,15)];
+var E3L=[skiE(2,500),rowE(2,500),bbj(2,10)];
+var EPK=[ski(2,1000),rowe(2,1000),bbj(3,15),wbc(3,20)];
+var EPL=[ski(1,1000),rowe(1,1000),mv("Conditioning","Burpee Broad Jumps","2x80m"),wbc(2,30)];
+var S3Q=[
+  mv("Simulation","Run 1km - Ski Erg 1,000m",""),
+  mv("Simulation","Run 1km - Sled Push","152kg total","152","kg total","weight"),
+  mv("Simulation","Run 1km - Sled Pull","103kg total","103","kg total","weight"),
+  mv("Simulation","Run 1km - Burpee Broad Jumps","80m"),
+  mv("Simulation","Run 1km - Row Erg 1,000m",""),
+  mv("Simulation","Run 1km - Farmers Carry","2x24kg 200m","24","kg per hand","weight"),
+  simT()
+];
+var SFL=[
+  mv("Simulation","Run 1km - Ski Erg 1,000m",""),
+  mv("Simulation","Run 1km - Sled Push","152kg total","152","kg total","weight"),
+  mv("Simulation","Run 1km - Sled Pull","103kg total","103","kg total","weight"),
+  mv("Simulation","Run 1km - Burpee Broad Jumps","80m"),
+  mv("Simulation","Run 1km - Row Erg 1,000m",""),
+  mv("Simulation","Run 1km - Farmers Carry","2x24kg 200m","24","kg per hand","weight"),
+  mv("Simulation","Run 1km - Sandbag Lunges","20kg 100m","20","kg","weight"),
+  mv("Simulation","Run 1km - Wall Balls","6kg x100 3.0m","6","kg","weight"),
+  simT()
+];
+
+function R(day,t){return {day:day,type:"rest",t:t,mvs:[]};}
+function D(day,type,t,mvs){return {day:day,type:type,t:t,mvs:mvs};}
+
+var weeks=[
+  {ph:"deload",lbl:"Deload - Week 1",dt:"May 1-7",note:"April marathon recovery. Walk only.",days:[R("Mon","Rest"),R("Tue","Rest"),D("Wed","run-easy","Easy Jog (optional)",[jog(25)]),R("Thu","Rest"),D("Fri","run-easy","Easy Jog (optional)",[jog(25)]),R("Sat","Rest"),R("Sun","Full Rest")]},
+  {ph:"deload",lbl:"Deload - Week 2",dt:"May 8-11",note:"Continue recovery. Phase 1 begins May 12.",days:[D("Mon","run-easy","Easy Jog",[jog(30)]),R("Tue","Rest"),D("Wed","run-easy","Easy Jog",[jog(30)]),R("Thu","Rest"),R("Fri","Rest"),R("Sat","Rest"),R("Sun","Full Rest")]},
+  {ph:"phase1",lbl:"Phase 1 - Wk 1  * Hackney Half",dt:"May 12-18",note:"B Race: Hackney Half 21.1k - Sun May 17. Lighter week, race replaces long run.",days:[D("Mon","combo","Easy Run + Strength + Stations",CP1(30,20,15,40)),D("Tue","erg","Erg + Conditioning",E1L),D("Wed","run-easy","Easy Run - no intervals",[run(30)]),D("Thu","strength","Light Strength + Sled",SL1(100,70)),R("Fri","Rest - eat well, hydrate"),D("Sat","run-easy","Pre-Race: Easy Jog + Strides",[jog(20),strd()]),D("Sun","race","HACKNEY HALF - May 17",[raceM("Hackney Half","21.1k")])]},
+  {ph:"phase1",lbl:"Phase 1 - Wk 2",dt:"May 19-25",note:"3 runs/wk. Back to normal.",days:[D("Mon","combo","Easy Run + Strength + Stations",CP1(35,20,15,60)),D("Tue","erg","Erg + Conditioning",E1),D("Wed","run-quality","Intervals",[wup(),i800(6),cdown()]),D("Thu","strength","Strength + Sled",SL1(115,80)),R("Fri","Rest / Mobility"),D("Sat","long-run","Long Run",[lrun("70 min")]),R("Sun","Rest")]},
+  {ph:"phase1",lbl:"Phase 1 - Wk 3",dt:"May 26 - Jun 1",note:"3 runs/wk. Switch to 1km intervals.",days:[D("Mon","combo","Easy Run + Strength + Stations",CP1(40,22,17.5,60)),D("Tue","erg","Erg + Conditioning",E1),D("Wed","run-quality","Intervals",[wup(),i1k(5),cdown()]),D("Thu","strength","Strength + Sled",SL1(120,82)),R("Fri","Rest / Mobility"),D("Sat","long-run","Long Run",[lrun("75 min","last 15 min @ marathon pace")]),R("Sun","Rest")]},
+  {ph:"phase1",lbl:"Phase 1 - Wk 4",dt:"Jun 2-8",note:"3 runs/wk. Farmers Carry at race weight.",days:[D("Mon","combo","Easy Run + Strength + Stations",CP1(40,24,18,60)),D("Tue","erg","Erg + Conditioning",E1),D("Wed","run-quality","Intervals",[wup(),i1k(5),cdown()]),D("Thu","strength","Strength + Sled",SL1(130,90)),R("Fri","Rest / Mobility"),D("Sat","long-run","Long Run",[lrun("75 min","last 15 min @ marathon pace")]),R("Sun","Rest")]},
+  {ph:"phase1",lbl:"Phase 1 - Wk 5",dt:"Jun 9-15",note:"3 runs/wk. All carry stations at race weight.",days:[D("Mon","combo","Easy Run + Strength + Stations",CP1(40,24,20,60)),D("Tue","erg","Erg + Conditioning",E1),D("Wed","run-quality","Intervals",[wup(),i1k(5),cdown()]),D("Thu","strength","Strength + Sled",SL1(130,90)),R("Fri","Rest / Mobility"),D("Sat","long-run","Long Run",[lrun("80 min","middle 20 min @ marathon pace")]),R("Sun","Rest")]},
+  {ph:"phase2",lbl:"Phase 2 - Wk 1",dt:"Jun 16-22",note:"3 runs/wk. Wed = marathon intervals.",days:[D("Mon","combo","Easy Run + Strength + Stations",CP2(40)),D("Tue","erg","Erg + Conditioning",E2),D("Wed","run-quality","Marathon Intervals",[mi1k(6)]),D("Thu","strength","Strength + Sled",SL2(130,90)),R("Fri","Rest / Mobility"),D("Sat","long-run","Long Run",[lrun("90 min")]),R("Sun","Rest")]},
+  {ph:"phase2",lbl:"Phase 2 - Wk 2",dt:"Jun 23-29",note:"3 runs/wk.",days:[D("Mon","combo","Easy Run + Strength + Stations",CP2(40)),D("Tue","erg","Erg + Conditioning",E2),D("Wed","run-quality","Marathon Intervals",[mi1k(6)]),D("Thu","strength","Strength + Sled",SL2(138,95)),R("Fri","Rest / Mobility"),D("Sat","long-run","Long Run",[lrun("100 min")]),R("Sun","Rest")]},
+  {ph:"phase2",lbl:"Phase 2 - Wk 3  * Brands Hatch 10k",dt:"Jun 30 - Jul 6",note:"B Race: Brands Hatch 10k - Fri Jul 3. Race replaces long run.",days:[D("Mon","combo","Easy Run + Strength + Stations",CP2(40)),D("Tue","erg","Erg - lighter",E2L),D("Wed","run-easy","Easy Run - no intervals",[run(30)]),R("Thu","Pre-Race Rest"),D("Fri","race","BRANDS HATCH 10k - Jul 3",[raceM("Brands Hatch","10k")]),D("Sat","run-easy","Recovery Run",[run(35)]),R("Sun","Rest")]},
+  {ph:"phase2",lbl:"Phase 2 - Wk 4  * Saucony London 10k (Down)",dt:"Jul 7-13",note:"B Race + Down Week: Saucony London 10k - Sun Jul 12.",days:[D("Mon","combo","Easy Run + Strength + Stations",CP2D(30)),D("Tue","erg","Erg - lighter",E2L),D("Wed","run-easy","Easy Run - no intervals",[run(25)]),D("Thu","strength","Light Strength + Sled",[rdl(3,8),dbr(3,10),SP(130,2),SPL(90,2)]),R("Fri","Rest"),D("Sat","run-easy","Pre-Race: Easy Jog + Strides",[jog(20),strd()]),D("Sun","race","SAUCONY LONDON 10k - Jul 12",[raceM("Saucony London","10k")])]},
+  {ph:"phase2",lbl:"Phase 2 - Wk 5",dt:"Jul 14-20",note:"3 runs/wk. Sled at race weight.",days:[D("Mon","combo","Easy Run + Strength + Stations",CP2(40)),D("Tue","erg","Erg + Conditioning",E2),D("Wed","run-quality","Marathon Long Intervals",[i3k(3)]),D("Thu","strength","Strength + Sled (race weight)",SL2(152,103)),R("Fri","Rest / Mobility"),D("Sat","long-run","Long Run",[lrun("130 min","middle 30 min @ marathon pace")]),R("Sun","Rest")]},
+  {ph:"phase2",lbl:"Phase 2 - Wk 6",dt:"Jul 21-27",note:"3 runs/wk. All stations at race weight.",days:[D("Mon","combo","Easy Run + Strength + Stations",CP2(40)),D("Tue","erg","Erg + Conditioning",E2),D("Wed","run-quality","Marathon Long Intervals",[i3k(3)]),D("Thu","strength","Strength + Sled",SL2(152,103)),R("Fri","Rest / Mobility"),D("Sat","long-run","Long Run",[lrun("140 min")]),R("Sun","Rest")]},
+  {ph:"phase2",lbl:"Phase 2 - Wk 7",dt:"Jul 28 - Aug 3",note:"Final 3-run week. 4 runs/wk begins Aug 4.",days:[D("Mon","combo","Easy Run + Strength + Stations",CP2(40,80)),D("Tue","erg","Erg + Conditioning",E2),D("Wed","run-quality","Marathon Long Intervals",[i3k(3)]),D("Thu","strength","Strength + Sled",SL2(152,103)),R("Fri","Rest / Mobility"),D("Sat","long-run","Long Run",[lrun("150 min","final 20 min @ marathon pace")]),R("Sun","Rest")]},
+  {ph:"phase3",lbl:"Phase 3 - Wk 1",dt:"Aug 4-10",note:"4 runs/wk from here. Dublin training leads.",days:[D("Mon","combo","Easy Run + Hyrox Maintenance",CP3(40,50,50)),D("Tue","run-easy","Easy Run #2",[run(35)]),D("Wed","run-quality","Marathon Key Run",[mrun(10)]),D("Thu","erg","Erg + Conditioning",E3),D("Fri","strength","Strength + Sled",SL3()),D("Sat","long-run","Long Run",[lrun("155 min")]),R("Sun","Rest")]},
+  {ph:"phase3",lbl:"Phase 3 - Wk 2",dt:"Aug 11-17",note:"4 runs/wk.",days:[D("Mon","combo","Easy Run + Hyrox Maintenance",CP3(40,50,50)),D("Tue","run-easy","Easy Run #2",[run(35)]),D("Wed","run-quality","Marathon Key Run",[mrun(11)]),D("Thu","erg","Erg + Conditioning",E3),D("Fri","strength","Strength + Sled",SL3()),D("Sat","long-run","Long Run",[lrun("160 min")]),R("Sun","Rest")]},
+  {ph:"phase3",lbl:"Phase 3 - Wk 3",dt:"Aug 18-24",note:"4 runs/wk.",days:[D("Mon","combo","Easy Run + Hyrox Maintenance",CP3(40,50,50)),D("Tue","run-easy","Easy Run #2",[run(35)]),D("Wed","run-quality","Marathon Key Run",[mrun(12)]),D("Thu","erg","Erg + Conditioning",E3),D("Fri","strength","Strength + Sled",SL3()),D("Sat","long-run","Long Run",[lrun("165 min","middle 30 min @ marathon pace")]),R("Sun","Rest")]},
+  {ph:"phase3",lbl:"Phase 3 - Wk 4 (Down)",dt:"Aug 25-31",note:"4 runs/wk. Down week.",days:[D("Mon","combo","Easy Run + Hyrox Maintenance",CP3(35,40,50)),D("Tue","run-easy","Easy Run #2",[run(30)]),D("Wed","run-quality","Marathon Key Run",[mrun(10)]),D("Thu","erg","Erg - lighter",E3L),D("Fri","strength","Strength + Sled - lighter",SL3(152,103,2)),D("Sat","long-run","Long Run - down week",[lrun("120 min")]),R("Sun","Rest")]},
+  {ph:"phase3",lbl:"Phase 3 - Wk 5  * The Big Half",dt:"Sep 1-6",note:"B Race: The Big Half 21.1k - Sun Sep 6. Lighter week, race replaces long run.",days:[D("Mon","combo","Easy Run + Hyrox Maintenance",CP3(35,40,50)),D("Tue","run-easy","Easy Run #2",[run(30)]),D("Wed","run-easy","Easy Run - no key session",[run(25)]),D("Thu","erg","Light Erg",[skiE(1,500),rowE(1,500)]),R("Fri","Rest - eat well, hydrate"),D("Sat","run-easy","Pre-Race: Easy Jog + Strides",[jog(20),strd()]),D("Sun","race","THE BIG HALF - Sep 6",[raceM("The Big Half","21.1k")])]},
+  {ph:"phase3",lbl:"Phase 3 - Wk 6",dt:"Sep 8-14",note:"4 runs/wk. Back into peak block.",days:[D("Mon","combo","Easy Run + Hyrox Maintenance",CP3(40,50,50)),D("Tue","run-easy","Easy Run #2",[run(35)]),D("Wed","run-quality","Marathon Key Run",[mrun(15)]),D("Thu","erg","Erg + Conditioning",E3),D("Fri","strength","Strength + Sled",SL3()),D("Sat","long-run","Long Run - final peak run",[lrun("175 min")]),R("Sun","Rest")]},
+  {ph:"phase3",lbl:"Phase 3 - Wk 7",dt:"Sep 15-21",note:"4 runs/wk. Begin backing off.",days:[D("Mon","combo","Easy Run + Hyrox Maintenance",CP3(40,50,50)),D("Tue","run-easy","Easy Run #2",[run(35)]),D("Wed","run-quality","Marathon Key Run",[mrun(16)]),D("Thu","erg","Erg + Conditioning",E3),D("Fri","strength","Strength + Sled",SL3()),D("Sat","long-run","Long Run",[lrun("150 min")]),R("Sun","Rest")]},
+  {ph:"phase3",lbl:"Phase 3 - Wk 8",dt:"Sep 22-28",note:"4 runs/wk. Continued reduction.",days:[D("Mon","combo","Easy Run + Hyrox Maintenance",CP3(35,50,50)),D("Tue","run-easy","Easy Run #2",[run(30)]),D("Wed","run-quality","Marathon Key Run",[mrun(10)]),D("Thu","erg","Erg + Conditioning",E3),D("Fri","strength","Strength + Sled",SL3()),D("Sat","long-run","Long Run",[lrun("120 min")]),R("Sun","Rest")]},
+  {ph:"phase3",lbl:"Phase 3 - Wk 9",dt:"Sep 29 - Oct 5",note:"4 runs/wk. Final week before taper.",days:[D("Mon","combo","Easy Run + Hyrox Maintenance",CP3(35,40,50)),D("Tue","run-easy","Easy Run #2",[run(30)]),D("Wed","run-quality","Marathon Key Run",[mrun(8)]),D("Thu","erg","Erg + Conditioning",E3),D("Fri","strength","Strength + Sled - lighter",SL3(152,103,2)),D("Sat","long-run","Long Run",[lrun("100 min")]),R("Sun","Rest")]},
+  {ph:"taper1",lbl:"Marathon Taper - Wk 1",dt:"Oct 6-12",note:"4 runs, volume -30%. Keep stations alive.",days:[D("Mon","combo","Easy Run + Light Strength + Stations",[run(30),sqm(3,5),him(3,5),FC(24),SB(20),WB(50),SP(152,3),SPL(103,3)]),D("Tue","run-easy","Easy Run #2",[run(25)]),D("Wed","run-quality","Marathon Pace Run",[mrun(8)]),D("Thu","erg","Erg - easy",[skiE(1,1000),rowE(1,1000)]),R("Fri","Rest"),D("Sat","long-run","Easy Run",[lrun("80 min")]),R("Sun","Rest")]},
+  {ph:"taper1",lbl:"Marathon Taper - Wk 2",dt:"Oct 13-19",note:"4 runs, volume -50%.",days:[D("Mon","combo","Easy Run + Light Stations",[run(25),sqm(2,5),FC(24),WB(50)]),D("Tue","run-easy","Easy Run #2",[run(20)]),D("Wed","run-quality","Marathon Pace Run",[mrun(6)]),D("Thu","erg","Erg - easy",[skiE(1,500),rowE(1,500)]),R("Fri","Rest"),D("Sat","long-run","Easy Run",[lrun("60 min")]),R("Sun","Rest")]},
+  {ph:"taper1",lbl:"Dublin Race Week",dt:"Oct 20-26",note:"Minimal movement. Race Sunday Oct 26.",days:[D("Mon","run-easy","Easy Jog",[jog(25)]),D("Tue","run-easy","Strides",[jog(15),strd()]),R("Wed","Full Rest"),D("Thu","run-easy","Easy Walk / Jog",[jog(15)]),R("Fri","Rest - kit check, eat well"),R("Sat","Rest - travel, race prep"),D("Sun","race","DUBLIN MARATHON - Oct 26",[raceM("Dublin Marathon","42.2k")])]},
+  {ph:"recovery",lbl:"Recovery - Wk 1 (Full Rest)",dt:"Oct 27 - Nov 2",note:"Walk only. No running, lifting or stations.",days:[R("Mon","Full Rest"),R("Tue","Full Rest"),R("Wed","Full Rest"),R("Thu","Full Rest"),R("Fri","Full Rest"),R("Sat","Easy Walk"),R("Sun","Rest")]},
+  {ph:"recovery",lbl:"Recovery - Wk 2 (Reintroduction)",dt:"Nov 3-9",note:"Gentle movement only. Phase 4 begins Nov 10.",days:[D("Mon","run-easy","Easy Jog - if ready",[jog(25)]),R("Tue","Light Mobility - bodyweight only"),D("Wed","run-easy","Easy Jog",[jog(30)]),D("Thu","erg","Gentle Erg - movement only",[skiE(2,500),rowE(2,500)]),D("Fri","strength","Light Station Reintro",[FC(16),WB(30,6)]),D("Sat","run-easy","Easy Jog",[jog(35)]),R("Sun","Rest - Phase 4 begins Mon Nov 10")]},
+  {ph:"phase4",lbl:"Phase 4 - Wk 1 (Reactivation)",dt:"Nov 10-16",note:"4 runs/wk. Full stations return. 3/4 race sim Saturday.",days:[D("Mon","combo","Easy Run + Strength + Stations",[run(40),sqm(3,5),him(3,5),spr(3,8),FC(24),SB(20),WB(60),SP(152,2),SPL(103,2)]),D("Tue","run-easy","Easy Run #2",[run(35)]),D("Wed","run-quality","Hyrox Intervals",[wup(),i1k(4),cdown()]),D("Thu","erg","Erg + Conditioning",EPK),D("Fri","strength","Strength + Sled",SL3(152,103,4)),D("Sat","long-run","3/4 Race Simulation",S3Q),R("Sun","Rest")]},
+  {ph:"phase4",lbl:"Phase 4 - Wk 2 (Full Race Sim)",dt:"Nov 17-23",note:"4 runs/wk. Full race simulation Saturday.",days:[D("Mon","combo","Easy Run + Strength + All Stations",[run(35),sqm(3,5),him(3,5),upm(3,8),FC(24),SB(20),WB(60),SP(152,2),SPL(103,2)]),D("Tue","run-easy","Easy Run #2",[run(30)]),D("Wed","run-quality","Hyrox Intervals",[wup(),i1k(5),cdown()]),D("Thu","erg","Erg + Finisher",EPL),D("Fri","strength","Light Strength + Mobility",[sqm(2,5),him(2,5)]),D("Sat","race","FULL RACE SIMULATION",SFL),R("Sun","Rest")]},
+  {ph:"phase4",lbl:"Phase 4 - Wk 3 (Sharpening)",dt:"Nov 24-30",note:"4 runs/wk. Reduce volume, stay sharp.",days:[D("Mon","combo","Easy Run + Light Stations",[run(30),sqm(2,5),FC(24),SB(20,50),WB(40)]),D("Tue","run-easy","Easy Run #2",[run(20)]),D("Wed","run-quality","Race Pace Run",[wup(),i1k(3,"Hyrox race pace - crisp"),cdown()]),D("Thu","erg","Light Erg",[skiE(1,500),rowE(1,500),mv("Conditioning","Burpee Broad Jumps","2x10 reps")]),R("Fri","Rest / Easy Walk"),D("Sat","run-easy","Easy Jog + Strides",[jog(20),strd()]),R("Sun","Rest - Hyrox taper begins Dec 1")]},
+  {ph:"taper2",lbl:"Hyrox Taper + Race Day",dt:"Dec 1-5",note:"4 days to race. Stay loose. Trust the work.",days:[D("Mon","run-easy","Easy Jog",[jog(15)]),D("Tue","strength","Station Shakeout",[SP(152,2),SPL(103,2),FC(24,100),WB(20)]),R("Wed","Rest - pack kit, eat well, sleep early"),R("Thu","Rest - eat well, hydrate, sleep early"),R("Fri","Rest - you are ready"),D("Sat","race","HYROX - Dec 5",[raceM("HYROX Dec 5","Men's Open")]),R("Sun","Rest - you have earned it")]}
+];
+
+// ── Phases ─────────────────────────────────────────────────────────────────────
+var PHASES=[
+  {id:"all",l:"All",f:"fb-all"},{id:"deload",l:"Deload",f:"fb-deload"},
+  {id:"phase1",l:"Phase 1",f:"fb-phase1"},{id:"phase2",l:"Phase 2",f:"fb-phase2"},
+  {id:"phase3",l:"Phase 3",f:"fb-phase3"},{id:"taper1",l:"Mara Taper",f:"fb-taper1"},
+  {id:"recovery",l:"Recovery",f:"fb-recovery"},{id:"phase4",l:"Hyrox Peak",f:"fb-phase4"},
+  {id:"taper2",l:"Hyrox Taper",f:"fb-taper2"}
+];
+
+// ── LocalStorage helpers ───────────────────────────────────────────────────────
+function loadState(key) {
+  try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : {c:{},v:{}}; }
+  catch(e) { return {c:{},v:{}}; }
+}
+function saveState(key, st) {
+  try { localStorage.setItem(key, JSON.stringify(st)); } catch(e) {}
+}
+
+// ── HTML builders ──────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function buildInput(m, idx, key, val) {
+  if (m.tr === "weight") {
+    return '<div class="iwrap"><input type="number" inputmode="decimal" class="minput" value="'+esc(val)+'" placeholder="'+esc(m.tgt||"0")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" onchange="onInput(this)" oninput="onInput(this)"><span class="munit">'+esc(m.un)+'</span></div>';
+  }
+  if (m.tr === "pace" || m.tr === "time") {
+    return '<div class="iwrap"><input type="text" inputmode="decimal" class="minput wide" value="'+esc(val)+'" placeholder="'+(m.tr==="pace"?"1:45":"hh:mm")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" onchange="onInput(this)" oninput="onInput(this)"><span class="munit">'+esc((m.un||"").split(" ")[0])+'</span></div>';
+  }
+  return "";
+}
+
+function buildSections(mvs, key, st) {
+  if (!mvs || !mvs.length) return "";
+  var sections = [];
+  mvs.forEach(function(m, i) {
+    var last = sections[sections.length - 1];
+    if (!last || last.name !== m.sc) sections.push({name: m.sc, items: [{m:m,i:i}]});
+    else last.items.push({m:m,i:i});
+  });
+  var html = "";
+  sections.forEach(function(sec) {
+    html += '<div class="sblk"><div class="sbadge sc-'+esc(sec.name)+'">'+esc(sec.name)+'</div><div class="sitems">';
+    sec.items.forEach(function(x) {
+      var done = !!(st.c && st.c[x.i]);
+      var val = (st.v && st.v[x.i]) || "";
+      html += '<div class="mvrow'+(done?" dn":"")+'" data-idx="'+x.i+'">';
+      html += '<button class="chkbtn'+(done?" on":"")+'" data-key="'+esc(key)+'" data-idx="'+x.i+'" onclick="onCheck(this)">'+(done?"&#10003;":"")+'</button>';
+      html += '<div class="minfo"><div class="mname'+(done?" x":"")+'">'+esc(x.m.nm)+'</div>'+(x.m.st?'<div class="msets">'+esc(x.m.st)+'</div>':"")+'</div>';
+      html += buildInput(x.m, x.i, key, val);
+      html += "</div>";
+    });
+    html += "</div></div>";
+  });
+  return html;
+}
+
+function buildDay(day, wi, di) {
+  var key = "hx_w"+wi+"d"+di;
+  var mvs = day.mvs || [];
+  var isRest = day.type === "rest" || mvs.length === 0;
+  var st = loadState(key);
+  var doneCount = 0;
+  mvs.forEach(function(_, i) { if (st.c && st.c[i]) doneCount++; });
+  var allDone = mvs.length > 0 && doneCount === mvs.length;
+  var dtClass = "dt-" + (day.type || "rest");
+  var html = '<div class="dcard '+dtClass+(allDone?" alldone":"")+'" data-key="'+key+'" data-total="'+mvs.length+'">';
+  html += '<div class="dhdr" onclick="toggleDay(\''+key+'\')">';
+  html += '<div class="ddot"></div>';
+  html += '<div class="dtxt"><div class="dlbl">'+esc(day.day)+'</div><div class="dtitle">'+esc(day.t)+'</div></div>';
+  if (!isRest) {
+    html += '<div class="dmeta"><span class="dprog'+(allDone?" dn":"")+'" id="prog-'+key+'">'+doneCount+"/"+mvs.length+'</span><span class="dchev" id="chev-'+key+'">&#9660;</span></div>';
+  }
+  html += "</div>";
+  html += '<div class="dbody" id="db-'+key+'">'+(buildSections(mvs, key, st))+(doneCount>0 ? '<button class="resetbtn" onclick="onReset('+JSON.stringify(key)+')">Reset session</button>' : "")+'</div>';
+  html += "</div>";
+  return html;
+}
+
+function buildWeek(week, wi) {
+  var hasRace = week.days.some(function(d){ return d.type === "race"; });
+  var html = '<div class="wcard ph-'+esc(week.ph)+'" data-phase="'+esc(week.ph)+'">';
+  html += '<div class="whdr"><div class="wtop"><div><div class="wlbl">'+esc(week.lbl)+'</div><div class="wdt">'+esc(week.dt)+'</div></div>'+(hasRace?'<span class="rbadge">RACE</span>':"")+'</div>'+(week.note?'<div class="wnote">'+esc(week.note)+'</div>':"")+'</div>';
+  html += '<div class="days">';
+  week.days.forEach(function(day, di) { html += buildDay(day, wi, di); });
+  html += "</div></div>";
+  return html;
+}
+
+// ── Event handlers ─────────────────────────────────────────────────────────────
+function toggleDay(key) {
+  var body = document.getElementById("db-"+key);
+  var chev = document.getElementById("chev-"+key);
+  if (!body) return;
+  var open = body.classList.contains("open");
+  body.classList.toggle("open", !open);
+  if (chev) chev.innerHTML = open ? "\u25BC" : "\u25B2";
+}
+
+function onCheck(btn) {
+  var key = btn.getAttribute("data-key");
+  var idx = parseInt(btn.getAttribute("data-idx"), 10);
+  var isOn = btn.classList.contains("on");
+  btn.classList.toggle("on", !isOn);
+  btn.innerHTML = !isOn ? "\u2713" : "";
+  var row = btn.parentElement;
+  if (row) {
+    row.classList.toggle("dn", !isOn);
+    var nm = row.querySelector(".mname");
+    if (nm) nm.classList.toggle("x", !isOn);
+  }
+  var st = loadState(key);
+  if (!st.c) st.c = {};
+  st.c[idx] = !isOn;
+  saveState(key, st);
+  updateProgress(key);
+}
+
+function onInput(input) {
+  var key = input.getAttribute("data-key");
+  var idx = parseInt(input.getAttribute("data-idx"), 10);
+  var st = loadState(key);
+  if (!st.v) st.v = {};
+  st.v[idx] = input.value;
+  saveState(key, st);
+}
+
+function onReset(key) {
+  var card = document.querySelector('.dcard[data-key="'+key+'"]');
+  if (!card) return;
+  card.querySelectorAll(".chkbtn").forEach(function(b) {
+    b.classList.remove("on");
+    b.innerHTML = "";
+  });
+  card.querySelectorAll(".mvrow").forEach(function(r) {
+    r.classList.remove("dn");
+    var nm = r.querySelector(".mname");
+    if (nm) nm.classList.remove("x");
+  });
+  card.querySelectorAll("input").forEach(function(inp) { inp.value = ""; });
+  try { localStorage.removeItem(key); } catch(e) {}
+  updateProgress(key);
+  var rb = card.querySelector(".resetbtn");
+  if (rb) rb.style.display = "none";
+}
+
+function updateProgress(key) {
+  var card = document.querySelector('.dcard[data-key="'+key+'"]');
+  if (!card) return;
+  var total = parseInt(card.getAttribute("data-total") || "0", 10);
+  if (total === 0) return;
+  var done = card.querySelectorAll(".chkbtn.on").length;
+  var prog = document.getElementById("prog-"+key);
+  if (prog) {
+    prog.textContent = done+"/"+total;
+    prog.classList.toggle("dn", done === total);
+  }
+  card.classList.toggle("alldone", done === total);
+  var rb = card.querySelector(".resetbtn");
+  if (rb) rb.style.display = done > 0 ? "" : "none";
+}
+
+function setPhase(ph) {
+  activePhase = ph;
+  document.querySelectorAll(".fbtn").forEach(function(b) {
+    b.classList.toggle("on", b.getAttribute("data-id") === ph);
+  });
+  var visible = 0;
+  document.querySelectorAll(".wcard").forEach(function(c) {
+    var show = ph === "all" || c.getAttribute("data-phase") === ph;
+    c.classList.toggle("hidden", !show);
+    if (show) visible++;
+  });
+  document.getElementById("wcount").textContent = visible + " week" + (visible !== 1 ? "s" : "") + " \u00b7 Progress saves automatically";
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+window.addEventListener("DOMContentLoaded", function() {
+  // Build filter buttons
+  var frow = document.getElementById("filters");
+  PHASES.forEach(function(p) {
+    var btn = document.createElement("button");
+    btn.className = "fbtn " + p.f + (p.id === "all" ? " on" : "");
+    btn.setAttribute("data-id", p.id);
+    btn.textContent = p.l;
+    btn.onclick = function() { setPhase(p.id); };
+    frow.appendChild(btn);
+  });
+
+  // Build weeks
+  var html = "";
+  weeks.forEach(function(week, wi) { html += buildWeek(week, wi); });
+  document.getElementById("weeks").innerHTML = html;
+  document.getElementById("wcount").textContent = weeks.length + " weeks \u00b7 Progress saves automatically";
+
+  // Race toggle
+  document.getElementById("raceToggle").onclick = function() {
+    racesVisible = !racesVisible;
+    document.getElementById("raceList").style.display = racesVisible ? "flex" : "none";
+    this.textContent = racesVisible ? "Hide race calendar" : "Show race calendar";
+  };
+});
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js').catch(function(e) {
+      console.log('SW registration failed:', e);
+    });
+  });
+}
+</script>
+
+</body>
+</html>
