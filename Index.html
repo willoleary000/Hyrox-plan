@@ -133,11 +133,94 @@ input[type=number]{-moz-appearance:textfield}
 .sc-Conditioning{color:#6d28d9;border-color:#ddd6fe;background:#f5f3ff}
 .sc-Simulation{color:#b91c1c;border-color:#fecaca;background:#fef2f2}
 .sc-Race{color:#b91c1c;border-color:#fecaca;background:#fef2f2}
+
+/* === MODALS === */
+.overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:900;display:flex;align-items:flex-end;padding:0}
+.modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-height:80vh;overflow-y:auto;padding:20px 16px 36px}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-title{font-size:1rem;font-weight:700;color:#111827}
+.modal-close{font-size:1.1rem;color:#6b7280;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#f3f4f6}
+/* History modal */
+.hist-empty{font-size:.8rem;color:#9ca3af;text-align:center;padding:20px 0}
+.hist-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f3f4f6}
+.hist-row:last-child{border-bottom:none}
+.hist-date{font-size:.72rem;color:#6b7280}
+.hist-val{font-size:.9rem;font-weight:700;color:#111827}
+.hist-ctx{font-size:.65rem;color:#9ca3af;margin-top:2px}
+.hist-delete{font-size:.7rem;color:#ef4444;background:none;border:none;cursor:pointer;padding:4px}
+/* Add exercise form */
+.add-field{width:100%;border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;font-size:.875rem;color:#111827;margin-bottom:10px;background:#fff}
+.add-field:focus{outline:none;border-color:#14b8a6}
+.add-row{display:flex;gap:8px;margin-bottom:10px}
+.add-row .add-field{margin-bottom:0}
+.add-btns{display:flex;gap:8px;margin-top:4px}
+.add-cancel-btn{flex:1;padding:12px;border-radius:10px;border:1px solid #e5e7eb;background:#fff;color:#374151;font-size:.875rem;font-weight:500}
+.add-save-btn{flex:2;padding:12px;border-radius:10px;background:#14b8a6;color:#fff;font-size:.875rem;font-weight:700;border:none}
+.add-label{font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;display:block}
+/* History button on inputs */
+.hist-btn{width:26px;height:26px;border-radius:6px;background:#f3f4f6;border:none;font-size:.75rem;color:#6b7280;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
+/* Add exercise button */
+.add-ex-btn{width:100%;margin-top:10px;padding:9px;border-radius:9px;border:1px dashed #d1d5db;background:transparent;color:#6b7280;font-size:.75rem;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px}
+.add-ex-btn:active{background:#f9fafb}
+/* Custom section badge */
+.sc-Custom{color:#374151;border-color:#e5e7eb;background:#f9fafb}
 </style>
 
 </head>
 <body>
 <div class="app">
+
+<!-- History Modal -->
+
+<div class="overlay" id="histOverlay" style="display:none" onclick="closeHistIfBg(event)">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title" id="histTitle">History</span>
+      <button class="modal-close" onclick="closeHist()">&#10005;</button>
+    </div>
+    <div id="histContent"></div>
+  </div>
+</div>
+<!-- Add Exercise Modal -->
+<div class="overlay" id="addOverlay" style="display:none" onclick="closeAddIfBg(event)">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title">Add Exercise</span>
+      <button class="modal-close" onclick="closeAdd()">&#10005;</button>
+    </div>
+    <label class="add-label">Exercise Name</label>
+    <input id="addName" type="text" class="add-field" placeholder="e.g. Cable Row, Hip Thrust"/>
+    <div class="add-row">
+      <div style="flex:1">
+        <label class="add-label">Sets / Distance</label>
+        <input id="addSets" type="text" class="add-field" placeholder="e.g. 3x10 or 200m"/>
+      </div>
+      <div style="flex:1">
+        <label class="add-label">Section</label>
+        <select id="addSection" class="add-field">
+          <option value="Strength">Strength</option>
+          <option value="Stations">Stations</option>
+          <option value="Conditioning">Conditioning</option>
+          <option value="Erg">Erg</option>
+          <option value="Run">Run</option>
+          <option value="Custom">Custom</option>
+        </select>
+      </div>
+    </div>
+    <label class="add-label">Track</label>
+    <select id="addTrack" class="add-field">
+      <option value="">No tracking</option>
+      <option value="weight">Weight (kg)</option>
+      <option value="pace">Pace (/500m)</option>
+      <option value="time">Time (hh:mm)</option>
+    </select>
+    <div class="add-btns">
+      <button class="add-cancel-btn" onclick="closeAdd()">Cancel</button>
+      <button class="add-save-btn" onclick="submitAdd()">Add Exercise</button>
+    </div>
+  </div>
+</div>
+
   <div class="hdr">
     <h1>Hyrox + Dublin</h1>
     <div class="sub">Men's Open &middot; 6 days/week &middot; Marathon Oct 26 &middot; Hyrox Dec 5</div>
@@ -303,6 +386,18 @@ var PHASES=[
   {id:"taper2",l:"Hyrox Taper",f:"fb-taper2"}
 ];
 
+
+function buildInputHtml(m, idx, key, val, ctx) {
+  ctx = ctx || '';
+  if (m.tr === "weight") {
+    return '<div class="iwrap"><input type="number" inputmode="decimal" class="minput" value="'+esc(val)+'" placeholder="'+esc(m.tgt||"0")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'" onchange="onInput(this)" oninput="onInput(this)"><span class="munit">'+esc(m.un)+'</span><button class="hist-btn" onclick="showHist('+JSON.stringify(m.nm||"")+')" title="History">&#128202;</button></div>';
+  }
+  if (m.tr === "pace" || m.tr === "time") {
+    return '<div class="iwrap"><input type="text" inputmode="decimal" class="minput wide" value="'+esc(val)+'" placeholder="'+(m.tr==="pace"?"1:45":"hh:mm")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'" onchange="onInput(this)" oninput="onInput(this)"><span class="munit">'+esc((m.un||"").split(" ")[0])+'</span><button class="hist-btn" onclick="showHist('+JSON.stringify(m.nm||"")+')" title="History">&#128202;</button></div>';
+  }
+  return '';
+}
+
 // ── LocalStorage helpers ───────────────────────────────────────────────────────
 function loadState(key) {
   try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : {c:{},v:{}}; }
@@ -318,13 +413,7 @@ function esc(s) {
 }
 
 function buildInput(m, idx, key, val) {
-  if (m.tr === "weight") {
-    return '<div class="iwrap"><input type="number" inputmode="decimal" class="minput" value="'+esc(val)+'" placeholder="'+esc(m.tgt||"0")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" onchange="onInput(this)" oninput="onInput(this)"><span class="munit">'+esc(m.un)+'</span></div>';
-  }
-  if (m.tr === "pace" || m.tr === "time") {
-    return '<div class="iwrap"><input type="text" inputmode="decimal" class="minput wide" value="'+esc(val)+'" placeholder="'+(m.tr==="pace"?"1:45":"hh:mm")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" onchange="onInput(this)" oninput="onInput(this)"><span class="munit">'+esc((m.un||"").split(" ")[0])+'</span></div>';
-  }
-  return "";
+  return buildInputHtml(m, idx, key, val, '');
 }
 
 function buildSections(mvs, key, st) {
@@ -352,7 +441,7 @@ function buildSections(mvs, key, st) {
   return html;
 }
 
-function buildDay(day, wi, di) {
+function buildDay(day, wi, di, week) {
   var key = "hx_w"+wi+"d"+di;
   var mvs = day.mvs || [];
   var isRest = day.type === "rest" || mvs.length === 0;
@@ -369,7 +458,14 @@ function buildDay(day, wi, di) {
     html += '<div class="dmeta"><span class="dprog'+(allDone?" dn":"")+'" id="prog-'+key+'">'+doneCount+"/"+mvs.length+'</span><span class="dchev" id="chev-'+key+'">&#9660;</span></div>';
   }
   html += "</div>";
-  html += '<div class="dbody" id="db-'+key+'">'+(buildSections(mvs, key, st))+(doneCount>0 ? '<button class="resetbtn" onclick="onReset('+JSON.stringify(key)+')">Reset session</button>' : "")+'</div>';
+  var ctx = week ? week.lbl : "";
+  var custom = loadCustom(wi, di);
+  html += '<div class="dbody" id="db-'+key+'">'
+    + buildSections(mvs, key, st, ctx)
+    + buildCustomSections(custom, wi, di, key, st, ctx)
+    + '<button class="add-ex-btn" data-wi="'+wi+'" data-di="'+di+'" onclick="openAdd(this)"><span>+</span> Add exercise</button>'
+    + (doneCount>0 ? '<button class="resetbtn" onclick="onReset('+JSON.stringify(key)+')">Reset session</button>' : "")
+    + '</div>';
   html += "</div>";
   return html;
 }
@@ -379,7 +475,7 @@ function buildWeek(week, wi) {
   var html = '<div class="wcard ph-'+esc(week.ph)+'" data-phase="'+esc(week.ph)+'">';
   html += '<div class="whdr"><div class="wtop"><div><div class="wlbl">'+esc(week.lbl)+'</div><div class="wdt">'+esc(week.dt)+'</div></div>'+(hasRace?'<span class="rbadge">RACE</span>':"")+'</div>'+(week.note?'<div class="wnote">'+esc(week.note)+'</div>':"")+'</div>';
   html += '<div class="days">';
-  week.days.forEach(function(day, di) { html += buildDay(day, wi, di); });
+  week.days.forEach(function(day, di) { html += buildDay(day, wi, di, week); });
   html += "</div></div>";
   return html;
 }
@@ -396,15 +492,22 @@ function toggleDay(key) {
 
 function onCheck(btn) {
   var key = btn.getAttribute("data-key");
-  var idx = parseInt(btn.getAttribute("data-idx"), 10);
+  var idx = btn.getAttribute("data-idx");
+  var nm = btn.getAttribute("data-nm") || "";
+  var ctx = btn.getAttribute("data-ctx") || "";
   var isOn = btn.classList.contains("on");
   btn.classList.toggle("on", !isOn);
   btn.innerHTML = !isOn ? "\u2713" : "";
   var row = btn.parentElement;
   if (row) {
     row.classList.toggle("dn", !isOn);
-    var nm = row.querySelector(".mname");
-    if (nm) nm.classList.toggle("x", !isOn);
+    var nmEl = row.querySelector(".mname");
+    if (nmEl) nmEl.classList.toggle("x", !isOn);
+    // Save history when ticking done
+    if (!isOn && nm) {
+      var inp = row.querySelector("input");
+      if (inp && inp.value) saveToHistory(nm, inp.value, ctx);
+    }
   }
   var st = loadState(key);
   if (!st.c) st.c = {};
@@ -469,6 +572,160 @@ function setPhase(ph) {
     if (show) visible++;
   });
   document.getElementById("wcount").textContent = visible + " week" + (visible !== 1 ? "s" : "") + " \u00b7 Progress saves automatically";
+}
+
+
+// === HISTORY ===
+var currentHistName = null;
+function histKey(nm) {
+  return 'hx_hist_' + nm.toLowerCase().replace(/[^a-z0-9]/g,'_').substring(0,40);
+}
+function saveToHistory(nm, value, ctx) {
+  if (!value || !value.trim()) return;
+  var key = histKey(nm);
+  var hist = getHistData(nm);
+  var today = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'});
+  hist = hist.filter(function(h){ return h.date !== today; });
+  hist.unshift({date:today, value:value.trim(), ctx:ctx||''});
+  hist = hist.slice(0, 30);
+  try { localStorage.setItem(key, JSON.stringify(hist)); } catch(e) {}
+}
+function getHistData(nm) {
+  try { var v=localStorage.getItem(histKey(nm)); return v?JSON.parse(v):[]; } catch(e){ return []; }
+}
+function clearHistEntry(nm, idx) {
+  var hist = getHistData(nm);
+  hist.splice(idx, 1);
+  try { localStorage.setItem(histKey(nm), JSON.stringify(hist)); } catch(e) {}
+  showHist(nm);
+}
+function showHist(nm) {
+  currentHistName = nm;
+  document.getElementById('histTitle').textContent = nm;
+  var hist = getHistData(nm);
+  var html = '';
+  if (!hist.length) {
+    html = '<div class="hist-empty">No history yet. Values are saved when you tick a movement as done.</div>';
+  } else {
+    hist.forEach(function(h, i) {
+      html += '<div class="hist-row">';
+      html += '<div><div class="hist-date">'+esc(h.date)+'</div>'+(h.ctx?'<div class="hist-ctx">'+esc(h.ctx)+'</div>':'')+'</div>';
+      html += '<div style="display:flex;align-items:center;gap:8px"><span class="hist-val">'+esc(h.value)+'</span>';
+      html += '<button class="hist-delete" onclick="clearHistEntry('+JSON.stringify(nm)+','+i+')">&#10005;</button></div>';
+      html += '</div>';
+    });
+  }
+  document.getElementById('histContent').innerHTML = html;
+  document.getElementById('histOverlay').style.display = 'flex';
+}
+function closeHist() { document.getElementById('histOverlay').style.display='none'; }
+function closeHistIfBg(e) { if(e.target.id==='histOverlay') closeHist(); }
+
+// === CUSTOM EXERCISES ===
+var addingForKey = null;
+var addingForCtx = null;
+function customKey(wi, di) { return 'hx_custom_w'+wi+'d'+di; }
+function loadCustom(wi, di) {
+  try { var v=localStorage.getItem(customKey(wi,di)); return v?JSON.parse(v):[]; } catch(e){ return []; }
+}
+function saveCustom(wi, di, arr) {
+  try { localStorage.setItem(customKey(wi,di), JSON.stringify(arr)); } catch(e) {}
+}
+function openAdd(btn) {
+  var wi = parseInt(btn.getAttribute('data-wi'), 10);
+  var di = parseInt(btn.getAttribute('data-di'), 10);
+  var ctx = weeks[wi] ? weeks[wi].lbl : '';
+  addingForKey = customKey(wi, di);
+  addingForCtx = ctx;
+  document.getElementById('addName').value='';
+  document.getElementById('addSets').value='';
+  document.getElementById('addTrack').value='';
+  document.getElementById('addSection').value='Strength';
+  document.getElementById('addOverlay').style.display='flex';
+  setTimeout(function(){ document.getElementById('addName').focus(); }, 100);
+}
+function closeAdd() { document.getElementById('addOverlay').style.display='none'; }
+function closeAddIfBg(e) { if(e.target.id==='addOverlay') closeAdd(); }
+function submitAdd() {
+  var nm = document.getElementById('addName').value.trim();
+  if (!nm) { document.getElementById('addName').focus(); return; }
+  var sets = document.getElementById('addSets').value.trim();
+  var track = document.getElementById('addTrack').value || null;
+  var sec = document.getElementById('addSection').value;
+  // Decode key to get wi/di
+  var m = addingForKey.match(/hx_custom_w(\d+)d(\d+)/);
+  if (!m) return;
+  var wi=parseInt(m[1]), di=parseInt(m[2]);
+  var arr = loadCustom(wi, di);
+  arr.push({nm:nm, st:sets, tr:track, sc:sec});
+  saveCustom(wi, di, arr);
+  closeAdd();
+  // Re-render the day body
+  refreshDayBody(wi, di, addingForCtx);
+}
+function deleteCustomEx(btn) {
+  var wi = parseInt(btn.getAttribute('data-wi'), 10);
+  var di = parseInt(btn.getAttribute('data-di'), 10);
+  var ci = parseInt(btn.getAttribute('data-ci'), 10);
+  var ctx = weeks[wi] ? weeks[wi].lbl : '';
+  deleteCustom(wi, di, ci, ctx);
+}
+function deleteCustom(wi, di, idx, ctx) {
+  var arr = loadCustom(wi, di);
+  arr.splice(idx, 1);
+  saveCustom(wi, di, arr);
+  refreshDayBody(wi, di, ctx);
+}
+
+// Rebuild the body of an open day card
+function refreshDayBody(wi, di, ctx) {
+  var key = 'hx_w'+wi+'d'+di;
+  var card = document.querySelector('.dcard[data-key="'+key+'"]');
+  if (!card) return;
+  var body = document.getElementById('db-'+key);
+  if (!body) return;
+  var week = weeks[wi];
+  if (!week) return;
+  var day = week.days[di];
+  if (!day) return;
+  var st = loadState(key);
+  var custom = loadCustom(wi, di);
+  body.innerHTML = buildSections(day.mvs||[], key, st, ctx) +
+    buildCustomSections(custom, wi, di, key, st, ctx) +
+    '<button class="add-ex-btn" onclick="openAdd('+wi+','+di+','+JSON.stringify(ctx||'')+')">' +
+    '<span>+</span> Add exercise</button>' +
+    (Object.keys(st.c||{}).length>0?'<button class="resetbtn" onclick="onReset(\''+key+'\')">Reset session</button>':'');
+  updateProgress(key);
+}
+
+function buildCustomSections(custom, wi, di, key, st, ctx) {
+  if (!custom || !custom.length) return '';
+  // Group by section
+  var secs = {};
+  custom.forEach(function(m, ci) {
+    var sec = m.sc || 'Custom';
+    if (!secs[sec]) secs[sec] = [];
+    secs[sec].push({m:m, ci:ci});
+  });
+  var html = '';
+  Object.keys(secs).forEach(function(sec) {
+    html += '<div class="sblk"><div class="sbadge sc-'+(sec||'Custom')+'">'+(sec||'Custom')+'</div><div class="sitems">';
+    secs[sec].forEach(function(x) {
+      var customIdx = 'c_'+x.ci;
+      var done = !!(st.c && st.c[customIdx]);
+      var val = (st.v && st.v[customIdx]) || '';
+      html += '<div class="mvrow'+(done?' dn':'')+'" data-idx="'+customIdx+'">';
+      html += '<button class="chkbtn'+(done?' on':'')+'" data-key="'+esc(key)+'" data-idx="'+customIdx+'" data-nm="'+esc(x.m.nm)+'" data-ctx="'+esc(ctx||'')+'" onclick="onCheck(this)">'+(done?'\u2713':'')+'</button>';
+      html += '<div class="minfo"><div class="mname'+(done?' x':'')+'">'+esc(x.m.nm)+'</div>'+(x.m.st?'<div class="msets">'+esc(x.m.st)+'</div>':'')+'</div>';
+      if (x.m.tr) {
+        html += buildInputHtml(x.m, customIdx, key, val, ctx||'');
+      }
+      html += '<button class="del-cust" data-wi="'+wi+'" data-di="'+di+'" data-ci="'+x.ci+'" onclick="deleteCustomEx(this)" style="font-size:.65rem;color:#ef4444;background:none;border:none;padding:2px 4px;flex-shrink:0;cursor:pointer">&#10005;</button>';
+      html += '</div>';
+    });
+    html += '</div></div>';
+  });
+  return html;
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────────
