@@ -462,13 +462,16 @@ function buildInput(m, idx, key, val, st) {
   return buildInputHtml(m, idx, key, val, '', st ? st.v : {});
 }
 
-function buildSections(mvs, key, st) {
+function buildSections(mvs, key, st, ctx, wi, di) {
   if (!mvs || !mvs.length) return "";
+  ctx = ctx || "";
+  var ov = (wi !== undefined && di !== undefined) ? loadOverrides(wi, di) : {};
   var sections = [];
   mvs.forEach(function(m, i) {
+    var m2 = applyOverride(m, ov, i);
     var last = sections[sections.length - 1];
-    if (!last || last.name !== m.sc) sections.push({name: m.sc, items: [{m:m,i:i}]});
-    else last.items.push({m:m,i:i});
+    if (!last || last.name !== m2.sc) sections.push({name: m2.sc, items: [{m:m2,i:i}]});
+    else last.items.push({m:m2,i:i});
   });
   var html = "";
   sections.forEach(function(sec) {
@@ -476,10 +479,12 @@ function buildSections(mvs, key, st) {
     sec.items.forEach(function(x) {
       var done = !!(st.c && st.c[x.i]);
       var val = (st.v && st.v[x.i]) || "";
+      var repsIdx = 'r_'+x.i;
       html += '<div class="mvrow'+(done?" dn":"")+'" data-idx="'+x.i+'">';
-      html += '<button class="chkbtn'+(done?" on":"")+'" data-key="'+esc(key)+'" data-idx="'+x.i+'" onclick="onCheck(this)">'+(done?"&#10003;":"")+'</button>';
+      html += '<button class="chkbtn'+(done?" on":"")+'" data-key="'+esc(key)+'" data-idx="'+x.i+'" data-nm="'+esc(x.m.nm)+'" data-ctx="'+esc(ctx)+'" onclick="onCheck(this)">'+(done?"\u2713":"")+'</button>';
       html += '<div class="minfo"><div class="mname'+(done?" x":"")+'">'+esc(x.m.nm)+'</div>'+(x.m.st?'<div class="msets">'+esc(x.m.st)+'</div>':"")+'</div>';
-      html += buildInput(x.m, x.i, key, val);
+      html += buildInputHtml(x.m, x.i, key, val, ctx, st.v);
+      if (wi !== undefined) html += '<button class="edit-btn" data-wi="'+wi+'" data-di="'+di+'" data-idx="'+x.i+'" onclick="openEdit(this)" title="Edit">&#9998;</button>';
       html += "</div>";
     });
     html += "</div></div>";
