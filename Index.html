@@ -390,10 +390,10 @@ var PHASES=[
 function buildInputHtml(m, idx, key, val, ctx) {
   ctx = ctx || '';
   if (m.tr === "weight") {
-    return '<div class="iwrap"><input type="number" inputmode="decimal" class="minput" value="'+esc(val)+'" placeholder="'+esc(m.tgt||"0")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'" onchange="onInput(this)" oninput="onInput(this)"><span class="munit">'+esc(m.un)+'</span><button class="hist-btn" onclick="showHist('+JSON.stringify(m.nm||"")+')" title="History">&#128202;</button></div>';
+    return '<div class="iwrap"><input type="number" inputmode="decimal" class="minput" value="'+esc(val)+'" placeholder="'+esc(m.tgt||"0")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'" onchange="onInput(this)" oninput="onInput(this)"><span class="munit">'+esc(m.un)+'</span><button class="hist-btn" data-nm="'+esc(m.nm||"")+'" onclick="showHistFromBtn(this)" title="History">&#128202;</button></div>';
   }
   if (m.tr === "pace" || m.tr === "time") {
-    return '<div class="iwrap"><input type="text" inputmode="decimal" class="minput wide" value="'+esc(val)+'" placeholder="'+(m.tr==="pace"?"1:45":"hh:mm")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'" onchange="onInput(this)" oninput="onInput(this)"><span class="munit">'+esc((m.un||"").split(" ")[0])+'</span><button class="hist-btn" onclick="showHist('+JSON.stringify(m.nm||"")+')" title="History">&#128202;</button></div>';
+    return '<div class="iwrap"><input type="text" inputmode="decimal" class="minput wide" value="'+esc(val)+'" placeholder="'+(m.tr==="pace"?"1:45":"hh:mm")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'" onchange="onInput(this)" oninput="onInput(this)"><span class="munit">'+esc((m.un||"").split(" ")[0])+'</span><button class="hist-btn" data-nm="'+esc(m.nm||"")+'" onclick="showHistFromBtn(this)" title="History">&#128202;</button></div>';
   }
   return '';
 }
@@ -597,6 +597,10 @@ function clearHistEntry(nm, idx) {
   var hist = getHistData(nm);
   hist.splice(idx, 1);
   try { localStorage.setItem(histKey(nm), JSON.stringify(hist)); } catch(e) {}
+  showHist(nm);
+}
+function showHistFromBtn(btn) {
+  var nm = btn.getAttribute('data-nm') || '';
   showHist(nm);
 }
 function showHist(nm) {
