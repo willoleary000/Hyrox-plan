@@ -159,8 +159,13 @@ input[type=number]{-moz-appearance:textfield}
 .add-label{font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;display:block}
 /* History button on inputs */
 .hist-btn{width:26px;height:26px;border-radius:6px;background:#f3f4f6;border:none;font-size:.75rem;color:#6b7280;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
+.reps-input{width:38px;text-align:right;font-size:.72rem;border:1px solid #e5e7eb;border-radius:7px;padding:3px 4px;background:#f9fafb;color:#6b7280}
+.reps-input:focus{outline:none;border-color:#14b8a6;background:#fff}
+.reps-label{font-size:.6rem;color:#9ca3af;align-self:center}
 /* Add exercise button */
 .add-ex-btn{width:100%;margin-top:10px;padding:9px;border-radius:9px;border:1px dashed #d1d5db;background:transparent;color:#6b7280;font-size:.75rem;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px}
+.edit-btn{width:22px;height:22px;border-radius:5px;background:none;border:none;font-size:.65rem;color:#9ca3af;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;padding:0}
+.edit-btn:active{background:#f3f4f6}
 .add-ex-btn:active{background:#f9fafb}
 /* Custom section badge */
 .sc-Custom{color:#374151;border-color:#e5e7eb;background:#f9fafb}
@@ -179,6 +184,38 @@ input[type=number]{-moz-appearance:textfield}
       <button class="modal-close" onclick="closeHist()">&#10005;</button>
     </div>
     <div id="histContent"></div>
+  </div>
+</div>
+<!-- Edit Exercise Modal -->
+<div class="overlay" id="editOverlay" style="display:none" onclick="closeEditIfBg(event)">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title">Edit Exercise</span>
+      <button class="modal-close" onclick="closeEdit()">&#10005;</button>
+    </div>
+    <label class="add-label">Exercise Name</label>
+    <input id="editName" type="text" class="add-field"/>
+    <div class="add-row">
+      <div style="flex:1">
+        <label class="add-label">Sets / Distance</label>
+        <input id="editSets" type="text" class="add-field" placeholder="e.g. 4x8 or 200m"/>
+      </div>
+      <div style="flex:1">
+        <label class="add-label">Target</label>
+        <input id="editTarget" type="text" class="add-field" placeholder="e.g. 100"/>
+      </div>
+    </div>
+    <label class="add-label">Track</label>
+    <select id="editTrack" class="add-field">
+      <option value="">No tracking</option>
+      <option value="weight">Weight (kg)</option>
+      <option value="pace">Pace (/500m)</option>
+      <option value="time">Time (hh:mm)</option>
+    </select>
+    <div class="add-btns">
+      <button class="add-cancel-btn" onclick="closeEdit()">Cancel</button>
+      <button class="add-save-btn" onclick="submitEdit()">Save Changes</button>
+    </div>
   </div>
 </div>
 <!-- Add Exercise Modal -->
@@ -387,13 +424,22 @@ var PHASES=[
 ];
 
 
-function buildInputHtml(m, idx, key, val, ctx) {
+function buildInputHtml(m, idx, key, val, ctx, rSt) {
   ctx = ctx || '';
   if (m.tr === "weight") {
-    return '<div class="iwrap"><input type="number" inputmode="decimal" class="minput" value="'+esc(val)+'" placeholder="'+esc(m.tgt||"0")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'" onchange="onInput(this)" oninput="onInput(this)"><span class="munit">'+esc(m.un)+'</span><button class="hist-btn" data-nm="'+esc(m.nm||"")+'" onclick="showHistFromBtn(this)" title="History">&#128202;</button></div>';
+    var repsIdx = 'r_'+idx;
+    var repsVal = (rSt && rSt[repsIdx]) || '';
+    return '<div class="iwrap">'
+      + '<input type="number" inputmode="decimal" class="minput" value="'+esc(val)+'" placeholder="'+esc(m.tgt||"0")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-reps-idx="'+repsIdx+'" data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'" onchange="onInput(this)" oninput="onInput(this)" onblur="onBlur(this)">'
+      + '<span class="munit">'+esc(m.un)+'</span>'
+      + '<span class="reps-label">×</span>'
+      + '<input type="number" inputmode="decimal" class="reps-input" value="'+esc(repsVal)+'" placeholder="reps" data-key="'+esc(key)+'" data-idx="'+repsIdx+'" data-paired-idx="'+idx+'" data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'" onchange="onRepsInput(this)" oninput="onRepsInput(this)" onblur="onRepsBlur(this)">'
+      + '<span class="reps-label">reps</span>'
+      + '<button class="hist-btn" data-nm="'+esc(m.nm||"")+'" onclick="showHistFromBtn(this)" title="History">&#128202;</button>'
+      + '</div>';
   }
   if (m.tr === "pace" || m.tr === "time") {
-    return '<div class="iwrap"><input type="text" inputmode="decimal" class="minput wide" value="'+esc(val)+'" placeholder="'+(m.tr==="pace"?"1:45":"hh:mm")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'" onchange="onInput(this)" oninput="onInput(this)"><span class="munit">'+esc((m.un||"").split(" ")[0])+'</span><button class="hist-btn" data-nm="'+esc(m.nm||"")+'" onclick="showHistFromBtn(this)" title="History">&#128202;</button></div>';
+    return '<div class="iwrap"><input type="text" inputmode="decimal" class="minput wide" value="'+esc(val)+'" placeholder="'+(m.tr==="pace"?"1:45":"hh:mm")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'" onchange="onInput(this)" oninput="onInput(this)" onblur="onBlur(this)"><span class="munit">'+esc((m.un||"").split(" ")[0])+'</span><button class="hist-btn" data-nm="'+esc(m.nm||"")+'" onclick="showHistFromBtn(this)" title="History">&#128202;</button></div>';
   }
   return '';
 }
@@ -412,8 +458,8 @@ function esc(s) {
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
-function buildInput(m, idx, key, val) {
-  return buildInputHtml(m, idx, key, val, '');
+function buildInput(m, idx, key, val, st) {
+  return buildInputHtml(m, idx, key, val, '', st ? st.v : {});
 }
 
 function buildSections(mvs, key, st) {
@@ -461,7 +507,7 @@ function buildDay(day, wi, di, week) {
   var ctx = week ? week.lbl : "";
   var custom = loadCustom(wi, di);
   html += '<div class="dbody" id="db-'+key+'">'
-    + buildSections(mvs, key, st, ctx)
+    + buildSections(mvs, key, st, ctx, wi, di)
     + buildCustomSections(custom, wi, di, key, st, ctx)
     + '<button class="add-ex-btn" data-wi="'+wi+'" data-di="'+di+'" onclick="openAdd(this)"><span>+</span> Add exercise</button>'
     + (doneCount>0 ? '<button class="resetbtn" onclick="onReset('+JSON.stringify(key)+')">Reset session</button>' : "")
@@ -518,13 +564,56 @@ function onCheck(btn) {
 
 function onInput(input) {
   var key = input.getAttribute("data-key");
-  var idx = parseInt(input.getAttribute("data-idx"), 10);
+  var idx = input.getAttribute("data-idx");
   var st = loadState(key);
   if (!st.v) st.v = {};
   st.v[idx] = input.value;
   saveState(key, st);
 }
+function onBlur(input) {
+  var nm = input.getAttribute("data-nm") || "";
+  var ctx = input.getAttribute("data-ctx") || "";
+  var val = input.value;
+  var key = input.getAttribute("data-key");
+  var repsIdx = input.getAttribute("data-reps-idx");
+  if (!nm || !val || !val.trim()) return;
+  // If this is a weight input with a paired reps field, build combined entry
+  if (repsIdx) {
+    var st = loadState(key);
+    var repsVal = (st.v && st.v[repsIdx]) || "";
+    var combined = val.trim() + "kg";
+    if (repsVal) combined += " × " + repsVal + " reps";
+    saveToHistory(nm, combined, ctx);
+  } else {
+    saveToHistory(nm, val.trim(), ctx);
+  }
+}
 
+function onRepsInput(input) {
+  var key = input.getAttribute("data-key");
+  var idx = input.getAttribute("data-idx");
+  var st = loadState(key);
+  if (!st.v) st.v = {};
+  st.v[idx] = input.value;
+  saveState(key, st);
+}
+function onRepsBlur(input) {
+  var nm = input.getAttribute("data-nm") || "";
+  var ctx = input.getAttribute("data-ctx") || "";
+  var repsVal = input.value;
+  var key = input.getAttribute("data-key");
+  var pairedIdx = input.getAttribute("data-paired-idx");
+  // Get weight value from paired input
+  var st = loadState(key);
+  var weightVal = (st.v && st.v[pairedIdx]) || "";
+  if (nm && (repsVal || weightVal)) {
+    var combined = "";
+    if (weightVal) combined += weightVal + "kg";
+    if (weightVal && repsVal) combined += " × ";
+    if (repsVal) combined += repsVal + " reps";
+    if (combined) saveToHistory(nm, combined, ctx);
+  }
+}
 function onReset(key) {
   var card = document.querySelector('.dcard[data-key="'+key+'"]');
   if (!card) return;
@@ -609,7 +698,7 @@ function showHist(nm) {
   var hist = getHistData(nm);
   var html = '';
   if (!hist.length) {
-    html = '<div class="hist-empty">No history yet. Values are saved when you tick a movement as done.</div>';
+    html = '<div class="hist-empty">No history yet. Enter a value and tap away to save.</div>';
   } else {
     hist.forEach(function(h, i) {
       html += '<div class="hist-row">';
@@ -694,7 +783,7 @@ function refreshDayBody(wi, di, ctx) {
   if (!day) return;
   var st = loadState(key);
   var custom = loadCustom(wi, di);
-  body.innerHTML = buildSections(day.mvs||[], key, st, ctx) +
+  body.innerHTML = buildSections(day.mvs||[], key, st, ctx, wi, di) +
     buildCustomSections(custom, wi, di, key, st, ctx) +
     '<button class="add-ex-btn" onclick="openAdd('+wi+','+di+','+JSON.stringify(ctx||'')+')">' +
     '<span>+</span> Add exercise</button>' +
@@ -722,14 +811,90 @@ function buildCustomSections(custom, wi, di, key, st, ctx) {
       html += '<button class="chkbtn'+(done?' on':'')+'" data-key="'+esc(key)+'" data-idx="'+customIdx+'" data-nm="'+esc(x.m.nm)+'" data-ctx="'+esc(ctx||'')+'" onclick="onCheck(this)">'+(done?'\u2713':'')+'</button>';
       html += '<div class="minfo"><div class="mname'+(done?' x':'')+'">'+esc(x.m.nm)+'</div>'+(x.m.st?'<div class="msets">'+esc(x.m.st)+'</div>':'')+'</div>';
       if (x.m.tr) {
-        html += buildInputHtml(x.m, customIdx, key, val, ctx||'');
+        html += buildInputHtml(x.m, customIdx, key, val, ctx||'', st.v);
       }
+      html += '<button class="edit-btn" data-wi="'+wi+'" data-di="'+di+'" data-idx="'+customIdx+'" onclick="openEdit(this)" title="Edit">&#9998;</button>';
       html += '<button class="del-cust" data-wi="'+wi+'" data-di="'+di+'" data-ci="'+x.ci+'" onclick="deleteCustomEx(this)" style="font-size:.65rem;color:#ef4444;background:none;border:none;padding:2px 4px;flex-shrink:0;cursor:pointer">&#10005;</button>';
       html += '</div>';
     });
     html += '</div></div>';
   });
   return html;
+}
+
+// === EDIT MOVEMENTS ===
+var editingWi = null, editingDi = null, editingIdx = null, editingIsCustom = false;
+
+function overrideKey(wi, di) { return 'hx_ov_w'+wi+'d'+di; }
+function loadOverrides(wi, di) {
+  try { var v=localStorage.getItem(overrideKey(wi,di)); return v?JSON.parse(v):{}; } catch(e){ return {}; }
+}
+function saveOverrides(wi, di, ov) {
+  try { localStorage.setItem(overrideKey(wi,di), JSON.stringify(ov)); } catch(e) {}
+}
+function getMovement(wi, di, idx) {
+  // idx is a string: numeric = built-in, 'c_N' = custom
+  var week = weeks[wi];
+  if (!week) return null;
+  var day = week.days[di];
+  if (!day) return null;
+  if (String(idx).indexOf('c_') === 0) {
+    var ci = parseInt(String(idx).replace('c_',''), 10);
+    var customs = loadCustom(wi, di);
+    return customs[ci] ? Object.assign({}, customs[ci]) : null;
+  }
+  var i = parseInt(idx, 10);
+  return day.mvs[i] ? Object.assign({}, day.mvs[i]) : null;
+}
+function openEdit(btn) {
+  var wi = parseInt(btn.getAttribute('data-wi'), 10);
+  var di = parseInt(btn.getAttribute('data-di'), 10);
+  var idx = btn.getAttribute('data-idx');
+  editingWi = wi; editingDi = di; editingIdx = idx;
+  editingIsCustom = String(idx).indexOf('c_') === 0;
+  // Load current values: check overrides first, then original
+  var ov = loadOverrides(wi, di);
+  var base = getMovement(wi, di, idx);
+  if (!base) return;
+  var cur = ov[idx] ? Object.assign({}, base, ov[idx]) : base;
+  document.getElementById('editName').value = cur.nm || '';
+  document.getElementById('editSets').value = cur.st || '';
+  document.getElementById('editTarget').value = cur.tgt || '';
+  document.getElementById('editTrack').value = cur.tr || '';
+  document.getElementById('editOverlay').style.display = 'flex';
+  setTimeout(function(){ document.getElementById('editName').focus(); }, 100);
+}
+function closeEdit() { document.getElementById('editOverlay').style.display='none'; }
+function closeEditIfBg(e) { if(e.target.id==='editOverlay') closeEdit(); }
+function submitEdit() {
+  var nm = document.getElementById('editName').value.trim();
+  if (!nm) { document.getElementById('editName').focus(); return; }
+  var ov = loadOverrides(editingWi, editingDi);
+  ov[editingIdx] = {
+    nm: nm,
+    st: document.getElementById('editSets').value.trim(),
+    tgt: document.getElementById('editTarget').value.trim(),
+    tr: document.getElementById('editTrack').value || null
+  };
+  saveOverrides(editingWi, editingDi, ov);
+  // If custom, also update the custom array directly
+  if (editingIsCustom) {
+    var ci = parseInt(String(editingIdx).replace('c_',''), 10);
+    var customs = loadCustom(editingWi, editingDi);
+    if (customs[ci]) {
+      customs[ci] = Object.assign(customs[ci], ov[editingIdx]);
+      saveCustom(editingWi, editingDi, customs);
+    }
+  }
+  closeEdit();
+  var ctx = weeks[editingWi] ? weeks[editingWi].lbl : '';
+  refreshDayBody(editingWi, editingDi, ctx);
+}
+
+// Merge overrides into a movement object
+function applyOverride(m, ov, idx) {
+  if (!ov || !ov[idx]) return m;
+  return Object.assign({}, m, ov[idx]);
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────────
