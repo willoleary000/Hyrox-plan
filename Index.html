@@ -320,6 +320,7 @@ input[type=number]{-moz-appearance:textfield}
 // ── State ─────────────────────────────────────────────────────────────────────
 var activePhase = "all";
 var racesVisible = false;
+var currentTab = 'cal';
 
 // ── Data builders ─────────────────────────────────────────────────────────────
 function mv(sc, nm, st, tgt, un, tr) {
@@ -804,6 +805,14 @@ function openAdd(btn) {
 }
 function closeAdd() { document.getElementById('addOverlay').style.display='none'; }
 function closeAddIfBg(e) { if(e.target.id==='addOverlay') closeAdd(); }
+
+function invalidateOverview() {
+  var ovEl = document.getElementById('overview');
+  if (ovEl && currentTab === 'ov') {
+    ovEl.innerHTML = '';
+    buildOverview();
+  }
+}
 function submitAdd() {
   var nm = document.getElementById('addName').value.trim();
   if (!nm) { document.getElementById('addName').focus(); return; }
@@ -818,8 +827,8 @@ function submitAdd() {
   arr.push({nm:nm, st:sets, tr:track, sc:sec});
   saveCustom(wi, di, arr);
   closeAdd();
-  // Re-render the day body
   refreshDayBody(wi, di, addingForCtx);
+  invalidateOverview();
 }
 function deleteCustomEx(btn) {
   var wi = parseInt(btn.getAttribute('data-wi'), 10);
@@ -833,6 +842,7 @@ function deleteCustom(wi, di, idx, ctx) {
   arr.splice(idx, 1);
   saveCustom(wi, di, arr);
   refreshDayBody(wi, di, ctx);
+  invalidateOverview();
 }
 
 // Rebuild the body of an open day card
@@ -951,10 +961,7 @@ function submitEdit() {
   closeEdit();
   var ctx = weeks[editingWi] ? weeks[editingWi].lbl : '';
   refreshDayBody(editingWi, editingDi, ctx);
-  if (typeof currentTab !== 'undefined' && currentTab === 'ov') {
-    var ovEl = document.getElementById('overview');
-    if (ovEl) { ovEl.innerHTML = ''; delete ovEl.dataset.built; buildOverview(); ovEl.dataset.built = '1'; }
-  }
+  invalidateOverview();
 }
 
 // Merge overrides into a movement object
@@ -994,7 +1001,6 @@ window.addEventListener("DOMContentLoaded", function() {
 
 <script>
 // === TAB SWITCHING ===
-var currentTab = 'cal';
 function switchTab(tab) {
   currentTab = tab;
   document.getElementById('tabCal').classList.toggle('on', tab === 'cal');
@@ -1009,7 +1015,8 @@ function switchTab(tab) {
   var ovEl = document.getElementById('overview');
   if (tab === 'ov') {
     ovEl.style.display = 'block';
-    if (!ovEl.dataset.built) { buildOverview(); ovEl.dataset.built = '1'; }
+    ovEl.innerHTML = '';
+    buildOverview();
   } else {
     ovEl.style.display = 'none';
   }
@@ -1022,17 +1029,29 @@ function buildOverview() {
   var mvMap = {};
   weeks.forEach(function(week, wi) {
     week.days.forEach(function(day, di) {
-      if (!day.mvs || !day.mvs.length) return;
       var ov = loadOverrides(wi, di);
-      day.mvs.forEach(function(m, idx) {
+      // Scan built-in movements
+      (day.mvs || []).forEach(function(m, idx) {
         var m2 = applyOverride(m, ov, idx);
-        if (!m2.tr) return;
         var nm = m2.nm;
+        if (!nm) return;
         if (!mvMap[nm]) mvMap[nm] = { sec: m2.sc, un: m2.un, tr: m2.tr, entries: [] };
         mvMap[nm].entries.push({
           wi: wi, di: di, idx: idx,
           weekLbl: week.lbl, dates: week.dt,
           sets: m2.st, tgt: m2.tgt, tr: m2.tr, un: m2.un
+        });
+      });
+      // Scan custom movements for this day
+      var customs = loadCustom(wi, di);
+      customs.forEach(function(m, ci) {
+        var nm = m.nm;
+        if (!nm) return;
+        if (!mvMap[nm]) mvMap[nm] = { sec: m.sc || 'Custom', un: m.un, tr: m.tr, entries: [] };
+        mvMap[nm].entries.push({
+          wi: wi, di: di, idx: 'c_' + ci,
+          weekLbl: week.lbl, dates: week.dt,
+          sets: m.st, tgt: m.tgt, tr: m.tr, un: m.un
         });
       });
     });
@@ -1045,7 +1064,14 @@ function buildOverview() {
     sections[sec].push(nm);
   });
 
+  // Sort each section alphabetically
+  Object.keys(sections).forEach(function(sec) {
+    sections[sec].sort(function(a, b) { return a.localeCompare(b); });
+  });
+
   var html = '';
+  Object.keys(sections).forEach(function(sec) { sections[sec].sort(function(a,b){return a.localeCompare(b);}); });
+
   OV_ORDER.forEach(function(sec) {
     if (!sections[sec] || !sections[sec].length) return;
     html += '<div class="ov-section"><div class="ov-sec-hdr">' + esc(sec) + '</div>';
@@ -1105,7 +1131,10 @@ function buildOvEntry(nm, e) {
   h += '</div>';
   h += '<div class="ov-entry-right">';
 
-  if (e.tr === 'weight') {
+  if (!e.tr) {
+    // No tracking - just show edit button
+    h += '<span style="font-size:.65rem;color:#3f3f46">no tracking</span>';
+  } else if (e.tr === 'weight') {
     h += '<input type="number" inputmode="decimal" class="ov-input" value="' + esc(val) + '" placeholder="' + esc(e.tgt || 'kg') + '"'
        + ' data-key="' + esc(sk) + '" data-idx="' + idx + '" data-reps-idx="' + rIdx + '"'
        + ' data-nm="' + esc(nm) + '" data-ctx="' + esc(e.weekLbl) + '"'
