@@ -207,6 +207,40 @@ input[type=number]{-moz-appearance:textfield}
 .ov-hist-btn{width:26px;height:26px;border-radius:6px;background:#1a1a1a;border:1px solid #2a2a2a;font-size:.7rem;color:#52525b;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
 .ov-edit-btn{width:26px;height:26px;border-radius:6px;background:#1a1a1a;border:1px solid #2a2a2a;font-size:.75rem;color:#52525b;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
 .ov-chev{font-size:.6rem;color:#3f3f46}
+
+/* === TODAY TAB === */
+#today-view{display:none;padding:16px 16px 60px;background:#0a0a0a;min-height:100vh}
+.today-empty{text-align:center;padding:60px 24px;color:#3f3f46;font-size:.9rem;line-height:1.6}
+.today-header{margin-bottom:20px}
+.today-date{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#52525b;margin-bottom:4px}
+.today-title{font-size:1.4rem;font-weight:800;color:#f4f4f5;line-height:1.2}
+.today-week{font-size:.75rem;color:#52525b;margin-top:4px}
+.today-rest{text-align:center;padding:48px 0}
+.today-rest-icon{font-size:3rem;margin-bottom:12px}
+.today-rest-label{font-size:1.2rem;font-weight:700;color:#71717a}
+.today-rest-sub{font-size:.8rem;color:#3f3f46;margin-top:6px}
+.today-sec{margin-bottom:24px}
+.today-sec-hdr{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:0 0 10px;border-bottom:1px solid #1f1f1f;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.today-sec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.today-sec-name{color:#71717a}
+.today-mv{background:#111111;border:1px solid #1f1f1f;border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.today-mv.done-mv{opacity:.45}
+.today-chk{width:32px;height:32px;border-radius:9px;border:2px solid #2a2a2a;background:#1a1a1a;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem;font-weight:700;color:#fff}
+.today-chk.on{background:#14b8a6;border-color:#14b8a6}
+.today-mv-info{flex:1;min-width:0}
+.today-mv-name{font-size:1rem;font-weight:700;color:#e4e4e7;line-height:1.3}
+.today-mv-name.crossed{text-decoration:line-through;color:#3f3f46}
+.today-mv-sets{font-size:.8rem;color:#52525b;margin-top:3px}
+.today-inputs{display:flex;align-items:center;gap:6px;margin-top:10px}
+.today-input{flex:1;text-align:right;font-size:.95rem;border:1px solid #2a2a2a;border-radius:9px;padding:8px 10px;background:#1a1a1a;color:#e4e4e7;min-width:0}
+.today-input:focus{outline:none;border-color:#14b8a6;background:#1f2d2b}
+.today-reps{width:70px;text-align:right;font-size:.9rem;border:1px solid #2a2a2a;border-radius:9px;padding:8px 8px;background:#1a1a1a;color:#a1a1aa;flex-shrink:0}
+.today-reps:focus{outline:none;border-color:#14b8a6;background:#1f2d2b}
+.today-unit{font-size:.72rem;color:#3f3f46;white-space:nowrap}
+.today-progress{background:#1a1a1a;border:1px solid #1f1f1f;border-radius:12px;padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.today-prog-bar-wrap{flex:1;background:#111111;border-radius:999px;height:8px;overflow:hidden}
+.today-prog-bar{height:8px;background:#14b8a6;border-radius:999px;transition:width .3s}
+.today-prog-label{font-size:.72rem;font-weight:700;color:#52525b;white-space:nowrap}
 </style>
 
 </head>
@@ -303,7 +337,8 @@ input[type=number]{-moz-appearance:textfield}
   </div>
   <div class="tabs">
     <button class="tab on" id="tabCal" onclick="switchTab('cal')">Calendar</button>
-    <button class="tab" id="tabOv" onclick="switchTab('ov')">Programme Overview</button>
+    <button class="tab" id="tabToday" onclick="switchTab('today')">Today</button>
+    <button class="tab" id="tabOv" onclick="switchTab('ov')">Overview</button>
   </div>
 
   <div class="sect">
@@ -322,6 +357,7 @@ input[type=number]{-moz-appearance:textfield}
   <div class="ctxt" id="wcount"></div>
   <div class="weeks" id="weeks"></div>
   <div id="overview"></div>
+  <div id="today-view"></div>
 </div>
 
 <script>
@@ -1021,6 +1057,7 @@ function switchTab(tab) {
   currentTab = tab;
   document.getElementById('tabCal').classList.toggle('on', tab === 'cal');
   document.getElementById('tabOv').classList.toggle('on', tab === 'ov');
+  document.getElementById('tabToday').classList.toggle('on', tab === 'today');
   var calEls = ['weeks','filters','wcount'];
   calEls.forEach(function(id) {
     var el = document.getElementById(id);
@@ -1035,6 +1072,13 @@ function switchTab(tab) {
     buildOverview();
   } else {
     ovEl.style.display = 'none';
+  }
+  var todayEl = document.getElementById('today-view');
+  if (tab === 'today') {
+    todayEl.style.display = 'block';
+    buildTodayView();
+  } else {
+    todayEl.style.display = 'none';
   }
 }
 
@@ -1185,6 +1229,199 @@ function buildOvEntry(nm, e) {
   h += '</div></div>';
   return h;
 }
+
+// === TODAY VIEW ===
+var MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var MONTH_MAP = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+var DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var SECTION_DOTS = {
+  Run:'#38bdf8', Intervals:'#818cf8', Strength:'#fb923c',
+  Stations:'#14b8a6', Erg:'#c084fc', Conditioning:'#a78bfa',
+  Simulation:'#f87171', Race:'#f87171', Custom:'#71717a'
+};
+
+function parseWeekDates(dt) {
+  // Parses e.g. "May 12-18", "Jun 30 - Jul 6", "May 1-7"
+  dt = dt.trim();
+  var parts = dt.split('-').map(function(p){ return p.trim(); });
+  // Handle "Jun 30 - Jul 6" (space around dash)
+  if (dt.indexOf(' - ') !== -1) parts = dt.split(' - ').map(function(p){ return p.trim(); });
+  var start = parseDate(parts[0]);
+  if (!start) return null;
+  var endStr = parts[parts.length-1];
+  // endStr might be "18" or "Jul 6" or "1"
+  var endDate;
+  if (/^[a-zA-Z]/.test(endStr)) {
+    endDate = parseDate(endStr);
+  } else {
+    endDate = new Date(start.getFullYear(), start.getMonth(), parseInt(endStr));
+    if (endDate < start) endDate.setMonth(endDate.getMonth() + 1);
+  }
+  if (!endDate) endDate = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
+  endDate.setHours(23,59,59,999);
+  return { start: start, end: endDate };
+}
+
+function parseDate(str) {
+  // "May 12" or "Jun 1" or "1"
+  str = str.trim();
+  var m = str.match(/^([A-Za-z]+)\s+(\d+)$/);
+  if (!m) return null;
+  var mon = MONTH_MAP[m[1].toLowerCase().substring(0,3)];
+  if (mon === undefined) return null;
+  var day = parseInt(m[2]);
+  var year = 2025;
+  // Assume 2025 for May-Dec, 2026 for anything wrapping
+  if (mon >= 0 && mon <= 3) year = 2026; // Jan-Apr would be 2026 (post-marathon)
+  return new Date(year, mon, day, 0, 0, 0, 0);
+}
+
+function findTodayWeekDay() {
+  var now = new Date();
+  var todayDow = DAY_NAMES[now.getDay()]; // Mon, Tue etc
+  for (var wi = 0; wi < weeks.length; wi++) {
+    var week = weeks[wi];
+    var range = parseWeekDates(week.dt);
+    if (!range) continue;
+    if (now >= range.start && now <= range.end) {
+      // Find the matching day
+      for (var di = 0; di < week.days.length; di++) {
+        if (week.days[di].day === todayDow) {
+          return { wi: wi, di: di, week: week, day: week.days[di] };
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function buildTodayView() {
+  var el = document.getElementById('today-view');
+  var found = findTodayWeekDay();
+  var now = new Date();
+  var dateStr = DAY_NAMES[now.getDay()] + ' ' + now.getDate() + ' ' + MONTH_NAMES[now.getMonth()];
+
+  if (!found) {
+    el.innerHTML = '<div class="today-empty"><div style="font-size:2.5rem;margin-bottom:16px">📅</div><div style="color:#e4e4e7;font-size:1rem;font-weight:700;margin-bottom:8px">No session found for today</div><div>' + dateStr + '</div><div style="margin-top:12px;font-size:.75rem">Check your dates are in range May–Dec 2025</div></div>';
+    return;
+  }
+
+  var wi = found.wi, di = found.di, week = found.week, day = found.day;
+  var key = 'hx_w' + wi + 'd' + di;
+  var st = loadState(key);
+  var custom = loadCustom(wi, di);
+  var ov = loadOverrides(wi, di);
+  var mvs = day.mvs || [];
+  var isRest = day.type === 'rest' || (mvs.length === 0 && custom.length === 0);
+
+  // Header
+  var html = '<div class="today-header">';
+  html += '<div class="today-date">' + esc(dateStr) + '</div>';
+  html += '<div class="today-title">' + esc(day.t) + '</div>';
+  html += '<div class="today-week">' + esc(week.lbl) + ' &nbsp;&middot;&nbsp; ' + esc(week.dt) + '</div>';
+  html += '</div>';
+
+  if (isRest) {
+    html += '<div class="today-rest"><div class="today-rest-icon">🛌</div><div class="today-rest-label">Rest Day</div><div class="today-rest-sub">Recovery is part of the training.</div></div>';
+    el.innerHTML = html;
+    return;
+  }
+
+  // Build merged section map (same as buildSections)
+  var secOrder = [], secMap = {};
+  mvs.forEach(function(m, i) {
+    var m2 = applyOverride(m, ov, i);
+    var sec = m2.sc;
+    if (!secMap[sec]) { secMap[sec] = []; secOrder.push(sec); }
+    secMap[sec].push({ type:'builtin', m:m2, i:i });
+  });
+  custom.forEach(function(m, ci) {
+    var sec = m.sc || 'Custom';
+    if (!secMap[sec]) { secMap[sec] = []; secOrder.push(sec); }
+    secMap[sec].push({ type:'custom', m:m, ci:ci });
+  });
+
+  // Progress bar
+  var totalMvs = 0, doneMvs = 0;
+  secOrder.forEach(function(sec) {
+    secMap[sec].forEach(function(x) {
+      totalMvs++;
+      var idx = x.type === 'builtin' ? x.i : 'c_' + x.ci;
+      if ((st.c || {})[idx]) doneMvs++;
+    });
+  });
+  if (totalMvs > 0) {
+    var pct = Math.round((doneMvs / totalMvs) * 100);
+    html += '<div class="today-progress">';
+    html += '<div class="today-prog-bar-wrap"><div class="today-prog-bar" id="today-prog-bar" style="width:' + pct + '%"></div></div>';
+    html += '<div class="today-prog-label" id="today-prog-label">' + doneMvs + '/' + totalMvs + '</div>';
+    html += '</div>';
+  }
+
+  // Sections
+  secOrder.forEach(function(sec) {
+    var dot = SECTION_DOTS[sec] || '#71717a';
+    html += '<div class="today-sec">';
+    html += '<div class="today-sec-hdr"><div class="today-sec-dot" style="background:' + dot + '"></div><span class="today-sec-name">' + esc(sec) + '</span></div>';
+    secMap[sec].forEach(function(x) {
+      var idx = x.type === 'builtin' ? String(x.i) : 'c_' + x.ci;
+      var m = x.m;
+      var done = !!((st.c || {})[idx]);
+      var val = (st.v && st.v[idx]) || '';
+      var rIdx = 'r_' + idx;
+      var rVal = (st.v && st.v[rIdx]) || '';
+      html += '<div class="today-mv' + (done ? ' done-mv' : '') + '" id="tdmv-' + idx + '">';
+      html += '<button class="today-chk' + (done ? ' on' : '') + '" data-key="' + esc(key) + '" data-idx="' + idx + '" data-nm="' + esc(m.nm) + '" data-ctx="' + esc(week.lbl) + '" onclick="onTodayCheck(this);">' + (done ? '✓' : '') + '</button>';
+      html += '<div class="today-mv-info">';
+      html += '<div class="today-mv-name' + (done ? ' crossed' : '') + '">' + esc(m.nm) + '</div>';
+      if (m.st) html += '<div class="today-mv-sets">' + esc(m.st) + '</div>';
+      if (m.tr === 'weight') {
+        html += '<div class="today-inputs">';
+        html += '<input type="number" inputmode="decimal" class="today-input" value="' + esc(val) + '" placeholder="' + esc(m.tgt || 'kg') + '" data-key="' + esc(key) + '" data-idx="' + idx + '" data-reps-idx="' + rIdx + '" data-nm="' + esc(m.nm) + '" data-ctx="' + esc(week.lbl) + '" onchange="onInput(this)" oninput="onInput(this)" onblur="onBlur(this)">';
+        html += '<span class="today-unit">kg &times;</span>';
+        html += '<input type="number" inputmode="decimal" class="today-reps" value="' + esc(rVal) + '" placeholder="reps" data-key="' + esc(key) + '" data-idx="' + rIdx + '" data-paired-idx="' + idx + '" data-nm="' + esc(m.nm) + '" data-ctx="' + esc(week.lbl) + '" onchange="onRepsInput(this)" oninput="onRepsInput(this)" onblur="onRepsBlur(this)">';
+        html += '<span class="today-unit">reps</span>';
+        html += '</div>';
+      } else if (m.tr === 'pace' || m.tr === 'time') {
+        html += '<div class="today-inputs">';
+        html += '<input type="text" inputmode="decimal" class="today-input" value="' + esc(val) + '" placeholder="' + (m.tr === 'pace' ? '1:45 /500m' : 'hh:mm') + '" data-key="' + esc(key) + '" data-idx="' + idx + '" data-nm="' + esc(m.nm) + '" data-ctx="' + esc(week.lbl) + '" onchange="onInput(this)" oninput="onInput(this)" onblur="onBlur(this)">';
+        html += '</div>';
+      }
+      html += '</div></div>';
+    });
+    html += '</div>';
+  });
+
+  el.innerHTML = html;
+  window._todayKey = key;
+  window._todayTotal = totalMvs;
+}
+
+function onTodayCheck(btn) {
+  // Reuse main onCheck for storage
+  onCheck(btn);
+  // Update today progress bar
+  var key = window._todayKey;
+  var total = window._todayTotal;
+  if (!key || !total) return;
+  var st = loadState(key);
+  var done = Object.values(st.c || {}).filter(Boolean).length;
+  var pct = Math.round((done / total) * 100);
+  var bar = document.getElementById('today-prog-bar');
+  var lbl = document.getElementById('today-prog-label');
+  if (bar) bar.style.width = pct + '%';
+  if (lbl) lbl.textContent = done + '/' + total;
+  // Strike-through the row
+  var idx = btn.getAttribute('data-idx');
+  var mv = document.getElementById('tdmv-' + idx);
+  if (mv) {
+    var isOn = btn.classList.contains('on');
+    mv.classList.toggle('done-mv', isOn);
+    var nm = mv.querySelector('.today-mv-name');
+    if (nm) nm.classList.toggle('crossed', isOn);
+  }
+}
+
 </script>
 
 <script>
