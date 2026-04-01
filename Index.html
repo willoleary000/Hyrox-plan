@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="Hyrox Plan"/>
 <link rel="manifest" href="/manifest.json"/>
 <link rel="apple-touch-icon" href="/icon.svg"/>
-<title>Hyrox + Dublin</title>
+<title>Hyrox + Dublin Marathon</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;min-height:100vh;color:#f1f1f1}
@@ -211,6 +211,12 @@ input[type=number]{-moz-appearance:textfield}
 /* === TODAY TAB === */
 #today-view{display:none;padding:16px 16px 60px;background:#0a0a0a;min-height:100vh}
 .today-empty{text-align:center;padding:60px 24px;color:#3f3f46;font-size:.9rem;line-height:1.6}
+.today-nav{display:flex;align-items:center;gap:8px;margin-bottom:20px}
+.today-nav-btn{width:36px;height:36px;border-radius:10px;background:#1a1a1a;border:1px solid #2a2a2a;color:#a1a1aa;font-size:1rem;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.today-nav-btn:active{background:#2a2a2a}
+.today-date-pick{flex:1;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:8px 12px;color:#e4e4e7;font-size:.85rem;font-family:inherit;text-align:center}
+.today-date-pick:focus{outline:none;border-color:#14b8a6}
+.today-today-btn{font-size:.72rem;font-weight:600;color:#14b8a6;background:none;border:none;cursor:pointer;white-space:nowrap;padding:0 4px}
 .today-header{margin-bottom:20px}
 .today-date{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#52525b;margin-bottom:4px}
 .today-title{font-size:1.4rem;font-weight:800;color:#f4f4f5;line-height:1.2}
@@ -365,6 +371,7 @@ input[type=number]{-moz-appearance:textfield}
 var activePhase = "all";
 var racesVisible = false;
 var currentTab = 'cal';
+var selectedDate = null; // null = use today
 
 // ── Data builders ─────────────────────────────────────────────────────────────
 function mv(sc, nm, st, tgt, un, tr) {
@@ -1283,17 +1290,16 @@ function parseDate(str) {
   return new Date(year, mon, day, 0, 0, 0, 0);
 }
 
-function findTodayWeekDay() {
-  var now = new Date();
-  var todayDow = DAY_NAMES[now.getDay()]; // Mon, Tue etc
+function findWeekDay(date) {
+  var d = date || new Date();
+  var dow = DAY_NAMES[d.getDay()];
   for (var wi = 0; wi < weeks.length; wi++) {
     var week = weeks[wi];
     var range = parseWeekDates(week.dt);
     if (!range) continue;
-    if (now >= range.start && now <= range.end) {
-      // Find the matching day
+    if (d >= range.start && d <= range.end) {
       for (var di = 0; di < week.days.length; di++) {
-        if (week.days[di].day === todayDow) {
+        if (week.days[di].day === dow) {
           return { wi: wi, di: di, week: week, day: week.days[di] };
         }
       }
@@ -1301,15 +1307,26 @@ function findTodayWeekDay() {
   }
   return null;
 }
+function findTodayWeekDay() { return findWeekDay(null); }
 
 function buildTodayView() {
   var el = document.getElementById('today-view');
-  var found = findTodayWeekDay();
-  var now = new Date();
-  var dateStr = DAY_NAMES[now.getDay()] + ' ' + now.getDate() + ' ' + MONTH_NAMES[now.getMonth()];
+  var viewDate = selectedDate ? new Date(selectedDate) : new Date();
+  var isToday = !selectedDate || isSameDay(viewDate, new Date());
+  var found = findWeekDay(viewDate);
+  var dateStr = DAY_NAMES[viewDate.getDay()] + ' ' + viewDate.getDate() + ' ' + MONTH_NAMES[viewDate.getMonth()] + ' ' + viewDate.getFullYear();
+  // Format date for input[type=date] value: yyyy-mm-dd
+  var inputVal = viewDate.getFullYear() + '-' + pad2(viewDate.getMonth()+1) + '-' + pad2(viewDate.getDate());
+
+  var navHtml = '<div class="today-nav">'
+    + '<button class="today-nav-btn" onclick="shiftDate(-1)">&#8249;</button>'
+    + '<input type="date" class="today-date-pick" id="today-date-pick" value="' + inputVal + '" onchange="onDatePick(this.value)">'
+    + (!isToday ? '<button class="today-today-btn" onclick="goToday()">Today</button>' : '')
+    + '<button class="today-nav-btn" onclick="shiftDate(1)">&#8250;</button>'
+    + '</div>';
 
   if (!found) {
-    el.innerHTML = '<div class="today-empty"><div style="font-size:2.5rem;margin-bottom:16px">📅</div><div style="color:#e4e4e7;font-size:1rem;font-weight:700;margin-bottom:8px">No session found for today</div><div>' + dateStr + '</div><div style="margin-top:12px;font-size:.75rem">Check your dates are in range May–Dec 2025</div></div>';
+    el.innerHTML = navHtml + '<div class="today-empty"><div style="font-size:2.5rem;margin-bottom:16px">📅</div><div style="color:#e4e4e7;font-size:1rem;font-weight:700;margin-bottom:8px">No session for this date</div><div style="color:#52525b">' + esc(dateStr) + '</div><div style="margin-top:12px;font-size:.75rem">Programme runs May–Dec 2025</div></div>';
     return;
   }
 
@@ -1322,7 +1339,8 @@ function buildTodayView() {
   var isRest = day.type === 'rest' || (mvs.length === 0 && custom.length === 0);
 
   // Header
-  var html = '<div class="today-header">';
+  var html = navHtml;
+  html += '<div class="today-header">';
   html += '<div class="today-date">' + esc(dateStr) + '</div>';
   html += '<div class="today-title">' + esc(day.t) + '</div>';
   html += '<div class="today-week">' + esc(week.lbl) + ' &nbsp;&middot;&nbsp; ' + esc(week.dt) + '</div>';
@@ -1404,6 +1422,24 @@ function buildTodayView() {
   window._todayTotal = totalMvs;
 }
 
+function pad2(n) { return n < 10 ? '0' + n : String(n); }
+function isSameDay(a, b) {
+  return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+}
+function shiftDate(delta) {
+  var d = selectedDate ? new Date(selectedDate) : new Date();
+  d.setDate(d.getDate() + delta);
+  selectedDate = d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
+  buildTodayView();
+}
+function onDatePick(val) {
+  selectedDate = val;
+  buildTodayView();
+}
+function goToday() {
+  selectedDate = null;
+  buildTodayView();
+}
 function onTodayCheck(btn) {
   // Reuse main onCheck for storage
   onCheck(btn);
@@ -1452,4 +1488,4 @@ try {
 </script>
 
 </body>
-</html>
+</html>=
