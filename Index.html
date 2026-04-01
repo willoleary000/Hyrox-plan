@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="Hyrox Plan"/>
 <link rel="manifest" href="/manifest.json"/>
 <link rel="apple-touch-icon" href="/icon.svg"/>
-<title>Hyrox + Dublin Marathon</title>
+<title>Hyrox + Dublin</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;min-height:100vh;color:#f1f1f1}
@@ -576,13 +576,13 @@ function buildSections(mvs, key, st, ctx, wi, di, custom) {
     html += '<div class="sblk"><div class="sbadge sc-'+esc(sec)+'">'+esc(sec)+'</div><div class="sitems">';
     secMap[sec].forEach(function(x) {
       if (x.type === 'builtin') {
-        var done = !!(st.c && st.c[x.i]);
-        var val = (st.v && st.v[x.i]) || "";
-        html += '<div class="mvrow'+(done?" dn":"")+'" data-idx="'+x.i+'">';
-        html += '<button class="chkbtn'+(done?" on":"")+'" data-key="'+esc(key)+'" data-idx="'+x.i+'" data-nm="'+esc(x.m.nm)+'" data-ctx="'+esc(ctx)+'" onclick="onCheck(this)">'+(done?"\u2713":"")+'</button>';
+        var done = !!(st.c && st.c[String(x.i)]);
+        var val = (st.v && st.v[String(x.i)]) || "";
+        html += '<div class="mvrow'+(done?" dn":"")+'" data-idx="'+String(x.i)+'">';
+        html += '<button class="chkbtn'+(done?" on":"")+'" data-key="'+esc(key)+'" data-idx="'+String(x.i)+'" data-nm="'+esc(x.m.nm)+'" data-ctx="'+esc(ctx)+'" onclick="onCheck(this)">'+(done?"\u2713":"")+'</button>';
         html += '<div class="minfo"><div class="mname'+(done?" x":"")+'">'+esc(x.m.nm)+'</div>'+(x.m.st?'<div class="msets">'+esc(x.m.st)+'</div>':"")+'</div>';
-        html += buildInputHtml(x.m, x.i, key, val, ctx, st.v);
-        if (wi !== undefined) html += '<button class="edit-btn" data-wi="'+wi+'" data-di="'+di+'" data-idx="'+x.i+'" onclick="openEdit(this)" title="Edit">&#9998;</button>';
+        html += buildInputHtml(x.m, String(x.i), key, val, ctx, st.v);
+        if (wi !== undefined) html += '<button class="edit-btn" data-wi="'+wi+'" data-di="'+di+'" data-idx="'+String(x.i)+'" onclick="openEdit(this)" title="Edit">&#9998;</button>';
         html += "</div>";
       } else {
         var customIdx = 'c_'+x.ci;
@@ -1206,7 +1206,7 @@ function buildOvEntry(nm, e) {
   var st = loadState(sk);
   var idx = String(e.idx);
   var rIdx = 'r_' + idx;
-  var val = (st.v && st.v[idx]) || '';
+  var val = (st.v && st.v[idx]) || (st.v && st.v[parseInt(idx)]) || '';
   var rVal = (st.v && st.v[rIdx]) || '';
 
   var h = '<div class="ov-entry">';
@@ -1371,7 +1371,7 @@ function buildTodayView() {
   secOrder.forEach(function(sec) {
     secMap[sec].forEach(function(x) {
       totalMvs++;
-      var idx = x.type === 'builtin' ? x.i : 'c_' + x.ci;
+      var idx = x.type === 'builtin' ? String(x.i) : 'c_' + x.ci;
       if ((st.c || {})[idx]) doneMvs++;
     });
   });
@@ -1488,4 +1488,4 @@ try {
 </script>
 
 </body>
-</html>=
+</html>
