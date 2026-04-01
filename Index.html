@@ -1290,14 +1290,24 @@ function parseDate(str) {
   return new Date(year, mon, day, 0, 0, 0, 0);
 }
 
+function dateMonthDay(d) {
+  return d.getMonth() * 100 + d.getDate(); // e.g. 412 = Apr 12
+}
 function findWeekDay(date) {
   var d = date || new Date();
   var dow = DAY_NAMES[d.getDay()];
+  var dMD = dateMonthDay(d);
   for (var wi = 0; wi < weeks.length; wi++) {
     var week = weeks[wi];
     var range = parseWeekDates(week.dt);
     if (!range) continue;
-    if (d >= range.start && d <= range.end) {
+    var startMD = dateMonthDay(range.start);
+    var endMD = dateMonthDay(range.end);
+    // Compare month+day only so year doesn't matter
+    var inRange = (startMD <= endMD)
+      ? (dMD >= startMD && dMD <= endMD)
+      : (dMD >= startMD || dMD <= endMD); // wraps Dec->Jan
+    if (inRange) {
       for (var di = 0; di < week.days.length; di++) {
         if (week.days[di].day === dow) {
           return { wi: wi, di: di, week: week, day: week.days[di] };
@@ -1311,16 +1321,30 @@ function findTodayWeekDay() { return findWeekDay(null); }
 
 function buildTodayView() {
   var el = document.getElementById('today-view');
-  var viewDate = selectedDate ? new Date(selectedDate) : new Date();
+  // Default to today; if today is outside programme range, default to programme start
+  var viewDate;
+  if (selectedDate) {
+    viewDate = new Date(selectedDate);
+  } else {
+    var now = new Date();
+    // Temporarily check if today is in range by month/day
+    var nowMD = now.getMonth() * 100 + now.getDate();
+    var inProg = (nowMD >= 501 && nowMD <= 1205); // May 1 to Dec 5
+    viewDate = inProg ? now : progStart();
+  }
   var isToday = !selectedDate || isSameDay(viewDate, new Date());
   var found = findWeekDay(viewDate);
   var dateStr = DAY_NAMES[viewDate.getDay()] + ' ' + viewDate.getDate() + ' ' + MONTH_NAMES[viewDate.getMonth()] + ' ' + viewDate.getFullYear();
   // Format date for input[type=date] value: yyyy-mm-dd
+  // For the date input, keep the year but show the programme year for display
   var inputVal = viewDate.getFullYear() + '-' + pad2(viewDate.getMonth()+1) + '-' + pad2(viewDate.getDate());
+  // Show programme-year date in nav input (always use 2025 as base year for display)
+  var progYear = viewDate.getFullYear();
+  var progInputVal = progYear + '-' + pad2(viewDate.getMonth()+1) + '-' + pad2(viewDate.getDate());
 
   var navHtml = '<div class="today-nav">'
     + '<button class="today-nav-btn" onclick="shiftDate(-1)">&#8249;</button>'
-    + '<input type="date" class="today-date-pick" id="today-date-pick" value="' + inputVal + '" onchange="onDatePick(this.value)">'
+    + '<input type="date" class="today-date-pick" id="today-date-pick" value="' + progInputVal + '" min="2025-05-01" max="2025-12-05" onchange="onDatePick(this.value)">'
     + (!isToday ? '<button class="today-today-btn" onclick="goToday()">Today</button>' : '')
     + '<button class="today-nav-btn" onclick="shiftDate(1)">&#8250;</button>'
     + '</div>';
@@ -1431,6 +1455,10 @@ function shiftDate(delta) {
   d.setDate(d.getDate() + delta);
   selectedDate = d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
   buildTodayView();
+}
+// Get programme start date for default view
+function progStart() {
+  return new Date(2025, 4, 1); // May 1 2025
 }
 function onDatePick(val) {
   selectedDate = val;
