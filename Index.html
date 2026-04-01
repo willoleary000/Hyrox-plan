@@ -245,7 +245,7 @@ input[type=number]{-moz-appearance:textfield}
 
 </head>
 <body>
-<div class="app">
+<div class="app" id="app-root">
 
 <!-- History Modal -->
 
@@ -1024,7 +1024,9 @@ function applyOverride(m, ov, idx) {
 
 
 // ── Init ───────────────────────────────────────────────────────────────────────
-window.addEventListener("DOMContentLoaded", function() {
+function initApp() {
+  if (initApp._done) return;
+  initApp._done = true;
   // Build filter buttons
   var frow = document.getElementById("filters");
   PHASES.forEach(function(p) {
@@ -1048,7 +1050,12 @@ window.addEventListener("DOMContentLoaded", function() {
     document.getElementById("raceList").style.display = racesVisible ? "flex" : "none";
     this.textContent = racesVisible ? "Hide race calendar" : "Show race calendar";
   };
-});
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 </script>
 
 <script>
@@ -1431,6 +1438,16 @@ if ('serviceWorker' in navigator) {
       console.log('SW registration failed:', e);
     });
   });
+}
+</script>
+
+<script>
+// Force init and catch any errors visibly
+try {
+  if (typeof initApp === 'function') initApp();
+} catch(e) {
+  document.getElementById('app-root').innerHTML = '<div style="color:#ef4444;padding:20px;font-family:monospace;background:#1a0000;min-height:100vh"><b>Init error:</b><br>' + e.message + '<br><pre>' + e.stack + '</pre></div>';
+
 }
 </script>
 
