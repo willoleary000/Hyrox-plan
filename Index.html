@@ -1324,7 +1324,7 @@ function buildTodayView() {
   // Default to today; if today is outside programme range, default to programme start
   var viewDate;
   if (selectedDate) {
-    viewDate = new Date(selectedDate);
+    viewDate = localDate(selectedDate);
   } else {
     var now = new Date();
     // Temporarily check if today is in range by month/day
@@ -1447,11 +1447,16 @@ function buildTodayView() {
 }
 
 function pad2(n) { return n < 10 ? '0' + n : String(n); }
+function localDate(str) {
+  // Parse YYYY-MM-DD as local time (avoids UTC midnight timezone shift)
+  var p = str.split('-');
+  return new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
+}
 function isSameDay(a, b) {
   return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
 }
 function shiftDate(delta) {
-  var d = selectedDate ? new Date(selectedDate) : new Date();
+  var d = selectedDate ? localDate(selectedDate) : new Date();
   d.setDate(d.getDate() + delta);
   selectedDate = d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
   buildTodayView();
