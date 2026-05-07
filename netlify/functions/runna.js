@@ -3,21 +3,33 @@ const https = require(“https”);
 exports.handler = async function() {
 const url = “https://cal.runna.com/20b5653689c52dddbf577b3acf9a80bc.ics”;
 
-const raw = await new Promise(function(resolve, reject) {
-https.get(url, function(res) {
+let raw;
+try {
+raw = await new Promise(function(resolve, reject) {
+const req = https.get(url, function(res) {
 let s = “”;
 res.on(“data”, function(c) { s += c; });
 res.on(“end”, function() { resolve(s); });
-}).on(“error”, reject);
+res.on(“error”, reject);
 });
+req.on(“error”, reject);
+req.setTimeout(8000, function() {
+req.destroy();
+reject(new Error(“timeout”));
+});
+});
+} catch(e) {
+return {
+statusCode: 502,
+body: “Failed to fetch Runna feed: “ + e.message
+};
+}
 
-// Cutoff = 2 weeks ago as YYYYMMDD number
 const cutoff = new Date();
 cutoff.setDate(cutoff.getDate() - 14);
 const cutoffNum = cutoff.getFullYear() * 10000 + (cutoff.getMonth() + 1) * 100 + cutoff.getDate();
 
 function extractDate(line) {
-// Handles DTSTART:20260512 and DTSTART;TZID=…:20260512T… and DTSTART;VALUE=DATE:20260512
 const val = line.split(”:”).pop().trim().substring(0, 8);
 const n = parseInt(val, 10);
 return isNaN(n) ? 0 : n;
@@ -41,7 +53,6 @@ eventLines.push(lines[i]);
 if (keep) output.push(eventLines.join(”\n”));
 } else if (inEvent) {
 eventLines.push(lines[i]);
-// Match any DTSTART line regardless of parameters
 if (line.startsWith(“DTSTART”)) {
 const d = extractDate(line);
 if (d >= cutoffNum) keep = true;
