@@ -11,10 +11,17 @@ res.on(“end”, function() { resolve(s); });
 }).on(“error”, reject);
 });
 
-// Cutoff = 2 weeks ago as YYYYMMDD
+// Cutoff = 2 weeks ago as YYYYMMDD number
 const cutoff = new Date();
 cutoff.setDate(cutoff.getDate() - 14);
 const cutoffNum = cutoff.getFullYear() * 10000 + (cutoff.getMonth() + 1) * 100 + cutoff.getDate();
+
+function extractDate(line) {
+// Handles DTSTART:20260512 and DTSTART;TZID=…:20260512T… and DTSTART;VALUE=DATE:20260512
+const val = line.split(”:”).pop().trim().substring(0, 8);
+const n = parseInt(val, 10);
+return isNaN(n) ? 0 : n;
+}
 
 const lines = raw.split(”\n”);
 const output = [];
@@ -34,9 +41,10 @@ eventLines.push(lines[i]);
 if (keep) output.push(eventLines.join(”\n”));
 } else if (inEvent) {
 eventLines.push(lines[i]);
-if (line.startsWith(“DTSTART:”)) {
-const ds = parseInt(line.replace(“DTSTART:”, “”).trim().substring(0, 8), 10);
-if (!isNaN(ds) && ds >= cutoffNum) keep = true;
+// Match any DTSTART line regardless of parameters
+if (line.startsWith(“DTSTART”)) {
+const d = extractDate(line);
+if (d >= cutoffNum) keep = true;
 }
 } else {
 output.push(lines[i]);
