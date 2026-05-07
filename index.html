@@ -1307,11 +1307,11 @@ function fetchRunna(cb){
     });
 }
 function getRunnaForDate(evs,date){
-  // Runna events are in 2026. Match month+day, ignoring year entirely.
-  var m=date.getMonth(), d=date.getDate();
+  // Match exact full date including year
+  var y=date.getFullYear(), m=date.getMonth(), d=date.getDate();
   return evs.filter(function(ev){
     var dt=parseIcalDate(ev["DTSTART"]);
-    return dt&&dt.getMonth()===m&&dt.getDate()===d;
+    return dt&&dt.getFullYear()===y&&dt.getMonth()===m&&dt.getDate()===d;
   });
 }
 function buildRunnaCard(ev){
@@ -1371,9 +1371,7 @@ function parseDate(str) {
   var mon = MONTH_MAP[m[1].toLowerCase().substring(0,3)];
   if (mon === undefined) return null;
   var day = parseInt(m[2]);
-  var year = 2025;
-  // Assume 2025 for May-Dec, 2026 for anything wrapping
-  if (mon >= 0 && mon <= 3) year = 2026; // Jan-Apr would be 2026 (post-marathon)
+  var year = 2026; // Programme runs May-Dec 2026
   return new Date(year, mon, day, 0, 0, 0, 0);
 }
 
