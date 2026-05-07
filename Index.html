@@ -1301,9 +1301,10 @@ function fetchRunna(cb){
     });
 }
 function getRunnaForDate(evs,date){
+  // Match month+day only — Runna dates are 2026 but picker shows 2025
   return evs.filter(function(ev){
     var dt=parseIcalDate(ev["DTSTART"]);
-    return dt&&dt.getFullYear()===date.getFullYear()&&dt.getMonth()===date.getMonth()&&dt.getDate()===date.getDate();
+    return dt&&dt.getMonth()===date.getMonth()&&dt.getDate()===date.getDate();
   });
 }
 function buildRunnaCard(ev){
