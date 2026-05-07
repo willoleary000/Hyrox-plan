@@ -1290,14 +1290,40 @@ function fetchRunna(cb){
   if(runnaCache){cb(null,runnaCache);return;}
   if(runnaFetching){setTimeout(function(){fetchRunna(cb);},300);return;}
   runnaFetching=true;
+  // Try direct fetch first
   fetch(RUNNA_URL)
-    .then(function(r){return r.text();})
-    .then(function(t){runnaFetching=false;runnaCache=parseIcal(t);cb(null,runnaCache);})
-    .catch(function(){
-      fetch("https://api.allorigins.win/get?url="+encodeURIComponent(RUNNA_URL))
-        .then(function(r){return r.json();})
-        .then(function(j){runnaFetching=false;runnaCache=parseIcal(j.contents);cb(null,runnaCache);})
-        .catch(function(){runnaFetching=false;cb("error",null);});
+    .then(function(r){
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      return r.text();
+    })
+    .then(function(t){
+      runnaFetching=false;
+      runnaCache=parseIcal(t);
+      cb(null,runnaCache);
+    })
+    .catch(function(e1){
+      // Try CORS proxy
+      fetch("https://corsproxy.io/?"+encodeURIComponent(RUNNA_URL))
+        .then(function(r){return r.text();})
+        .then(function(t){
+          runnaFetching=false;
+          runnaCache=parseIcal(t);
+          cb(null,runnaCache);
+        })
+        .catch(function(e2){
+          // Final fallback: allorigins
+          fetch("https://api.allorigins.win/get?url="+encodeURIComponent(RUNNA_URL))
+            .then(function(r){return r.json();})
+            .then(function(j){
+              runnaFetching=false;
+              runnaCache=parseIcal(j.contents);
+              cb(null,runnaCache);
+            })
+            .catch(function(e3){
+              runnaFetching=false;
+              cb("Failed: "+e1.message+" / "+e3.message, null);
+            });
+        });
     });
 }
 function getRunnaForDate(evs,date){
@@ -1532,9 +1558,14 @@ function buildTodayView() {
   el.appendChild(rBox);
   var vd=new Date(viewDate.getTime());
   fetchRunna(function(err,evs){
-    if(err||!evs){rBox.innerHTML="";return;}
+    if(err||!evs){rBox.innerHTML='<div class="runna-error">Runna: '+esc(err||"no data")+'</div>';return;}
     var dayEvs=getRunnaForDate(evs,vd);
-    if(!dayEvs.length){rBox.innerHTML="";return;}
+    if(!dayEvs.length){
+      var mo=date.getMonth()+1,da=date.getDate();
+      var allDates=evs.slice(0,5).map(function(e){var d=parseIcalDate(e["DTSTART"]);return d?(d.getMonth()+1)+"/"+d.getDate():"?";}).join(", ");
+      rBox.innerHTML='<div class="runna-error">Runna loaded '+evs.length+' events. None match '+(vd.getMonth()+1)+'/'+vd.getDate()+'. Sample dates: '+allDates+'</div>';
+      return;
+    }
     var rh='<div class="runna-section"><div class="runna-sec-hdr"><div class="runna-dot"></div><span class="runna-sec-name">Runna Plan</span></div>';
     dayEvs.forEach(function(ev){rh+=buildRunnaCard(ev);});
     rh+='</div>';
