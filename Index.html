@@ -1102,30 +1102,7 @@ function switchTab(tab) {
   if (tab === 'today') {
     todayEl.style.display = 'block';
     buildTodayView();
-    // Debug: test Runna fetch immediately
-    setTimeout(function() {
-      var dbg = document.getElementById('runna-dbg');
-      if (!dbg) { dbg = document.createElement('div'); dbg.id='runna-dbg'; dbg.style.cssText='background:#1a0a00;color:#fde68a;padding:12px;margin:8px 16px;border-radius:8px;font-size:.75rem;font-family:monospace;line-height:1.6'; todayEl.appendChild(dbg); }
-      dbg.textContent = 'Testing Runna fetch...';
-      fetch(RUNNA_URL)
-        .then(function(r){ dbg.textContent='Direct fetch OK - status '+r.status+', content-type: '+r.headers.get('content-type'); return r.text(); })
-        .then(function(t){ 
-          var evCount = (t.match(/BEGIN:VEVENT/g)||[]).length;
-          dbg.textContent = 'Runna OK: '+evCount+' events loaded. URL reachable directly.';
-        })
-        .catch(function(e){
-          dbg.textContent = 'Direct fetch BLOCKED: '+e.message+'. Trying proxy...';
-          fetch('https://corsproxy.io/?'+encodeURIComponent(RUNNA_URL))
-            .then(function(r){ return r.text(); })
-            .then(function(t){
-              var evCount = (t.match(/BEGIN:VEVENT/g)||[]).length;
-              dbg.textContent = 'Proxy OK: '+evCount+' events via corsproxy.io';
-            })
-            .catch(function(e2){
-              dbg.textContent = 'Both failed. Direct: '+e.message+' / Proxy: '+e2.message;
-            });
-        });
-    }, 500);
+
   } else {
     todayEl.style.display = 'none';
   }
@@ -1314,7 +1291,6 @@ function fetchRunna(cb){
   if(runnaCache){cb(null,runnaCache);return;}
   if(runnaFetching){setTimeout(function(){fetchRunna(cb);},300);return;}
   runnaFetching=true;
-  // Try direct fetch first
   fetch(RUNNA_URL)
     .then(function(r){
       if(!r.ok) throw new Error("HTTP "+r.status);
@@ -1325,29 +1301,9 @@ function fetchRunna(cb){
       runnaCache=parseIcal(t);
       cb(null,runnaCache);
     })
-    .catch(function(e1){
-      // Try CORS proxy
-      fetch("https://corsproxy.io/?"+encodeURIComponent(RUNNA_URL))
-        .then(function(r){return r.text();})
-        .then(function(t){
-          runnaFetching=false;
-          runnaCache=parseIcal(t);
-          cb(null,runnaCache);
-        })
-        .catch(function(e2){
-          // Final fallback: allorigins
-          fetch("https://api.allorigins.win/get?url="+encodeURIComponent(RUNNA_URL))
-            .then(function(r){return r.json();})
-            .then(function(j){
-              runnaFetching=false;
-              runnaCache=parseIcal(j.contents);
-              cb(null,runnaCache);
-            })
-            .catch(function(e3){
-              runnaFetching=false;
-              cb("Failed: "+e1.message+" / "+e3.message, null);
-            });
-        });
+    .catch(function(err){
+      runnaFetching=false;
+      cb(err.message,null);
     });
 }
 function getRunnaForDate(evs,date){
@@ -1575,21 +1531,16 @@ function buildTodayView() {
   window._todayKey = key;
   window._todayTotal = totalMvs;
 
-  // Append Runna events asynchronously
+  // Fetch Runna events via Netlify proxy
   var rBox=document.createElement("div");
   rBox.className="runna-loading";
   rBox.textContent="Loading Runna schedule...";
   el.appendChild(rBox);
   var vd=new Date(viewDate.getTime());
   fetchRunna(function(err,evs){
-    if(err||!evs){rBox.innerHTML='<div class="runna-error">Runna: '+esc(err||"no data")+'</div>';return;}
+    if(err||!evs){rBox.innerHTML='';return;}
     var dayEvs=getRunnaForDate(evs,vd);
-    if(!dayEvs.length){
-      var mo=date.getMonth()+1,da=date.getDate();
-      var allDates=evs.slice(0,5).map(function(e){var d=parseIcalDate(e["DTSTART"]);return d?(d.getMonth()+1)+"/"+d.getDate():"?";}).join(", ");
-      rBox.innerHTML='<div class="runna-error">Runna loaded '+evs.length+' events. None match '+(vd.getMonth()+1)+'/'+vd.getDate()+'. Sample dates: '+allDates+'</div>';
-      return;
-    }
+    if(!dayEvs.length){rBox.innerHTML='';return;}
     var rh='<div class="runna-section"><div class="runna-sec-hdr"><div class="runna-dot"></div><span class="runna-sec-name">Runna Plan</span></div>';
     dayEvs.forEach(function(ev){rh+=buildRunnaCard(ev);});
     rh+='</div>';
