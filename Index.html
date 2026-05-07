@@ -1102,6 +1102,30 @@ function switchTab(tab) {
   if (tab === 'today') {
     todayEl.style.display = 'block';
     buildTodayView();
+    // Debug: test Runna fetch immediately
+    setTimeout(function() {
+      var dbg = document.getElementById('runna-dbg');
+      if (!dbg) { dbg = document.createElement('div'); dbg.id='runna-dbg'; dbg.style.cssText='background:#1a0a00;color:#fde68a;padding:12px;margin:8px 16px;border-radius:8px;font-size:.75rem;font-family:monospace;line-height:1.6'; todayEl.appendChild(dbg); }
+      dbg.textContent = 'Testing Runna fetch...';
+      fetch(RUNNA_URL)
+        .then(function(r){ dbg.textContent='Direct fetch OK - status '+r.status+', content-type: '+r.headers.get('content-type'); return r.text(); })
+        .then(function(t){ 
+          var evCount = (t.match(/BEGIN:VEVENT/g)||[]).length;
+          dbg.textContent = 'Runna OK: '+evCount+' events loaded. URL reachable directly.';
+        })
+        .catch(function(e){
+          dbg.textContent = 'Direct fetch BLOCKED: '+e.message+'. Trying proxy...';
+          fetch('https://corsproxy.io/?'+encodeURIComponent(RUNNA_URL))
+            .then(function(r){ return r.text(); })
+            .then(function(t){
+              var evCount = (t.match(/BEGIN:VEVENT/g)||[]).length;
+              dbg.textContent = 'Proxy OK: '+evCount+' events via corsproxy.io';
+            })
+            .catch(function(e2){
+              dbg.textContent = 'Both failed. Direct: '+e.message+' / Proxy: '+e2.message;
+            });
+        });
+    }, 500);
   } else {
     todayEl.style.display = 'none';
   }
