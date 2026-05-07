@@ -1257,7 +1257,7 @@ function buildOvEntry(nm, e) {
 }
 
 // === RUNNA ICAL INTEGRATION ===
-var RUNNA_URL = "https://cal.runna.com/20b5653689c52dddbf577b3acf9a80bc.ics";
+var RUNNA_URL = "/.netlify/functions/runna";
 var runnaCache = null;
 var runnaFetching = false;
 function parseIcal(text) {
@@ -1414,9 +1414,7 @@ function buildTodayView() {
   } else {
     var now = new Date();
     // Temporarily check if today is in range by month/day
-    var nowMD = now.getMonth() * 100 + now.getDate();
-    var inProg = (nowMD >= 501 && nowMD <= 1205); // May 1 to Dec 5
-    viewDate = inProg ? now : progStart();
+    viewDate = now;
   }
   var isToday = !selectedDate || isSameDay(viewDate, new Date());
   var found = findWeekDay(viewDate);
@@ -1430,7 +1428,7 @@ function buildTodayView() {
 
   var navHtml = '<div class="today-nav">'
     + '<button class="today-nav-btn" onclick="shiftDate(-1)">&#8249;</button>'
-    + '<input type="date" class="today-date-pick" id="today-date-pick" value="' + progInputVal + '" min="2025-05-01" max="2025-12-05" onchange="onDatePick(this.value)">'
+    + '<input type="date" class="today-date-pick" id="today-date-pick" value="' + progInputVal + '" onchange="onDatePick(this.value)">'
     + (!isToday ? '<button class="today-today-btn" onclick="goToday()">Today</button>' : '')
     + '<button class="today-nav-btn" onclick="shiftDate(1)">&#8250;</button>'
     + '</div>';
