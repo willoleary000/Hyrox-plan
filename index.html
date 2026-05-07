@@ -1303,17 +1303,31 @@ function fetchRunna(cb){
     })
     .catch(function(err){
       runnaFetching=false;
+      runnaCache=null;
       cb(err.message,null);
     });
 }
-function getRunnaForDate(evs,date){
-  // Match exact full date including year
-  var y=date.getFullYear(), m=date.getMonth(), d=date.getDate();
-  return evs.filter(function(ev){
-    var dt=parseIcalDate(ev["DTSTART"]);
-    return dt&&dt.getFullYear()===y&&dt.getMonth()===m&&dt.getDate()===d;
+
+function showRunnaForDate(containerEl, targetDate) {
+  // targetDate must be a JS Date with correct year/month/day
+  var y=targetDate.getFullYear(), mo=targetDate.getMonth(), d=targetDate.getDate();
+  var box=document.createElement("div");
+  box.style.cssText="margin-top:4px";
+  containerEl.appendChild(box);
+  fetchRunna(function(err, evs){
+    if(err||!evs){ box.innerHTML=""; return; }
+    var matches=evs.filter(function(ev){
+      var dt=parseIcalDate(ev["DTSTART"]);
+      return dt && dt.getFullYear()===y && dt.getMonth()===mo && dt.getDate()===d;
+    });
+    if(!matches.length){ box.innerHTML=""; return; }
+    var h='<div class="runna-section"><div class="runna-sec-hdr"><div class="runna-dot"></div><span class="runna-sec-name">Runna Plan</span></div>';
+    matches.forEach(function(ev){ h+=buildRunnaCard(ev); });
+    h+="</div>";
+    box.innerHTML=h;
   });
 }
+
 function buildRunnaCard(ev){
   var sum=(ev["SUMMARY"]||"").replace(/[\uD800-\uDFFF]+\s*/g,"").trim();
   var desc=ev["DESCRIPTION"]||"";
@@ -1553,15 +1567,25 @@ function buildTodayView() {
   // Fetch Runna events via Netlify proxy
   var rBox=document.createElement("div");
   rBox.className="runna-loading";
-  rBox.textContent="Loading Runna schedule...";
+  rBox.textContent="Loading Runna...";
   el.appendChild(rBox);
   var vd=new Date(viewDate.getTime());
   fetchRunna(function(err,evs){
-    if(err||!evs){rBox.innerHTML='<div style="color:#ef4444;font-size:.75rem;padding:8px">Runna error: '+(err||'no data')+'</div>';return;}
+    if(err||!evs){
+      rBox.innerHTML='<div style="color:#ef4444;font-size:.72rem;padding:8px;background:#1a0000;border-radius:8px;margin-top:8px">Runna fetch failed: '+(err||'no data')+'</div>';
+      return;
+    }
     var dayEvs=getRunnaForDate(evs,vd);
-    var dbgDate=(vd.getMonth()+1)+'/'+vd.getDate()+'/'+vd.getFullYear();
-    var sample=evs.slice(0,3).map(function(e){var d=parseIcalDate(e['DTSTART']);return d?(d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear():'?';}).join(', ');
-    if(!dayEvs.length){rBox.innerHTML='<div style="color:#71717a;font-size:.7rem;padding:8px">Runna: '+evs.length+' events loaded. None for '+dbgDate+'. Sample: '+sample+'</div>';return;}
+    // Always show debug info so we can diagnose
+    var lookupStr=vd.getFullYear()+'/'+(vd.getMonth()+1)+'/'+vd.getDate();
+    var sampleStr=evs.slice(0,5).map(function(e){
+      var d=parseIcalDate(e['DTSTART']);
+      return d?d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate():'?';
+    }).join(', ');
+    if(!dayEvs.length){
+      rBox.innerHTML='<div style="color:#52525b;font-size:.68rem;padding:8px;background:#111;border-radius:8px;margin-top:8px">Looking for: '+lookupStr+'<br>Feed has '+evs.length+' events<br>First 5 dates: '+sampleStr+'</div>';
+      return;
+    }
     var rh='<div class="runna-section"><div class="runna-sec-hdr"><div class="runna-dot"></div><span class="runna-sec-name">Runna Plan</span></div>';
     dayEvs.forEach(function(ev){rh+=buildRunnaCard(ev);});
     rh+='</div>';
