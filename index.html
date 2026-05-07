@@ -1307,10 +1307,11 @@ function fetchRunna(cb){
     });
 }
 function getRunnaForDate(evs,date){
-  // Match month+day only — Runna dates are 2026 but picker shows 2025
+  // Runna events are in 2026. Match month+day, ignoring year entirely.
+  var m=date.getMonth(), d=date.getDate();
   return evs.filter(function(ev){
     var dt=parseIcalDate(ev["DTSTART"]);
-    return dt&&dt.getMonth()===date.getMonth()&&dt.getDate()===date.getDate();
+    return dt&&dt.getMonth()===m&&dt.getDate()===d;
   });
 }
 function buildRunnaCard(ev){
@@ -1414,7 +1415,11 @@ function buildTodayView() {
   } else {
     var now = new Date();
     // Temporarily check if today is in range by month/day
+    // Default to today but in 2026 context
     viewDate = now;
+    // If today is before programme start (May 2026), default to programme start
+    var progStart2026 = new Date(2026,4,1);
+    if(now < progStart2026) viewDate = progStart2026;
   }
   var isToday = !selectedDate || isSameDay(viewDate, new Date());
   var found = findWeekDay(viewDate);
@@ -1423,8 +1428,8 @@ function buildTodayView() {
   // For the date input, keep the year but show the programme year for display
   var inputVal = viewDate.getFullYear() + '-' + pad2(viewDate.getMonth()+1) + '-' + pad2(viewDate.getDate());
   // Show programme-year date in nav input (always use 2025 as base year for display)
-  var progYear = viewDate.getFullYear();
-  var progInputVal = progYear + '-' + pad2(viewDate.getMonth()+1) + '-' + pad2(viewDate.getDate());
+  // Always show 2026 in date picker since programme runs in 2026
+  var progInputVal = '2026-' + pad2(viewDate.getMonth()+1) + '-' + pad2(viewDate.getDate());
 
   var navHtml = '<div class="today-nav">'
     + '<button class="today-nav-btn" onclick="shiftDate(-1)">&#8249;</button>'
@@ -1434,7 +1439,25 @@ function buildTodayView() {
     + '</div>';
 
   if (!found) {
-    el.innerHTML = navHtml + '<div class="today-empty"><div style="font-size:2.5rem;margin-bottom:16px">📅</div><div style="color:#e4e4e7;font-size:1rem;font-weight:700;margin-bottom:8px">No session for this date</div><div style="color:#52525b">' + esc(dateStr) + '</div><div style="margin-top:12px;font-size:.75rem">Programme runs May–Dec 2025</div></div>';
+    // Show Runna even on non-programme days
+    var emptyHtml = navHtml + '<div class="today-empty"><div style="font-size:2.5rem;margin-bottom:16px">📅</div><div style="color:#e4e4e7;font-size:1rem;font-weight:700;margin-bottom:8px">No Hyrox session today</div><div style="color:#52525b">' + esc(dateStr) + '</div></div>';
+    el.innerHTML = emptyHtml;
+    var rBox2=document.createElement("div");
+    rBox2.className="runna-loading";
+    rBox2.textContent="Loading Runna schedule...";
+    el.appendChild(rBox2);
+    var vd2=new Date(viewDate.getTime());
+    fetchRunna(function(err,evs){
+      if(err||!evs){rBox2.innerHTML='<div style="color:#ef4444;font-size:.75rem;padding:8px">Runna error: '+(err||'no data')+'</div>';return;}
+      var dayEvs=getRunnaForDate(evs,vd2);
+      var dbgDate=(vd2.getMonth()+1)+'/'+vd2.getDate()+'/'+vd2.getFullYear();
+      var sample=evs.slice(0,3).map(function(e){var d=parseIcalDate(e['DTSTART']);return d?(d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear():'?';}).join(', ');
+      if(!dayEvs.length){rBox2.innerHTML='<div style="color:#71717a;font-size:.7rem;padding:8px">Runna: '+evs.length+' events. None for '+dbgDate+'. Sample: '+sample+'</div>';return;}
+      var rh='<div class="runna-section"><div class="runna-sec-hdr"><div class="runna-dot"></div><span class="runna-sec-name">Runna Plan</span></div>';
+      dayEvs.forEach(function(ev){rh+=buildRunnaCard(ev);});
+      rh+='</div>';
+      rBox2.innerHTML=rh;
+    });
     return;
   }
 
@@ -1558,9 +1581,9 @@ function isSameDay(a, b) {
   return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
 }
 function shiftDate(delta) {
-  var d = selectedDate ? localDate(selectedDate) : new Date();
+  var d = selectedDate ? localDate(selectedDate) : new Date(2026,4,1);
   d.setDate(d.getDate() + delta);
-  selectedDate = d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
+  selectedDate = '2026-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
   buildTodayView();
 }
 // Get programme start date for default view
@@ -1568,7 +1591,11 @@ function progStart() {
   return new Date(2025, 4, 1); // May 1 2025
 }
 function onDatePick(val) {
-  selectedDate = val;
+  // Force 2026 year regardless of what picker returns
+  if(val) {
+    var parts = val.split('-');
+    selectedDate = '2026-' + parts[1] + '-' + parts[2];
+  }
   buildTodayView();
 }
 function goToday() {
