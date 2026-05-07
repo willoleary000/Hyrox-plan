@@ -1292,6 +1292,9 @@ function getRunnaForDate(evs, date) {
   var m = date.getMonth();
   var d = date.getDate();
   return evs.filter(function(ev) {
+    // Only show planned Runna workouts, not synced past activities
+    var uid = ev['UID'] || '';
+    if (uid.indexOf('UPCOMING_PLAN_WORKOUT') < 0) return false;
     var dt = parseIcalDate(ev['DTSTART']);
     return dt && dt.getFullYear() === y && dt.getMonth() === m && dt.getDate() === d;
   });
