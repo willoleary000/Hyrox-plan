@@ -1305,7 +1305,7 @@ function fetchRunna(cb){
   if(runnaCache){cb(null,runnaCache);return;}
   if(runnaFetching){setTimeout(function(){fetchRunna(cb);},300);return;}
   runnaFetching=true;
-  fetch(RUNNA_URL)
+  fetch(RUNNA_URL + "?t=" + Date.now())
     .then(function(r){
       if(!r.ok) throw new Error("HTTP "+r.status);
       return r.text();
