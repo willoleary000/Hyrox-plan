@@ -1287,6 +1287,15 @@ function parseIcalDate(str){
   str=str.replace(/^.*:/,"");
   return new Date(parseInt(str.slice(0,4)),parseInt(str.slice(4,6))-1,parseInt(str.slice(6,8)));
 }
+function getRunnaForDate(evs, date) {
+  var y = date.getFullYear();
+  var m = date.getMonth();
+  var d = date.getDate();
+  return evs.filter(function(ev) {
+    var dt = parseIcalDate(ev['DTSTART']);
+    return dt && dt.getFullYear() === y && dt.getMonth() === m && dt.getDate() === d;
+  });
+}
 function fetchRunna(cb){
   if(runnaCache){cb(null,runnaCache);return;}
   if(runnaFetching){setTimeout(function(){fetchRunna(cb);},300);return;}
