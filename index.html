@@ -1340,6 +1340,8 @@ function showRunnaForDate(containerEl, targetDate) {
 function buildRunnaCard(ev){
   var sum=(ev["SUMMARY"]||"").replace(/[\uD800-\uDFFF]+\s*/g,"").trim();
   var desc=ev["DESCRIPTION"]||"";
+  var dt=parseIcalDate(ev["DTSTART"]);
+  var dateLabel=dt?(dt.getDate()+'/'+(dt.getMonth()+1)+'/'+dt.getFullYear()):'';
   var firstLine=desc.split("\n")[0]||"";
   var typeLabel=firstLine.split("•")[0].trim()||"Run";
   var linkMatch=desc.match(/https:\/\/club\.runna\.com\/[^\s]+/);
@@ -1347,9 +1349,9 @@ function buildRunnaCard(ev){
   var cleanDesc=desc.replace(/\s*[\uD83D][\uDCF2].*$/,"").trim();
   var h='<div class="runna-card">';
   h+='<div class="runna-card-title">'+esc(sum)+'</div>';
-  h+='<div class="runna-card-type">'+esc(typeLabel)+' \u2022 Runna</div>';
+  h+='<div class="runna-card-type">'+esc(typeLabel)+' • Runna • '+esc(dateLabel)+'</div>';
   if(cleanDesc) h+='<div class="runna-card-desc">'+esc(cleanDesc)+'</div>';
-  if(link) h+='<a class="runna-card-link" href="'+esc(link)+'" target="_blank">Open in Runna \u2192</a>';
+  if(link) h+='<a class="runna-card-link" href="'+esc(link)+'" target="_blank">Open in Runna →</a>';
   h+='</div>';
   return h;
 }
