@@ -225,6 +225,17 @@ input[type=number]{-moz-appearance:textfield}
 .today-rest-icon{font-size:3rem;margin-bottom:12px}
 .today-rest-label{font-size:1.2rem;font-weight:700;color:#71717a}
 .today-rest-sub{font-size:.8rem;color:#3f3f46;margin-top:6px}
+
+.runna-section{margin-bottom:24px}
+.runna-sec-hdr{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:0 0 10px;border-bottom:1px solid #1f1f1f;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.runna-dot{width:8px;height:8px;border-radius:50%;background:#f59e0b;flex-shrink:0}
+.runna-sec-name{color:#71717a}
+.runna-card{background:#111111;border:1px solid #292524;border-radius:14px;padding:14px 16px;margin-bottom:10px}
+.runna-card-title{font-size:1rem;font-weight:700;color:#fde68a;line-height:1.3}
+.runna-card-type{font-size:.72rem;color:#a16207;margin-top:3px;font-weight:600}
+.runna-card-desc{font-size:.8rem;color:#71717a;margin-top:10px;line-height:1.6;white-space:pre-line}
+.runna-card-link{display:inline-block;margin-top:10px;font-size:.72rem;color:#14b8a6;font-weight:600}
+.runna-loading{font-size:.8rem;color:#52525b;padding:12px 0;text-align:center}
 .today-sec{margin-bottom:24px}
 .today-sec-hdr{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:0 0 10px;border-bottom:1px solid #1f1f1f;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .today-sec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
@@ -1244,6 +1255,74 @@ function buildOvEntry(nm, e) {
   return h;
 }
 
+// === RUNNA ICAL INTEGRATION ===
+var RUNNA_URL = "https://cal.runna.com/20b5653689c52dddbf577b3acf9a80bc.ics";
+var runnaCache = null;
+var runnaFetching = false;
+function parseIcal(text) {
+  var events=[];
+  var raw=text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n");
+  var ufl=[];
+  raw.forEach(function(l){
+    if((l.charAt(0)===" "||l.charAt(0)==="\t")&&ufl.length) ufl[ufl.length-1]+=l.trim();
+    else ufl.push(l);
+  });
+  var ev=null;
+  ufl.forEach(function(line){
+    if(line==="BEGIN:VEVENT"){ev={};return;}
+    if(line==="END:VEVENT"){if(ev)events.push(ev);ev=null;return;}
+    if(!ev)return;
+    var col=line.indexOf(":");
+    if(col<0)return;
+    var key=line.substring(0,col).split(";")[0].toUpperCase();
+    var val=line.substring(col+1);
+    if(key==="DESCRIPTION")val=val.replace(/\\n/g,"\n");
+    ev[key]=val;
+  });
+  return events;
+}
+function parseIcalDate(str){
+  if(!str)return null;
+  str=str.replace(/^.*:/,"");
+  return new Date(parseInt(str.slice(0,4)),parseInt(str.slice(4,6))-1,parseInt(str.slice(6,8)));
+}
+function fetchRunna(cb){
+  if(runnaCache){cb(null,runnaCache);return;}
+  if(runnaFetching){setTimeout(function(){fetchRunna(cb);},300);return;}
+  runnaFetching=true;
+  fetch(RUNNA_URL)
+    .then(function(r){return r.text();})
+    .then(function(t){runnaFetching=false;runnaCache=parseIcal(t);cb(null,runnaCache);})
+    .catch(function(){
+      fetch("https://api.allorigins.win/get?url="+encodeURIComponent(RUNNA_URL))
+        .then(function(r){return r.json();})
+        .then(function(j){runnaFetching=false;runnaCache=parseIcal(j.contents);cb(null,runnaCache);})
+        .catch(function(){runnaFetching=false;cb("error",null);});
+    });
+}
+function getRunnaForDate(evs,date){
+  return evs.filter(function(ev){
+    var dt=parseIcalDate(ev["DTSTART"]);
+    return dt&&dt.getFullYear()===date.getFullYear()&&dt.getMonth()===date.getMonth()&&dt.getDate()===date.getDate();
+  });
+}
+function buildRunnaCard(ev){
+  var sum=(ev["SUMMARY"]||"").replace(/[\uD800-\uDFFF]+\s*/g,"").trim();
+  var desc=ev["DESCRIPTION"]||"";
+  var firstLine=desc.split("\n")[0]||"";
+  var typeLabel=firstLine.split("•")[0].trim()||"Run";
+  var linkMatch=desc.match(/https:\/\/club\.runna\.com\/[^\s]+/);
+  var link=linkMatch?linkMatch[0]:null;
+  var cleanDesc=desc.replace(/\s*[\uD83D][\uDCF2].*$/,"").trim();
+  var h='<div class="runna-card">';
+  h+='<div class="runna-card-title">'+esc(sum)+'</div>';
+  h+='<div class="runna-card-type">'+esc(typeLabel)+' \u2022 Runna</div>';
+  if(cleanDesc) h+='<div class="runna-card-desc">'+esc(cleanDesc)+'</div>';
+  if(link) h+='<a class="runna-card-link" href="'+esc(link)+'" target="_blank">Open in Runna \u2192</a>';
+  h+='</div>';
+  return h;
+}
+
 // === TODAY VIEW ===
 var MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 var MONTH_MAP = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
@@ -1444,6 +1523,22 @@ function buildTodayView() {
   el.innerHTML = html;
   window._todayKey = key;
   window._todayTotal = totalMvs;
+
+  // Append Runna events asynchronously
+  var rBox=document.createElement("div");
+  rBox.className="runna-loading";
+  rBox.textContent="Loading Runna schedule...";
+  el.appendChild(rBox);
+  var vd=new Date(viewDate.getTime());
+  fetchRunna(function(err,evs){
+    if(err||!evs){rBox.innerHTML="";return;}
+    var dayEvs=getRunnaForDate(evs,vd);
+    if(!dayEvs.length){rBox.innerHTML="";return;}
+    var rh='<div class="runna-section"><div class="runna-sec-hdr"><div class="runna-dot"></div><span class="runna-sec-name">Runna Plan</span></div>';
+    dayEvs.forEach(function(ev){rh+=buildRunnaCard(ev);});
+    rh+='</div>';
+    rBox.innerHTML=rh;
+  });
 }
 
 function pad2(n) { return n < 10 ? '0' + n : String(n); }
