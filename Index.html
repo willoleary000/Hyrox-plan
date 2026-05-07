@@ -1536,9 +1536,11 @@ function buildTodayView() {
   el.appendChild(rBox);
   var vd=new Date(viewDate.getTime());
   fetchRunna(function(err,evs){
-    if(err||!evs){rBox.innerHTML='';return;}
+    if(err||!evs){rBox.innerHTML='<div style="color:#ef4444;font-size:.75rem;padding:8px">Runna error: '+(err||'no data')+'</div>';return;}
     var dayEvs=getRunnaForDate(evs,vd);
-    if(!dayEvs.length){rBox.innerHTML='';return;}
+    var dbgDate=(vd.getMonth()+1)+'/'+vd.getDate()+'/'+vd.getFullYear();
+    var sample=evs.slice(0,3).map(function(e){var d=parseIcalDate(e['DTSTART']);return d?(d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear():'?';}).join(', ');
+    if(!dayEvs.length){rBox.innerHTML='<div style="color:#71717a;font-size:.7rem;padding:8px">Runna: '+evs.length+' events loaded. None for '+dbgDate+'. Sample: '+sample+'</div>';return;}
     var rh='<div class="runna-section"><div class="runna-sec-hdr"><div class="runna-dot"></div><span class="runna-sec-name">Runna Plan</span></div>';
     dayEvs.forEach(function(ev){rh+=buildRunnaCard(ev);});
     rh+='</div>';
