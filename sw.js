@@ -1,5 +1,5 @@
-const CACHE = ‘hyrox-plan-v3’;
-const ASSETS = [’/’, ‘/index.html’, ‘/manifest.json’, ‘/icon.svg’];
+var CACHE = ‘hyrox-plan-v4’;
+var ASSETS = [’/’, ‘/index.html’, ‘/manifest.json’, ‘/icon.svg’];
 
 self.addEventListener(‘install’, function(event) {
 event.waitUntil(
@@ -23,16 +23,28 @@ self.clients.claim();
 });
 
 self.addEventListener(‘fetch’, function(event) {
+// Never cache the Runna function
+if (event.request.url.indexOf(’.netlify/functions’) >= 0) {
+event.respondWith(fetch(event.request));
+return;
+}
+// Network first for HTML so updates always come through
+if (event.request.url.indexOf(’.html’) >= 0 || event.request.mode === ‘navigate’) {
+event.respondWith(
+fetch(event.request).then(function(response) {
+var clone = response.clone();
+caches.open(CACHE).then(function(cache) { cache.put(event.request, clone); });
+return response;
+}).catch(function() {
+return caches.match(event.request);
+})
+);
+return;
+}
+// Cache first for other assets
 event.respondWith(
 caches.match(event.request).then(function(cached) {
-return cached || fetch(event.request).then(function(response) {
-return caches.open(CACHE).then(function(cache) {
-cache.put(event.request, response.clone());
-return response;
-});
-}).catch(function() {
-return caches.match(’/index.html’);
-});
+return cached || fetch(event.request);
 })
 );
 });
