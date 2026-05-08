@@ -1023,7 +1023,7 @@ function onTodayCheck(btn){
 }
 
 // ── Runna integration ─────────────────────────────────────────────────────────
-var RUNNA_URL="/.netlify/functions/runna";
+var RUNNA_URL="https://cal.runna.com/20b5653689c52dddbf577b3acf9a80bc.ics";
 
 function parseIcal(text){
   var events=[];
@@ -1052,10 +1052,27 @@ function parseIcalDate(str){
 function fetchRunna(cb){
   if(runnaFetching){setTimeout(function(){fetchRunna(cb);},300);return;}
   runnaFetching=true;
-  fetch(RUNNA_URL+"?t="+Date.now())
-    .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.text();})
-    .then(function(t){runnaFetching=false;runnaCache=parseIcal(t);cb(null,runnaCache);})
-    .catch(function(err){runnaFetching=false;cb(err.message,null);});
+  function tryFetch(urls,i){
+    if(i>=urls.length){runnaFetching=false;cb("all proxies failed",null);return;}
+    fetch(urls[i])
+      .then(function(r){
+        if(!r.ok)throw new Error("HTTP "+r.status);
+        return urls[i].indexOf("allorigins")>=0?r.json():r.text();
+      })
+      .then(function(t){
+        var text=typeof t==="object"?t.contents:t;
+        if(!text||text.indexOf("BEGIN:VCALENDAR")<0)throw new Error("bad response");
+        runnaFetching=false;
+        runnaCache=parseIcal(text);
+        cb(null,runnaCache);
+      })
+      .catch(function(){tryFetch(urls,i+1);});
+  }
+  tryFetch([
+    "https://corsproxy.io/?"+encodeURIComponent(RUNNA_URL),
+    "https://api.allorigins.win/get?url="+encodeURIComponent(RUNNA_URL),
+    "https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(RUNNA_URL)
+  ],0);
 }
 function getRunnaForDate(evs,date){
   var y=date.getFullYear(),m=date.getMonth(),d=date.getDate();
