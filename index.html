@@ -605,6 +605,7 @@ function switchTab(tab){
     if(el)el.classList.toggle("on",t===tab);
   });
   ["weeks","filters","wcount"].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display=tab==="cal"?"":"none";});
+  if(tab==="cal")refreshCalendarRunna();
   var sectEl=document.querySelector(".sect");if(sectEl)sectEl.style.display=tab==="cal"?"":"none";
   document.getElementById("today-view").style.display=tab==="today"?"block":"none";
   if(tab==="today")buildTodayView();
@@ -940,7 +941,7 @@ function importFromUrl(){
         updateRunnaStatus();
         showSyncSuccess(planned.length);
         if(currentTab==="today")buildTodayView();
-        if(currentTab==="cal")refreshCalendarRunna();
+        refreshCalendarRunna();
       })
       .catch(function(){tryNext(i+1);});
   }
@@ -986,7 +987,7 @@ function doSync(){
         updateRunnaStatus();
         showSyncSuccess(planned.length);
         if(currentTab==="today")buildTodayView();
-        if(currentTab==="cal")refreshCalendarRunna();
+        refreshCalendarRunna();
       })
       .catch(function(){tryNext(i+1);});
   }
