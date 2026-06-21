@@ -145,7 +145,7 @@ input[type=number]{-moz-appearance:textfield}
 .hist-delete{font-size:.7rem;color:#ef4444;background:none;border:none;cursor:pointer;padding:4px}
 #today-view{display:none;padding:16px 16px 60px;background:#0a0a0a;min-height:100vh}
 .today-nav{display:flex;align-items:center;gap:8px;margin-bottom:20px}
-.today-nav-btn{width:36px;height:36px;border-radius:10px;background:#1a1a1a;border:1px solid #2a2a2a;color:#a1a1aa;font-size:1rem;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.today-nav-btn{width:44px;height:44px;border-radius:10px;background:#1a1a1a;border:1px solid #2a2a2a;color:#a1a1aa;font-size:1.3rem;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
 .today-date-pick{flex:1;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:8px 12px;color:#e4e4e7;font-size:.85rem;text-align:center}
 .today-date-pick:focus{outline:none;border-color:#14b8a6}
 .today-today-btn{font-size:.72rem;font-weight:600;color:#14b8a6;background:none;border:none;cursor:pointer;white-space:nowrap;padding:0 4px}
@@ -173,6 +173,11 @@ input[type=number]{-moz-appearance:textfield}
 .today-mv-name{font-size:1rem;font-weight:700;color:#e4e4e7;line-height:1.3}
 .today-mv-name.crossed{text-decoration:line-through;color:#3f3f46}
 .today-mv-sets{font-size:.8rem;color:#52525b;margin-top:3px}
+.today-set-rows{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.today-set-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #1f1f1f}
+.today-set-row.done .today-set-label,.today-set-row.done .today-set-reps{color:#3f3f46;text-decoration:line-through}
+.today-set-label{font-size:.78rem;font-weight:600;color:#71717a;min-width:44px;flex-shrink:0}
+.today-set-reps{font-size:.78rem;color:#52525b;flex:1}
 .today-inputs{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
 .today-input{flex:1;min-width:60px;text-align:right;font-size:.95rem;border:1px solid #2a2a2a;border-radius:9px;padding:8px 10px;background:#1a1a1a;color:#e4e4e7}
 .today-input:focus{outline:none;border-color:#14b8a6;background:#1f2d2b}
@@ -180,6 +185,20 @@ input[type=number]{-moz-appearance:textfield}
 .today-reps:focus{outline:none;border-color:#14b8a6;background:#1f2d2b}
 .today-unit{font-size:.72rem;color:#3f3f46;white-space:nowrap}
 .today-empty{text-align:center;padding:60px 24px;color:#3f3f46;font-size:.9rem;line-height:1.6}
+.today-set-row{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid #1a1a1a}
+.today-set-row:last-of-type{border-bottom:none}
+.today-set-row.done-set .today-set-num{color:#3f3f46;text-decoration:line-through}
+.today-set-check{width:28px;height:28px;border-radius:7px;border:2px solid #2a2a2a;background:#1a1a1a;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.75rem;font-weight:700;color:#fff}
+.today-set-check.on{background:#14b8a6;border-color:#14b8a6}
+.today-set-num{font-size:.68rem;font-weight:700;color:#52525b;width:22px;flex-shrink:0}
+.today-set-input{width:52px;text-align:right;font-size:.85rem;border:1px solid #2a2a2a;border-radius:8px;padding:5px 6px;background:#1a1a1a;color:#e4e4e7}
+.today-set-input:focus{outline:none;border-color:#14b8a6;background:#1f2d2b}
+.today-set-reps-input{width:44px;text-align:right;font-size:.85rem;border:1px solid #2a2a2a;border-radius:8px;padding:5px 4px;background:#1a1a1a;color:#a1a1aa}
+.today-set-reps-input:focus{outline:none;border-color:#14b8a6}
+.today-set-unit{font-size:.62rem;color:#3f3f46;flex-shrink:0}
+.today-set-remove{width:22px;height:22px;border-radius:5px;border:none;background:none;color:#3f3f46;font-size:.7rem;cursor:pointer;flex-shrink:0;margin-left:auto}
+.today-set-remove:hover{color:#ef4444}
+.today-add-set{width:100%;margin-top:8px;padding:7px;border-radius:8px;border:1px dashed #2a2a2a;background:transparent;color:#52525b;font-size:.72rem;cursor:pointer}
 .runna-section{margin-bottom:24px;margin-top:16px}
 .runna-sec-hdr{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:0 0 10px;border-bottom:1px solid #3d2e00;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .runna-dot{width:8px;height:8px;border-radius:50%;background:#f59e0b;flex-shrink:0}
@@ -228,6 +247,16 @@ input[type=number]{-moz-appearance:textfield}
 .wt-empty{font-size:.8rem;color:#3f3f46;font-style:italic}
 .last-hint{font-size:.62rem;color:#3f3f46;margin-top:3px;text-align:right}
 .last-hint span{color:#52525b}
+.mvrow-wrap{background:#1a1a1a;border-bottom:1px solid #2a2a2a;padding:8px}
+.mvrow-wrap:last-child{border-bottom:none}
+.mvrow-wrap.alldone{opacity:.5}
+.mvrow-head{display:flex;align-items:center;gap:7px}
+.set-rows{margin:6px 0 2px 31px;display:flex;flex-direction:column;gap:4px}
+.set-row{display:flex;align-items:center;gap:8px}
+.set-row.done .set-label,.set-row.done .set-reps{color:#3f3f46;text-decoration:line-through}
+.set-label{font-size:.72rem;font-weight:600;color:#71717a;min-width:38px}
+.set-reps{font-size:.72rem;color:#52525b;flex:1}
+.set-prog{font-size:.6rem;color:#52525b;margin-left:4px;white-space:nowrap}
 .runna-setup-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:950;display:flex;align-items:flex-end}
 .runna-setup-modal{background:#171717;border-radius:20px 20px 0 0;width:100%;padding:24px 16px 44px;border-top:1px solid #3d2e00}
 .runna-setup-title{font-size:1rem;font-weight:700;color:#fde68a;margin-bottom:6px}
@@ -254,6 +283,15 @@ textarea.runna-setup-input{resize:none;font-size:.72rem;line-height:1.4}
       <button class="runna-setup-cancel" onclick="closeRunnaSetup()">Cancel</button>
       <button class="runna-setup-save" id="runnaImportBtn" onclick="importFromUrl()">Sync</button>
     </div>
+  </div>
+</div>
+
+<!-- Previous Session Modal -->
+<div class="overlay" id="prevSessionOverlay" style="display:none" onclick="if(event.target.id=='prevSessionOverlay')closePrevSession()">
+  <div class="modal">
+    <div class="modal-hdr"><span class="modal-title" id="prevSessionTitle"></span><button class="modal-close" onclick="closePrevSession()">&#10005;</button></div>
+    <div id="prevSessionMeta" style="font-size:.72rem;color:#52525b;margin-bottom:14px"></div>
+    <div id="prevSessionContent"></div>
   </div>
 </div>
 
@@ -429,11 +467,46 @@ function onReset(key){
   updateProgress(key);var rb=card.querySelector(".resetbtn");if(rb)rb.style.display="none";
 }
 function applyOverride(m,ov,idx){if(!ov||!ov[idx])return m;return Object.assign({},m,ov[idx]);}
+function parseSets(st){
+  if(!st)return null;
+  var m=st.match(/^(\d+)\s*[xX]\s*(.+)$/);
+  if(!m)return null;
+  var n=parseInt(m[1],10);
+  if(n<2||n>20)return null;
+  return{num:n,reps:m[2].trim()};
+}
+function onSetCheck(btn){
+  var key=btn.getAttribute("data-key");
+  var idx=btn.getAttribute("data-idx");
+  var mvIdx=btn.getAttribute("data-mv-idx");
+  var totalSets=parseInt(btn.getAttribute("data-sets"),10);
+  var nm=btn.getAttribute("data-nm")||"";
+  var ctx=btn.getAttribute("data-ctx")||"";
+  var isOn=btn.classList.contains("on");
+  btn.classList.toggle("on",!isOn);btn.innerHTML=!isOn?"✓":"";
+  var setRow=btn.parentElement;if(setRow)setRow.classList.toggle("done",!isOn);
+  var st=loadState(key);if(!st.c)st.c={};
+  st.c[idx]=!isOn;
+  var allDone=true;
+  for(var s=0;s<totalSets;s++){if(!st.c[mvIdx+"_s"+s]){allDone=false;break;}}
+  st.c[mvIdx]=allDone;
+  saveState(key,st);
+  var wrap=btn.closest?btn.closest(".mvrow-wrap"):null;
+  if(wrap){
+    wrap.classList.toggle("alldone",allDone);
+    var nmEl=wrap.querySelector(".mname");if(nmEl)nmEl.classList.toggle("x",allDone);
+  }
+  updateProgress(key);
+  if(!isOn&&nm){
+    var valInp=wrap?wrap.querySelector("input[type='number'],input[type='text']"):null;
+    if(valInp&&valInp.value)saveToHistory(nm,valInp.value,ctx);
+  }
+}
 function buildInputHtml(m,idx,key,val,ctx,stv){
   ctx=ctx||"";var rIdx="r_"+idx;var rVal=(stv&&stv[rIdx])||"";
   if(m.tr==="weight"){
     var hist=m.nm?getHistData(m.nm):[];
-    var hint=hist.length?'<div class="last-hint">Last: <span>'+esc(hist[0].value)+'</span></div>':"";
+    var hint=hist.length?'<div class="last-hint">Last: <span>'+esc(hist[0].value)+'</span>'+(hist[0].value.indexOf('kg')<0?' kg':'')+'</div>':"";
     return '<div class="iwrap"><input type="number" inputmode="decimal" class="minput" value="'+esc(val)+'" placeholder="'+esc(m.tgt||"0")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-reps-idx="'+rIdx+'" data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'" onchange="onInput(this)" oninput="onInput(this)" onblur="onBlur(this)"><span class="munit">'+esc(m.un||"kg")+'</span><span class="reps-label">\u00d7</span><input type="number" inputmode="decimal" class="reps-input" value="'+esc(rVal)+'" placeholder="reps" data-key="'+esc(key)+'" data-idx="'+rIdx+'" data-paired-idx="'+idx+'" data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'" onchange="onRepsInput(this)" oninput="onRepsInput(this)" onblur="onRepsBlur(this)"><span class="reps-label">reps</span><button class="hist-btn" data-nm="'+esc(m.nm||"")+'" onclick="showHistFromBtn(this)">&#128202;</button></div>'+hint;
   }
   if(m.tr==="pace"||m.tr==="time"){
@@ -452,13 +525,31 @@ function buildSections(mvs,key,st,ctx,wi,di,custom){
     html+='<div class="sblk"><div class="sbadge sc-'+esc(sec)+'">'+esc(sec)+'</div><div class="sitems">';
     secMap[sec].forEach(function(x){
       if(x.type==="builtin"){
-        var done=!!(st.c&&st.c[String(x.i)]);var val=(st.v&&st.v[String(x.i)])||"";
-        html+='<div class="mvrow'+(done?" dn":"")+'">';
-        html+='<button class="chkbtn'+(done?" on":"")+'" data-key="'+esc(key)+'" data-idx="'+String(x.i)+'" data-nm="'+esc(x.m.nm)+'" data-ctx="'+esc(ctx)+'" onclick="onCheck(this)">'+(done?"\u2713":"")+'</button>';
-        html+='<div class="minfo"><div class="mname'+(done?" x":"")+'">'+esc(x.m.nm)+'</div>'+(x.m.st?'<div class="msets">'+esc(x.m.st)+'</div>':"")+'</div>';
-        html+=buildInputHtml(x.m,String(x.i),key,val,ctx,st.v);
-        if(wi!==undefined)html+='<button class="edit-btn" data-wi="'+wi+'" data-di="'+di+'" data-idx="'+String(x.i)+'" onclick="openEdit(this)">&#9998;</button>';
-        html+="</div>";
+        var idx=String(x.i);var parsed=parseSets(x.m.st);
+        var val=(st.v&&st.v[idx])||"";
+        if(parsed){
+          var doneSets=0;for(var ss=0;ss<parsed.num;ss++){if(st.c&&st.c[idx+"_s"+ss])doneSets++;}
+          var allDone=doneSets===parsed.num;
+          html+='<div class="mvrow-wrap'+(allDone?" alldone":"")+'">';
+          html+='<div class="mvrow-head"><div class="minfo"><div class="mname'+(allDone?" x":"")+'">'+esc(x.m.nm)+'</div></div>';
+          html+=buildInputHtml(x.m,idx,key,val,ctx,st.v);
+          if(wi!==undefined)html+='<button class="edit-btn" data-wi="'+wi+'" data-di="'+di+'" data-idx="'+idx+'" onclick="openEdit(this)">&#9998;</button>';
+          html+='</div><div class="set-rows">';
+          for(var ss=0;ss<parsed.num;ss++){
+            var sIdx=idx+"_s"+ss;var sDone=!!(st.c&&st.c[sIdx]);
+            html+='<div class="set-row'+(sDone?" done":"")+'"><button class="chkbtn'+(sDone?" on":"")+'" data-key="'+esc(key)+'" data-idx="'+sIdx+'" data-mv-idx="'+idx+'" data-sets="'+parsed.num+'" data-nm="'+esc(x.m.nm)+'" data-ctx="'+esc(ctx)+'" onclick="onSetCheck(this)">'+(sDone?"✓":"")+'</button>';
+            html+='<span class="set-label">Set '+(ss+1)+'</span><span class="set-reps">'+esc(parsed.reps)+'</span></div>';
+          }
+          html+='</div></div>';
+        } else {
+          var done=!!(st.c&&st.c[idx]);
+          html+='<div class="mvrow'+(done?" dn":"")+'">';
+          html+='<button class="chkbtn'+(done?" on":"")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-nm="'+esc(x.m.nm)+'" data-ctx="'+esc(ctx)+'" onclick="onCheck(this)">'+(done?"✓":"")+'</button>';
+          html+='<div class="minfo"><div class="mname'+(done?" x":"")+'">'+esc(x.m.nm)+'</div>'+(x.m.st?'<div class="msets">'+esc(x.m.st)+'</div>':"")+'</div>';
+          html+=buildInputHtml(x.m,idx,key,val,ctx,st.v);
+          if(wi!==undefined)html+='<button class="edit-btn" data-wi="'+wi+'" data-di="'+di+'" data-idx="'+idx+'" onclick="openEdit(this)">&#9998;</button>';
+          html+="</div>";
+        }
       } else {
         var customIdx="c_"+x.ci;var done=!!(st.c&&st.c[customIdx]);var val=(st.v&&st.v[customIdx])||"";
         html+='<div class="mvrow'+(done?" dn":"")+'">';
@@ -479,8 +570,15 @@ function getDayDate(week,dayName){
   var range=parseWeekDates(week.dt);if(!range)return null;
   var IDX={Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6};
   var di=IDX[dayName];if(di===undefined)return null;
+  // Extend search window by 2 days to catch Sat/Sun outside Mon-Fri ranges
+  var extended=new Date(range.end.getTime());
+  extended.setDate(extended.getDate()+2);
   var d=new Date(range.start.getTime());
-  for(var i=0;i<7;i++){if(d.getDay()===di)return new Date(d.getTime());d.setDate(d.getDate()+1);if(d>range.end)break;}
+  for(var i=0;i<9;i++){
+    if(d.getDay()===di)return new Date(d.getTime());
+    d.setDate(d.getDate()+1);
+    if(d>extended)break;
+  }
   return null;
 }
 function buildDay(day,wi,di,week){
@@ -494,7 +592,9 @@ function buildDay(day,wi,di,week){
   var runnaEvs=(dayDate&&typeof getRunnaForDate==="function")?getRunnaForDate(dayDate):[];
   var html='<div class="dcard dt-'+(day.type||"rest")+(allDone?" alldone":"")+'" data-key="'+key+'" data-total="'+total+'">';
   html+='<div class="dhdr" onclick="toggleDay(\''+key+'\')">';
-  html+='<div class="ddot"></div><div class="dtxt"><div class="dlbl">'+esc(day.day)+'</div><div class="dtitle">'+esc(day.t)+(runnaEvs.length?' <span style="font-size:.58rem;background:#f59e0b;color:#000;border-radius:5px;padding:1px 5px;font-weight:700;vertical-align:middle">&#127939; Runna</span>':'')+'</div></div>';
+  var dayDateStr="";
+  if(dayDate){var mn=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];dayDateStr=" "+dayDate.getDate()+" "+mn[dayDate.getMonth()];}
+  html+='<div class="ddot"></div><div class="dtxt"><div class="dlbl">'+esc(day.day)+dayDateStr+'</div><div class="dtitle">'+esc(day.t)+(runnaEvs.length?' <span style="font-size:.58rem;background:#f59e0b;color:#000;border-radius:5px;padding:1px 5px;font-weight:700;vertical-align:middle">&#127939; Runna</span>':'')+'</div></div>';
   if(!isRest){html+='<div class="dmeta"><span class="dprog'+(allDone?" dn":"")+'" id="prog-'+key+'">'+doneCount+"/"+total+'</span><span class="dchev" id="chev-'+key+'">\u25bc</span></div>';}
   html+="</div>";
   html+='<div class="dbody" id="db-'+key+'">';
@@ -519,9 +619,20 @@ function buildWeek(week,wi){
   var today=new Date();today.setHours(0,0,0,0);
   var range=typeof parseWeekDates==="function"?parseWeekDates(week.dt):null;
   var isPast=range&&range.end<today;
-  var isCurrent=range&&range.start<=today&&today<=range.end;
+  var isCurrent=range&&(range.start<=today&&today<=range.end);
+  // Also treat next upcoming week as current if today is before programme start
+  var isNext=!isCurrent&&!isPast&&range&&wi===0;
+  // Find true current: first non-past week
+  if(!isCurrent&&!isPast){
+    // Check if this is the first non-past week by seeing if previous week was past
+    var prevRange=wi>0&&typeof parseWeekDates==="function"?parseWeekDates(weeks[wi-1].dt):null;
+    var prevPast=prevRange&&prevRange.end<today;
+    if(wi===0||prevPast)isCurrent=true;
+  }
   var extraClass=isPast?" past":isCurrent?" current-week":"";
-  var collapsed=isCurrent?"":" collapsed";
+  var collapsed=isCurrent?"collapsed":" collapsed";
+  // Remove double-collapsed issue
+  collapsed=isCurrent?"":" collapsed";
   var html='<div class="wcard ph-'+esc(week.ph)+collapsed+extraClass+'" id="'+wid+'" data-phase="'+esc(week.ph)+'">';
   html+='<div class="whdr" onclick="toggleWeek(\''+wid+'\')">';
   html+='<div class="wtop"><div><div class="wlbl">'+esc(week.lbl)+'</div><div class="wdt">'+esc(week.dt)+'</div></div>';
@@ -819,12 +930,12 @@ function findWeekDay(date){
   return null;
 }
 function shiftDate(delta){
-  var d=selectedDate?localDate(selectedDate):new Date(2026,4,1);
+  var d=selectedDate?localDate(selectedDate):new Date();
   d.setDate(d.getDate()+delta);
-  selectedDate="2026-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate());
+  selectedDate=d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate());
   buildTodayView();
 }
-function onDatePick(val){if(val){var p=val.split("-");selectedDate="2026-"+p[1]+"-"+p[2];}buildTodayView();}
+function onDatePick(val){if(val){selectedDate=val;}buildTodayView();}
 function goToday(){selectedDate=null;buildTodayView();}
 
 // Runna helpers
@@ -1009,6 +1120,111 @@ function refreshCalendarRunna(){
   document.getElementById("weeks").innerHTML=html;
 }
 
+function prevKey(nm){return"hx_prev_"+nm.toLowerCase().replace(/[^a-z0-9]/g,"_").substring(0,40);}
+function savePrevSession(nm,weekLabel,dateStr,sets){
+  try{localStorage.setItem(prevKey(nm),JSON.stringify({date:dateStr,weekLabel:weekLabel,sets:sets}));}catch(e){}
+}
+function getPrevSession(nm){
+  try{var v=localStorage.getItem(prevKey(nm));return v?JSON.parse(v):null;}catch(e){return null;}
+}
+function showPrevSession(nm){
+  var prev=getPrevSession(nm);
+  document.getElementById("prevSessionTitle").textContent=nm;
+  var meta=document.getElementById("prevSessionMeta");
+  var cont=document.getElementById("prevSessionContent");
+  if(!prev||!prev.sets||!prev.sets.length){
+    if(meta)meta.textContent="";
+    if(cont)cont.innerHTML='<div class="hist-empty">No previous session recorded yet. Complete a session to log it.</div>';
+  } else {
+    if(meta)meta.textContent=(prev.date||"")+(prev.weekLabel?" · "+prev.weekLabel:"");
+    var html="";
+    prev.sets.forEach(function(set,i){
+      html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #2a2a2a">';
+      html+='<span style="font-size:.72rem;font-weight:700;color:#52525b;width:42px">Set '+(i+1)+'</span>';
+      if(set.w)html+='<span style="font-size:1rem;font-weight:700;color:#f4f4f5">'+esc(set.w)+'kg</span>';
+      if(set.r)html+='<span style="font-size:.85rem;color:#71717a">&times; '+esc(set.r)+' reps</span>';
+      if(set.done)html+='<span style="color:#14b8a6;margin-left:auto;font-size:1rem">&#10003;</span>';
+      html+='</div>';
+    });
+    if(cont)cont.innerHTML=html;
+  }
+  document.getElementById("prevSessionOverlay").style.display="flex";
+}
+function closePrevSession(){document.getElementById("prevSessionOverlay").style.display="none";}
+function onSetValInput(inp){
+  var key=inp.getAttribute("data-key");var idx=inp.getAttribute("data-idx");
+  var st=loadState(key);if(!st.v)st.v={};st.v[idx]=inp.value;saveState(key,st);
+}
+function getTodaySetCount(key,idx,defaultNum){
+  var st=loadState(key);
+  var stored=st.v&&st.v[idx+"_setc"];
+  return stored?parseInt(stored,10):defaultNum;
+}
+function onTodaySetCheck(btn){
+  var key=btn.getAttribute("data-key");
+  var idx=btn.getAttribute("data-idx"); // e.g. "3_s0"
+  var mvIdx=btn.getAttribute("data-mv-idx");
+  var nm=btn.getAttribute("data-nm")||"";
+  var ctx=btn.getAttribute("data-ctx")||"";
+  var isOn=btn.classList.contains("on");
+  btn.classList.toggle("on",!isOn);btn.innerHTML=!isOn?"✓":"";
+  var setRow=btn.parentElement;if(setRow)setRow.classList.toggle("done-set",!isOn);
+  var st=loadState(key);if(!st.c)st.c={};
+  st.c[idx]=!isOn;
+  // Save weight+reps to history when ticking
+  if(!isOn&&nm&&setRow){
+    var wi=setRow.querySelector(".today-set-input");var ri=setRow.querySelector(".today-set-reps-input");
+    if(wi&&wi.value){var h=wi.value+"kg";if(ri&&ri.value)h+=" × "+ri.value+" reps";saveToHistory(nm,h,ctx);}
+  }
+  // Check all sets done
+  var setCount=parseInt((st.v&&st.v[mvIdx+"_setc"])||"0",10)||4;
+  var allDone=true;
+  for(var s=0;s<setCount;s++){if(!st.c[mvIdx+"_s"+s]){allDone=false;break;}}
+  st.c[mvIdx]=allDone;
+  saveState(key,st);
+  var mvEl=document.getElementById("tdmv-"+mvIdx);
+  if(mvEl){mvEl.classList.toggle("done-mv",allDone);var nmEl=mvEl.querySelector(".today-mv-name");if(nmEl)nmEl.classList.toggle("crossed",allDone);}
+  // Save full session when all sets done
+  if(allDone&&mvEl){
+    var setRows=mvEl.querySelectorAll(".today-set-row");
+    var sets=[];
+    setRows.forEach(function(row){
+      var wi2=row.querySelector(".today-set-input");
+      var ri2=row.querySelector(".today-set-reps-input");
+      var cb2=row.querySelector(".today-set-check");
+      sets.push({w:wi2?wi2.value:"",r:ri2?ri2.value:"",done:cb2?cb2.classList.contains("on"):false});
+    });
+    var todayStr=new Date().toLocaleDateString("en-GB",{weekday:"short",day:"2-digit",month:"short"});
+    savePrevSession(nm,ctx,todayStr,sets);
+  }
+  // Update progress
+  var total=window._todayTotal||0;
+  var done=Object.keys(st.c||{}).filter(function(k){return st.c[k]&&k.indexOf("_s")<0;}).length;
+  var pct=total?Math.round((done/total)*100):0;
+  var bar=document.getElementById("today-prog-bar");var lbl=document.getElementById("today-prog-label");
+  if(bar)bar.style.width=pct+"%";if(lbl)lbl.textContent=done+"/"+total;
+}
+function addTodaySet(btn){
+  var key=btn.getAttribute("data-key");var idx=btn.getAttribute("data-idx");
+  var st=loadState(key);if(!st.v)st.v={};
+  var cur=parseInt(st.v[idx+"_setc"]||btn.getAttribute("data-sets")||"4",10);
+  st.v[idx+"_setc"]=String(cur+1);saveState(key,st);buildTodayView();
+}
+function removeTodaySet(btn){
+  var key=btn.getAttribute("data-key");var idx=btn.getAttribute("data-idx");var setNum=parseInt(btn.getAttribute("data-set"),10);
+  var st=loadState(key);if(!st.v)st.v={};
+  var cur=parseInt(st.v[idx+"_setc"]||"2",10);
+  if(cur<=1)return;
+  // Shift sets down
+  for(var s=setNum;s<cur-1;s++){
+    st.v[idx+"_s"+s+"_w"]=st.v[idx+"_s"+(s+1)+"_w"]||"";
+    st.v[idx+"_s"+s+"_r"]=st.v[idx+"_s"+(s+1)+"_r"]||"";
+    if(st.c)st.c[idx+"_s"+s]=st.c[idx+"_s"+(s+1)]||false;
+  }
+  delete st.v[idx+"_s"+(cur-1)+"_w"];delete st.v[idx+"_s"+(cur-1)+"_r"];
+  if(st.c)delete st.c[idx+"_s"+(cur-1)];
+  st.v[idx+"_setc"]=String(cur-1);saveState(key,st);buildTodayView();
+}
 function buildTodayView(){
   var el=document.getElementById("today-view");
   var now=new Date();var viewDate;
@@ -1017,7 +1233,7 @@ function buildTodayView(){
   var isToday=!selectedDate||isSameDay(viewDate,now);
   var found=findWeekDay(viewDate);
   var dateStr=DAY_NAMES[viewDate.getDay()]+" "+viewDate.getDate()+" "+MONTH_NAMES[viewDate.getMonth()]+" "+viewDate.getFullYear();
-  var inputVal="2026-"+pad2(viewDate.getMonth()+1)+"-"+pad2(viewDate.getDate());
+  var inputVal=viewDate.getFullYear()+"-"+pad2(viewDate.getMonth()+1)+"-"+pad2(viewDate.getDate());
   var navHtml='<div class="today-nav"><button class="today-nav-btn" onclick="shiftDate(-1)">&#8249;</button><input type="date" class="today-date-pick" id="today-date-pick" value="'+inputVal+'" onchange="onDatePick(this.value)">'+(!isToday?'<button class="today-today-btn" onclick="goToday()">Today</button>':"")+'<button class="today-nav-btn" onclick="shiftDate(1)">&#8250;</button></div>';
   if(!found){
     el.innerHTML=navHtml+'<div class="today-empty"><div style="font-size:2.5rem;margin-bottom:16px">&#128197;</div><div style="color:#e4e4e7;font-size:1rem;font-weight:700;margin-bottom:8px">No Hyrox session today</div><div style="color:#52525b">'+esc(dateStr)+'</div></div>';
@@ -1043,18 +1259,80 @@ function buildTodayView(){
     html+='<div class="today-sec"><div class="today-sec-hdr"><div class="today-sec-dot" style="background:'+dot+'"></div><span class="today-sec-name">'+esc(sec)+"</span></div>";
     secMap[sec].forEach(function(x){
       var idx=x.type==="builtin"?String(x.i):"c_"+x.ci;var m=x.m;
-      var done=!!((st.c||{})[idx]);var val=(st.v&&st.v[idx])||"";var rIdx="r_"+idx;var rVal=(st.v&&st.v[rIdx])||"";
-      html+='<div class="today-mv'+(done?" done-mv":"")+'" id="tdmv-'+idx+'">';
-      html+='<button class="today-chk'+(done?" on":"")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-nm="'+esc(m.nm)+'" data-ctx="'+esc(week.lbl)+'" onclick="onTodayCheck(this)">'+(done?"\u2713":"")+'</button>';
-      html+='<div class="today-mv-info"><div class="today-mv-name'+(done?" crossed":"")+'">'+esc(m.nm)+'</div>'+(m.st?'<div class="today-mv-sets">'+esc(m.st)+'</div>':"");
-      if(m.tr==="weight"){html+='<div class="today-inputs"><input type="number" inputmode="decimal" class="today-input" value="'+esc(val)+'" placeholder="'+esc(m.tgt||"kg")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-reps-idx="'+rIdx+'" data-nm="'+esc(m.nm)+'" data-ctx="'+esc(week.lbl)+'" onchange="onInput(this)" oninput="onInput(this)" onblur="onBlur(this)"><span class="today-unit">kg \u00d7</span><input type="number" inputmode="decimal" class="today-reps" value="'+esc(rVal)+'" placeholder="reps" data-key="'+esc(key)+'" data-idx="'+rIdx+'" data-paired-idx="'+idx+'" data-nm="'+esc(m.nm)+'" data-ctx="'+esc(week.lbl)+'" onchange="onRepsInput(this)" oninput="onRepsInput(this)" onblur="onRepsBlur(this)"><span class="today-unit">reps</span></div>';}
-      else if(m.tr==="pace"||m.tr==="time"){html+='<div class="today-inputs"><input type="text" inputmode="decimal" class="today-input" value="'+esc(val)+'" placeholder="'+(m.tr==="pace"?"1:45":"hh:mm")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-nm="'+esc(m.nm)+'" data-ctx="'+esc(week.lbl)+'" onchange="onInput(this)" oninput="onInput(this)" onblur="onBlur(this)"></div>';}
-      html+="</div></div>";
+      var val=(st.v&&st.v[idx])||"";var rIdx="r_"+idx;var rVal=(st.v&&st.v[rIdx])||"";
+      var parsed=parseSets(m.st);
+      if(parsed){
+        var setCount=getTodaySetCount(key,idx,parsed.num);
+        var allDone=!!(st.c&&st.c[idx]);
+        var hist=m.nm?getHistData(m.nm):[];
+        var lastHint=hist.length?'<div style="font-size:.66rem;color:#52525b;margin:2px 0 8px">Last: <span style="color:#14b8a6;font-weight:600">'+esc(hist[0].value)+(hist[0].value.indexOf('kg')<0?' kg':'')+'</span> &middot; '+esc(hist[0].date)+'</div>':"";
+        html+='<div class="today-mv'+(allDone?" done-mv":"")+'" id="tdmv-'+idx+'">';
+        html+='<div class="today-mv-info"><div style="display:flex;align-items:center;justify-content:space-between"><div class="today-mv-name'+(allDone?" crossed":"")+'">'+esc(m.nm)+'</div><button style="background:none;border:none;font-size:.9rem;color:#52525b;cursor:pointer;padding:0 4px" onclick="showPrevSession(\''+esc(m.nm)+'\')" title="Last session">&#128203;</button></div>'+lastHint;
+        for(var ss=0;ss<setCount;ss++){
+          var sIdx=idx+"_s"+ss;var sDone=!!(st.c&&st.c[sIdx]);
+          var sw=(st.v&&st.v[idx+"_s"+ss+"_w"])||"";
+          var sr=(st.v&&st.v[idx+"_s"+ss+"_r"])||"";
+          html+='<div class="today-set-row'+(sDone?" done-set":"")+'">';
+          html+='<button class="today-set-check'+(sDone?" on":"")+'" data-key="'+esc(key)+'" data-idx="'+sIdx+'" data-mv-idx="'+idx+'" data-nm="'+esc(m.nm)+'" data-ctx="'+esc(week.lbl)+'" onclick="onTodaySetCheck(this)">'+(sDone?"✓":"")+'</button>';
+          html+='<span class="today-set-num">S'+(ss+1)+'</span>';
+          html+='<input type="number" inputmode="decimal" class="today-set-input" value="'+esc(sw)+'" placeholder="kg" data-key="'+esc(key)+'" data-idx="'+idx+"_s"+ss+"_w"+'" onchange="onSetValInput(this)" oninput="onSetValInput(this)">';
+          html+='<span class="today-set-unit">kg</span>';
+          html+='<input type="number" inputmode="decimal" class="today-set-reps-input" value="'+esc(sr)+'" placeholder="'+esc(parsed.reps)+'" data-key="'+esc(key)+'" data-idx="'+idx+"_s"+ss+"_r"+'" onchange="onSetValInput(this)" oninput="onSetValInput(this)">';
+          html+='<span class="today-set-unit">reps</span>';
+          html+='<button class="today-set-remove" data-key="'+esc(key)+'" data-idx="'+idx+'" data-set="'+ss+'" onclick="removeTodaySet(this)">✕</button>';
+          html+='</div>';
+        }
+        html+='<button class="today-add-set" data-key="'+esc(key)+'" data-idx="'+idx+'" data-sets="'+setCount+'" onclick="addTodaySet(this)">+ Add Set</button>';
+        html+='</div></div></div>';
+      } else {
+        var done=!!((st.c||{})[idx]);var rVal=(st.v&&st.v[rIdx])||"";
+        var hist=m.nm?getHistData(m.nm):[];
+        var lastHint=m.tr==="weight"&&hist.length?'<div style="font-size:.68rem;color:#52525b;margin-top:6px">Last: <span style="color:#14b8a6;font-weight:600">'+esc(hist[0].value)+(hist[0].value.indexOf('kg')<0?' kg':'')+'</span> &middot; '+esc(hist[0].date)+'</div>':"";
+        html+='<div class="today-mv'+(done?" done-mv":"")+'" id="tdmv-'+idx+'">';
+        html+='<button class="today-chk'+(done?" on":"")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-nm="'+esc(m.nm)+'" data-ctx="'+esc(week.lbl)+'" onclick="onTodayCheck(this)">'+(done?"✓":"")+'</button>';
+        html+='<div class="today-mv-info"><div class="today-mv-name'+(done?" crossed":"")+'">'+esc(m.nm)+'</div>'+(m.st?'<div class="today-mv-sets">'+esc(m.st)+'</div>':"");
+        if(m.tr==="weight"){html+='<div class="today-inputs"><input type="number" inputmode="decimal" class="today-input" value="'+esc(val)+'" placeholder="'+esc(m.tgt||"kg")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-reps-idx="'+rIdx+'" data-nm="'+esc(m.nm)+'" data-ctx="'+esc(week.lbl)+'" onchange="onInput(this)" oninput="onInput(this)" onblur="onBlur(this)"><span class="today-unit">kg ×</span><input type="number" inputmode="decimal" class="today-reps" value="'+esc(rVal)+'" placeholder="reps" data-key="'+esc(key)+'" data-idx="'+rIdx+'" data-paired-idx="'+idx+'" data-nm="'+esc(m.nm)+'" data-ctx="'+esc(week.lbl)+'" onchange="onRepsInput(this)" oninput="onRepsInput(this)" onblur="onRepsBlur(this)"><span class="today-unit">reps</span></div>'+lastHint;}
+        else if(m.tr==="pace"||m.tr==="time"){html+='<div class="today-inputs"><input type="text" inputmode="decimal" class="today-input" value="'+esc(val)+'" placeholder="'+(m.tr==="pace"?"1:45":"hh:mm")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-nm="'+esc(m.nm)+'" data-ctx="'+esc(week.lbl)+'" onchange="onInput(this)" oninput="onInput(this)" onblur="onBlur(this)"></div>';}
+        html+="</div></div>";
+      }
     });
     html+="</div>";
   });
   el.innerHTML=html;window._todayKey=key;window._todayTotal=totalMvs;
+  window._todayMvIdxs=[];
+  secOrder.forEach(function(sec){secMap[sec].forEach(function(x){window._todayMvIdxs.push(x.type==="builtin"?String(x.i):"c_"+x.ci);});});
   appendRunnaCards(el,viewDate);
+}
+function onTodaySetCheck(btn){
+  var key=btn.getAttribute("data-key");
+  var idx=btn.getAttribute("data-idx");
+  var mvIdx=btn.getAttribute("data-mv-idx");
+  var totalSets=parseInt(btn.getAttribute("data-sets"),10);
+  var nm=btn.getAttribute("data-nm")||"";
+  var ctx=btn.getAttribute("data-ctx")||"";
+  var isOn=btn.classList.contains("on");
+  btn.classList.toggle("on",!isOn);btn.innerHTML=!isOn?"✓":"";
+  var setRow=btn.parentElement;if(setRow)setRow.classList.toggle("done",!isOn);
+  var st=loadState(key);if(!st.c)st.c={};
+  st.c[idx]=!isOn;
+  var allDone=true;
+  for(var s=0;s<totalSets;s++){if(!st.c[mvIdx+"_s"+s]){allDone=false;break;}}
+  st.c[mvIdx]=allDone;
+  saveState(key,st);
+  var wrap=document.getElementById("tdmv-"+mvIdx);
+  if(wrap){
+    wrap.classList.toggle("done-mv",allDone);
+    var nmEl=wrap.querySelector(".today-mv-name");if(nmEl)nmEl.classList.toggle("crossed",allDone);
+    if(!isOn&&nm){var inp=wrap.querySelector("input");if(inp&&inp.value)saveToHistory(nm,inp.value,ctx);}
+  }
+  // Update progress bar
+  var total=window._todayTotal;
+  var allSt=loadState(key);
+  var done=0;
+  if(window._todayMvIdxs){window._todayMvIdxs.forEach(function(mi){if(allSt.c&&allSt.c[mi])done++;});}
+  var pct=total?Math.round((done/total)*100):0;
+  var bar=document.getElementById("today-prog-bar");var lbl=document.getElementById("today-prog-label");
+  if(bar)bar.style.width=pct+"%";if(lbl)lbl.textContent=done+"/"+total;
 }
 function onTodayCheck(btn){
   onCheck(btn);var key=window._todayKey;var total=window._todayTotal;if(!key||!total)return;
