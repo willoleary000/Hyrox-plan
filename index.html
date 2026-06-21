@@ -218,6 +218,16 @@ input[type=number]{-moz-appearance:textfield}
 .ov-edit-btn{width:26px;height:26px;border-radius:6px;background:#1a1a1a;border:1px solid #2a2a2a;font-size:.8rem;color:#52525b;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
 .ov-chev{font-size:.6rem;color:#3f3f46}
 .ov-no-track{font-size:.65rem;color:#3f3f46;font-style:italic}
+#weights-view{display:none;padding:12px 16px 60px;background:#0a0a0a;min-height:100vh}
+.wt-section{margin-bottom:24px}
+.wt-sec-hdr{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#52525b;padding:14px 0 8px;border-bottom:1px solid #1f1f1f;margin-bottom:8px}
+.wt-row{display:flex;align-items:center;padding:10px 12px;background:#111111;border-radius:10px;margin-bottom:6px;gap:10px}
+.wt-name{flex:1;font-size:.82rem;font-weight:600;color:#e4e4e7}
+.wt-val{font-size:.9rem;font-weight:700;color:#14b8a6;flex-shrink:0}
+.wt-date{font-size:.65rem;color:#3f3f46;flex-shrink:0}
+.wt-empty{font-size:.8rem;color:#3f3f46;font-style:italic}
+.last-hint{font-size:.62rem;color:#3f3f46;margin-top:3px;text-align:right}
+.last-hint span{color:#52525b}
 .runna-setup-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:950;display:flex;align-items:flex-end}
 .runna-setup-modal{background:#171717;border-radius:20px 20px 0 0;width:100%;padding:24px 16px 44px;border-top:1px solid #3d2e00}
 .runna-setup-title{font-size:1rem;font-weight:700;color:#fde68a;margin-bottom:6px}
@@ -238,7 +248,7 @@ textarea.runna-setup-input{resize:none;font-size:.72rem;line-height:1.4}
   <div class="runna-setup-modal">
     <div class="runna-setup-title">&#127939; Connect Runna</div>
     <div class="runna-setup-sub">Paste your Runna iCal URL below. In the Runna app go to <strong style="color:#fde68a">Profile &rarr; Settings &rarr; Calendar</strong> and copy the iCal link.</div>
-    <input class="runna-setup-input" id="runnaUrlInput" type="url" placeholder="https://cal.runna.com/..."/>
+    <input class="runna-setup-input" id="runnaUrlInput" type="url" value="https://cal.runna.com/20b5653689c52dddbf577b3acf9a80bc.ics" placeholder="https://cal.runna.com/..."/>
     <div id="runnaSyncMsg" style="font-size:.72rem;min-height:18px;margin-bottom:8px;color:#71717a"></div>
     <div class="runna-setup-btns">
       <button class="runna-setup-cancel" onclick="closeRunnaSetup()">Cancel</button>
@@ -303,6 +313,7 @@ textarea.runna-setup-input{resize:none;font-size:.72rem;line-height:1.4}
 <div class="tabs">
   <button class="tab on" id="tabCal" onclick="switchTab('cal')">Calendar</button>
   <button class="tab" id="tabToday" onclick="switchTab('today')">Today</button>
+  <button class="tab" id="tabWeights" onclick="switchTab('weights')">Weights</button>
   <button class="tab" id="tabOv" onclick="switchTab('ov')">Overview</button>
 </div>
 
@@ -328,6 +339,7 @@ textarea.runna-setup-input{resize:none;font-size:.72rem;line-height:1.4}
 <div class="ctxt" id="wcount"></div>
 <div class="weeks" id="weeks"></div>
 <div id="today-view"></div>
+<div id="weights-view" style="display:none"></div>
 <div id="overview"></div>
 </div>
 <script>
@@ -420,7 +432,9 @@ function applyOverride(m,ov,idx){if(!ov||!ov[idx])return m;return Object.assign(
 function buildInputHtml(m,idx,key,val,ctx,stv){
   ctx=ctx||"";var rIdx="r_"+idx;var rVal=(stv&&stv[rIdx])||"";
   if(m.tr==="weight"){
-    return '<div class="iwrap"><input type="number" inputmode="decimal" class="minput" value="'+esc(val)+'" placeholder="'+esc(m.tgt||"0")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-reps-idx="'+rIdx+'" data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'" onchange="onInput(this)" oninput="onInput(this)" onblur="onBlur(this)"><span class="munit">'+esc(m.un||"kg")+'</span><span class="reps-label">\u00d7</span><input type="number" inputmode="decimal" class="reps-input" value="'+esc(rVal)+'" placeholder="reps" data-key="'+esc(key)+'" data-idx="'+rIdx+'" data-paired-idx="'+idx+'" data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'" onchange="onRepsInput(this)" oninput="onRepsInput(this)" onblur="onRepsBlur(this)"><span class="reps-label">reps</span><button class="hist-btn" data-nm="'+esc(m.nm||"")+'" onclick="showHistFromBtn(this)">&#128202;</button></div>';
+    var hist=m.nm?getHistData(m.nm):[];
+    var hint=hist.length?'<div class="last-hint">Last: <span>'+esc(hist[0].value)+'</span></div>':"";
+    return '<div class="iwrap"><input type="number" inputmode="decimal" class="minput" value="'+esc(val)+'" placeholder="'+esc(m.tgt||"0")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-reps-idx="'+rIdx+'" data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'" onchange="onInput(this)" oninput="onInput(this)" onblur="onBlur(this)"><span class="munit">'+esc(m.un||"kg")+'</span><span class="reps-label">\u00d7</span><input type="number" inputmode="decimal" class="reps-input" value="'+esc(rVal)+'" placeholder="reps" data-key="'+esc(key)+'" data-idx="'+rIdx+'" data-paired-idx="'+idx+'" data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'" onchange="onRepsInput(this)" oninput="onRepsInput(this)" onblur="onRepsBlur(this)"><span class="reps-label">reps</span><button class="hist-btn" data-nm="'+esc(m.nm||"")+'" onclick="showHistFromBtn(this)">&#128202;</button></div>'+hint;
   }
   if(m.tr==="pace"||m.tr==="time"){
     return '<div class="iwrap"><input type="text" inputmode="decimal" class="minput wide" value="'+esc(val)+'" placeholder="'+(m.tr==="pace"?"1:45":"hh:mm")+'" data-key="'+esc(key)+'" data-idx="'+idx+'" data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'" onchange="onInput(this)" oninput="onInput(this)" onblur="onBlur(this)"><span class="munit">'+esc((m.un||"").split(" ")[0])+'</span><button class="hist-btn" data-nm="'+esc(m.nm||"")+'" onclick="showHistFromBtn(this)">&#128202;</button></div>';
@@ -460,6 +474,15 @@ function buildSections(mvs,key,st,ctx,wi,di,custom){
   });
   return html;
 }
+function getDayDate(week,dayName){
+  if(!week||typeof parseWeekDates!=="function")return null;
+  var range=parseWeekDates(week.dt);if(!range)return null;
+  var IDX={Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6};
+  var di=IDX[dayName];if(di===undefined)return null;
+  var d=new Date(range.start.getTime());
+  for(var i=0;i<7;i++){if(d.getDay()===di)return new Date(d.getTime());d.setDate(d.getDate()+1);if(d>range.end)break;}
+  return null;
+}
 function buildDay(day,wi,di,week){
   var key="hx_w"+wi+"d"+di;var mvs=day.mvs||[];
   var isRest=day.type==="rest"||mvs.length===0;
@@ -474,6 +497,11 @@ function buildDay(day,wi,di,week){
   html+="</div>";
   html+='<div class="dbody" id="db-'+key+'">';
   html+=buildSections(mvs,key,st,ctx,wi,di,custom);
+  if(runnaEvs.length){
+    html+='<div class="runna-section"><div class="runna-sec-hdr"><div class="runna-dot"></div><span class="runna-sec-name">Runna Plan</span></div>';
+    runnaEvs.forEach(function(ev){if(typeof buildRunnaCard==="function")html+=buildRunnaCard(ev);});
+    html+='</div>';
+  }
   html+='<button class="add-ex-btn" data-wi="'+wi+'" data-di="'+di+'" onclick="openAdd(this)"><span>+</span> Add exercise</button>';
   if(doneCount>0)html+='<button class="resetbtn" data-key="'+key+'" onclick="onResetBtn(this)">Reset session</button>';
   html+="</div></div>";
@@ -570,11 +598,17 @@ function setPhase(ph){
 }
 function switchTab(tab){
   currentTab=tab;
-  ["cal","today","ov"].forEach(function(t){document.getElementById("tab"+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle("on",t===tab);});
+  ["cal","today","weights","ov"].forEach(function(t){
+    var el=document.getElementById("tab"+t.charAt(0).toUpperCase()+t.slice(1));
+    if(el)el.classList.toggle("on",t===tab);
+  });
   ["weeks","filters","wcount"].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display=tab==="cal"?"":"none";});
   var sectEl=document.querySelector(".sect");if(sectEl)sectEl.style.display=tab==="cal"?"":"none";
   document.getElementById("today-view").style.display=tab==="today"?"block":"none";
   if(tab==="today")buildTodayView();
+  var wvEl=document.getElementById("weights-view");
+  if(tab==="weights"){wvEl.style.display="block";buildWeightsView();}
+  else wvEl.style.display="none";
   var ovEl=document.getElementById("overview");
   if(tab==="ov"){ovEl.style.display="block";ovEl.innerHTML="";buildOverview();}
   else ovEl.style.display="none";
@@ -902,7 +936,9 @@ function importFromUrl(){
         if(btn)btn.disabled=false;
         closeRunnaSetup();
         updateRunnaStatus();
+        showSyncSuccess(planned.length);
         if(currentTab==="today")buildTodayView();
+        if(currentTab==="cal")refreshCalendarRunna();
       })
       .catch(function(){tryNext(i+1);});
   }
@@ -910,7 +946,62 @@ function importFromUrl(){
   tryNext(0);
 }
 function saveAndSync(){importFromUrl();}
-function doSync(){openRunnaSetup();}
+function doSync(){
+  var url="";
+  try{var meta=JSON.parse(localStorage.getItem("runna_meta")||"{}");url=meta.url||"";}catch(e){}
+  if(!url)url="https://cal.runna.com/20b5653689c52dddbf577b3acf9a80bc.ics";
+  var btn=document.getElementById("runnaSyncBtn");
+  var statusEl=document.getElementById("runnaStatus");
+  if(btn)btn.disabled=true;
+  if(statusEl)statusEl.textContent="Syncing…";
+  var proxyUrl="https://spectacular-vacherin-b65e34.netlify.app/.netlify/functions/runna";
+  var proxies=[
+    {u:proxyUrl,j:false},
+    {u:"https://api.allorigins.win/get?url="+encodeURIComponent(url),j:true}
+  ];
+  function tryNext(i){
+    if(i>=proxies.length){
+      if(btn)btn.disabled=false;
+      if(statusEl)statusEl.textContent="Sync failed — tap ⚙️ to check URL";
+      return;
+    }
+    fetch(proxies[i].u)
+      .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return proxies[i].j?r.json():r.text();})
+      .then(function(t){
+        var text=proxies[i].j?(t.contents||""):t;
+        if(!text||text.indexOf("BEGIN:VCALENDAR")<0)throw new Error("not ical");
+        var all=parseIcal(text);var planned=all.filter(isPlanned);
+        if(!planned.length)throw new Error("no sessions");
+        RUNNA_EVENTS=planned;
+        try{
+          localStorage.setItem("runna_events",JSON.stringify(planned));
+          var meta=JSON.parse(localStorage.getItem("runna_meta")||"{}");
+          meta.url=url;
+          meta.lastSync=new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"2-digit"});
+          localStorage.setItem("runna_meta",JSON.stringify(meta));
+        }catch(e){}
+        if(btn)btn.disabled=false;
+        updateRunnaStatus();
+        showSyncSuccess(planned.length);
+        if(currentTab==="today")buildTodayView();
+        if(currentTab==="cal")refreshCalendarRunna();
+      })
+      .catch(function(){tryNext(i+1);});
+  }
+  tryNext(0);
+}
+function showSyncSuccess(count){
+  var el=document.createElement("div");
+  el.style.cssText="position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#14b8a6;color:#fff;padding:10px 20px;border-radius:12px;font-size:.85rem;font-weight:700;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.4)";
+  el.textContent="✓ Synced — "+count+" sessions loaded";
+  document.body.appendChild(el);
+  setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},3000);
+}
+function refreshCalendarRunna(){
+  // Rebuild calendar to show updated Runna sessions
+  var html="";weeks.forEach(function(week,wi){html+=buildWeek(week,wi);});
+  document.getElementById("weeks").innerHTML=html;
+}
 
 function buildTodayView(){
   var el=document.getElementById("today-view");
@@ -1013,6 +1104,53 @@ function buildOvEntry(nm,e){
   h+='<button class="ov-hist-btn" data-nm="'+esc(nm)+'" onclick="showHistFromBtn(this)">&#128202;</button>';
   h+='<button class="ov-edit-btn" data-wi="'+e.wi+'" data-di="'+e.di+'" data-idx="'+idx+'" onclick="openEdit(this)">&#9998;</button>';
   h+="</div></div>";return h;
+}
+function buildWeightsView(){
+  var el=document.getElementById("weights-view");
+  if(!el)return;
+  var SEC_ORDER=["Strength","Stations","Erg","Conditioning","Custom"];
+  var secMap={};
+  // Scan all weeks for tracked movements
+  weeks.forEach(function(week,wi){
+    week.days.forEach(function(day,di){
+      (day.mvs||[]).forEach(function(m){
+        if(!m.tr||!m.nm)return;
+        var sec=m.sc||"Strength";
+        if(!secMap[sec])secMap[sec]={};
+        if(!secMap[sec][m.nm])secMap[sec][m.nm]=m.tr;
+      });
+      loadCustom(wi,di).forEach(function(m){
+        if(!m.tr||!m.nm)return;
+        var sec=m.sc||"Custom";
+        if(!secMap[sec])secMap[sec]={};
+        if(!secMap[sec][m.nm])secMap[sec][m.nm]=m.tr;
+      });
+    });
+  });
+  var html='<div style="padding:8px 0 16px"><div style="font-size:1rem;font-weight:700;color:#f4f4f5;margin-bottom:4px">Last Logged Weights</div><div style="font-size:.72rem;color:#52525b">Tap an exercise in the calendar to update</div></div>';
+  var hasAny=false;
+  function renderSec(sec){
+    if(!secMap[sec])return;
+    var names=Object.keys(secMap[sec]).sort();
+    if(!names.length)return;
+    html+='<div class="wt-section"><div class="wt-sec-hdr">'+esc(sec)+'</div>';
+    names.forEach(function(nm){
+      var hist=getHistData(nm);
+      html+='<div class="wt-row"><span class="wt-name">'+esc(nm)+'</span>';
+      if(hist.length){
+        hasAny=true;
+        html+='<span class="wt-val">'+esc(hist[0].value)+'</span>';
+        html+='<span class="wt-date">'+esc(hist[0].date)+'</span>';
+      }else{
+        html+='<span class="wt-empty">not logged yet</span>';
+      }
+      html+='</div>';
+    });
+    html+='</div>';
+  }
+  SEC_ORDER.forEach(renderSec);
+  Object.keys(secMap).forEach(function(sec){if(SEC_ORDER.indexOf(sec)<0)renderSec(sec);});
+  el.innerHTML=html;
 }
 function initApp(){
   if(initApp._done)return;initApp._done=true;
