@@ -322,7 +322,7 @@ textarea.runna-setup-input{resize:none;font-size:.72rem;line-height:1.4}
   <span class="runna-bar-label">&#127939; Runna</span>
   <span class="runna-bar-status" id="runnaStatus">Tap Sync to connect your plan</span>
   <button class="runna-bar-setup" onclick="openRunnaSetup()">&#9881;</button>
-  <button class="runna-bar-btn" id="runnaSyncBtn" onclick="openRunnaSetup()">Import</button>
+  <button class="runna-bar-btn" id="runnaSyncBtn" onclick="doSync()">Sync</button>
 </div>
 
 <div class="sect">
@@ -490,6 +490,8 @@ function buildDay(day,wi,di,week){
   var doneCount=0;
   if(!isRest){mvs.forEach(function(_,i){if((st.c||{})[String(i)])doneCount++;});custom.forEach(function(_,ci){if((st.c||{})["c_"+ci])doneCount++;});}
   var allDone=total>0&&doneCount===total;var ctx=week?week.lbl:"";
+  var dayDate=getDayDate(week,day.day);
+  var runnaEvs=(dayDate&&typeof getRunnaForDate==="function")?getRunnaForDate(dayDate):[];
   var html='<div class="dcard dt-'+(day.type||"rest")+(allDone?" alldone":"")+'" data-key="'+key+'" data-total="'+total+'">';
   html+='<div class="dhdr" onclick="toggleDay(\''+key+'\')">';
   html+='<div class="ddot"></div><div class="dtxt"><div class="dlbl">'+esc(day.day)+'</div><div class="dtitle">'+esc(day.t)+'</div></div>';
