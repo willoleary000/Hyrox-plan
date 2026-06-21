@@ -494,7 +494,7 @@ function buildDay(day,wi,di,week){
   var runnaEvs=(dayDate&&typeof getRunnaForDate==="function")?getRunnaForDate(dayDate):[];
   var html='<div class="dcard dt-'+(day.type||"rest")+(allDone?" alldone":"")+'" data-key="'+key+'" data-total="'+total+'">';
   html+='<div class="dhdr" onclick="toggleDay(\''+key+'\')">';
-  html+='<div class="ddot"></div><div class="dtxt"><div class="dlbl">'+esc(day.day)+'</div><div class="dtitle">'+esc(day.t)+'</div></div>';
+  html+='<div class="ddot"></div><div class="dtxt"><div class="dlbl">'+esc(day.day)+'</div><div class="dtitle">'+esc(day.t)+(runnaEvs.length?' <span style="font-size:.58rem;background:#f59e0b;color:#000;border-radius:5px;padding:1px 5px;font-weight:700;vertical-align:middle">&#127939; Runna</span>':'')+'</div></div>';
   if(!isRest){html+='<div class="dmeta"><span class="dprog'+(allDone?" dn":"")+'" id="prog-'+key+'">'+doneCount+"/"+total+'</span><span class="dchev" id="chev-'+key+'">\u25bc</span></div>';}
   html+="</div>";
   html+='<div class="dbody" id="db-'+key+'">';
@@ -503,6 +503,9 @@ function buildDay(day,wi,di,week){
     html+='<div class="runna-section"><div class="runna-sec-hdr"><div class="runna-dot"></div><span class="runna-sec-name">Runna Plan</span></div>';
     runnaEvs.forEach(function(ev){if(typeof buildRunnaCard==="function")html+=buildRunnaCard(ev);});
     html+='</div>';
+  }
+  if(isRest&&!runnaEvs.length){
+    html+='<div style="text-align:center;padding:16px 0;color:#3f3f46;font-size:.8rem">&#128716; Rest Day</div>';
   }
   html+='<button class="add-ex-btn" data-wi="'+wi+'" data-di="'+di+'" onclick="openAdd(this)"><span>+</span> Add exercise</button>';
   if(doneCount>0)html+='<button class="resetbtn" data-key="'+key+'" onclick="onResetBtn(this)">Reset session</button>';
@@ -706,78 +709,78 @@ var UPPER_HT=[s("Push Press","2x6"),s("DB Row","2x10/side"),s("DB Bench Press","
 var weeks=[
   // === PHASE 1: BASE BUILD ===
   {ph:"phase1",lbl:"Phase 1 - Wk 1 · Base Build",dt:"Jun 22-27",note:"Mon=Lower Squat, Tue=Lower Hinge, Wed=Easy Run, Thu=Easy Run+Stations, Fri=Tempo, Sat=Upper Push+Pull, Sun=Long Run.",
-    days:[D("Mon","strength","Lower Squat + Power",SQUAT_A),D("Tue","strength","Lower Hinge · Running Strength",HINGE_A),R("Wed","Run • See Runna"),D("Thu","erg","Hyrox Stations",STATION_A),R("Fri","Run • See Runna"),D("Sat","strength","Upper Push + Pull",UPPER_A),R("Sun","Long Run • See Runna")]},
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_A),D("Tue","strength","Lower Hinge · Running Strength",HINGE_A),R("Wed","Rest Day"),D("Thu","erg","Hyrox Stations",STATION_A),R("Fri","Rest Day"),D("Sat","strength","Upper Push + Pull",UPPER_A),R("Sun","Rest Day")]},
 
   {ph:"phase1",lbl:"Phase 1 - Wk 2 · Brands Hatch 10k",dt:"Jun 29 - Jul 4",note:"B Race: Brands Hatch 10k Fri 3 Jul. Light S&C Mon-Thu. Swap Fri Tempo for race. Rest Saturday.",
-    days:[D("Mon","strength","Lower Squat - Light",SQUAT_AL),D("Tue","strength","Lower Hinge - Light",HINGE_AL),R("Wed","Run • See Runna"),D("Thu","erg","Hyrox Stations - Light",STATION_AL),D("Fri","race","BRANDS HATCH 10k",[mv("Race","Brands Hatch 10k","","","finish time","time")]),R("Sat","Rest"),R("Sun","Long Run • See Runna")]},
+    days:[D("Mon","strength","Lower Squat - Light",SQUAT_AL),D("Tue","strength","Lower Hinge - Light",HINGE_AL),R("Wed","Rest Day"),D("Thu","erg","Hyrox Stations - Light",STATION_AL),D("Fri","race","BRANDS HATCH 10k",[mv("Race","Brands Hatch 10k","","","finish time","time")]),R("Sat","Rest"),R("Sun","Rest Day")]},
 
   {ph:"phase1",lbl:"Phase 1 - Wk 3 · Saucony 10k Week",dt:"Jul 6-12",note:"B Race: Saucony London 10k Sun 12 Jul. Light week. Long run replaced by race Sunday.",
-    days:[D("Mon","strength","Lower Squat - Light",SQUAT_AL),D("Tue","strength","Lower Hinge - Light",HINGE_AL),R("Wed","Run • See Runna"),D("Thu","erg","Hyrox Stations - Light",STATION_AL),R("Fri","Run • See Runna"),D("Sat","strength","Upper Push + Pull - Light",UPPER_AL),D("Sun","race","SAUCONY LONDON 10k",[mv("Race","Saucony London 10k","","","finish time","time")])]},
+    days:[D("Mon","strength","Lower Squat - Light",SQUAT_AL),D("Tue","strength","Lower Hinge - Light",HINGE_AL),R("Wed","Rest Day"),D("Thu","erg","Hyrox Stations - Light",STATION_AL),R("Fri","Rest Day"),D("Sat","strength","Upper Push + Pull - Light",UPPER_AL),D("Sun","race","SAUCONY LONDON 10k",[mv("Race","Saucony London 10k","","","finish time","time")])]},
 
   {ph:"phase1",lbl:"Phase 1 - Wk 4 · Post-Race Recovery",dt:"Jul 13-19",note:"Recovery after back-to-back 10ks. Light S&C, easy running only. Build back into full training.",
-    days:[D("Mon","strength","Lower Squat - Light",SQUAT_AL),D("Tue","strength","Lower Hinge - Light",HINGE_AL),R("Wed","Run • See Runna"),D("Thu","erg","Hyrox Stations - Light",STATION_AL),R("Fri","Run • See Runna"),D("Sat","strength","Upper Push + Pull - Light",UPPER_AL),R("Sun","Long Run • See Runna")]},
+    days:[D("Mon","strength","Lower Squat - Light",SQUAT_AL),D("Tue","strength","Lower Hinge - Light",HINGE_AL),R("Wed","Rest Day"),D("Thu","erg","Hyrox Stations - Light",STATION_AL),R("Fri","Rest Day"),D("Sat","strength","Upper Push + Pull - Light",UPPER_AL),R("Sun","Rest Day")]},
 
   // === PHASE 2: BUILD ===
   {ph:"phase2",lbl:"Phase 2 - Wk 1 · Build",dt:"Jul 20-26",note:"New movement block. Front squat, trap bar deadlift, incline press, pendlay row. Increase loads.",
-    days:[D("Mon","strength","Lower Squat + Power",SQUAT_B),D("Tue","strength","Lower Hinge · Running Strength",HINGE_B),R("Wed","Run • See Runna"),D("Thu","erg","Hyrox Stations",STATION_B),R("Fri","Run • See Runna"),D("Sat","strength","Upper Push + Pull",UPPER_B),R("Sun","Long Run • See Runna")]},
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_B),D("Tue","strength","Lower Hinge · Running Strength",HINGE_B),R("Wed","Rest Day"),D("Thu","erg","Hyrox Stations",STATION_B),R("Fri","Rest Day"),D("Sat","strength","Upper Push + Pull",UPPER_B),R("Sun","Rest Day")]},
 
   {ph:"phase2",lbl:"Phase 2 - Wk 2",dt:"Jul 27 - Aug 2",note:"Progressive overload week. Add weight on all main lifts. Station carries up to 22kg per hand.",
-    days:[D("Mon","strength","Lower Squat + Power",SQUAT_B),D("Tue","strength","Lower Hinge · Running Strength",HINGE_B),R("Wed","Run • See Runna"),D("Thu","erg","Hyrox Stations",STATION_B),R("Fri","Run • See Runna"),D("Sat","strength","Upper Push + Pull",UPPER_B),R("Sun","Long Run • See Runna")]},
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_B),D("Tue","strength","Lower Hinge · Running Strength",HINGE_B),R("Wed","Rest Day"),D("Thu","erg","Hyrox Stations",STATION_B),R("Fri","Rest Day"),D("Sat","strength","Upper Push + Pull",UPPER_B),R("Sun","Rest Day")]},
 
   {ph:"phase2",lbl:"Phase 2 - Wk 3",dt:"Aug 3-9",note:"Peak build. Push loads. Sandbag lunges introduced. Station volume at 4 sets.",
-    days:[D("Mon","strength","Lower Squat + Power",SQUAT_B),D("Tue","strength","Lower Hinge · Running Strength",HINGE_B),R("Wed","Run • See Runna"),D("Thu","erg","Hyrox Stations",STATION_B),R("Fri","Run • See Runna"),D("Sat","strength","Upper Push + Pull",UPPER_B),R("Sun","Long Run • See Runna")]},
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_B),D("Tue","strength","Lower Hinge · Running Strength",HINGE_B),R("Wed","Rest Day"),D("Thu","erg","Hyrox Stations",STATION_B),R("Fri","Rest Day"),D("Sat","strength","Upper Push + Pull",UPPER_B),R("Sun","Rest Day")]},
 
   {ph:"phase2",lbl:"Phase 2 - Wk 4",dt:"Aug 10-16",note:"Maintain intensity. Set personal bests where possible on main lifts.",
-    days:[D("Mon","strength","Lower Squat + Power",SQUAT_B),D("Tue","strength","Lower Hinge · Running Strength",HINGE_B),R("Wed","Run • See Runna"),D("Thu","erg","Hyrox Stations",STATION_B),R("Fri","Run • See Runna"),D("Sat","strength","Upper Push + Pull",UPPER_B),R("Sun","Long Run • See Runna")]},
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_B),D("Tue","strength","Lower Hinge · Running Strength",HINGE_B),R("Wed","Rest Day"),D("Thu","erg","Hyrox Stations",STATION_B),R("Fri","Rest Day"),D("Sat","strength","Upper Push + Pull",UPPER_B),R("Sun","Rest Day")]},
 
   // === PHASE 3: MARATHON STRENGTH ===
   {ph:"phase3",lbl:"Phase 3 - Wk 1 · Marathon Strength",dt:"Aug 17-23",note:"New block. Landmine squat, conventional deadlift, floor press. Quality over quantity alongside peak marathon mileage.",
-    days:[D("Mon","strength","Lower Squat + Power",SQUAT_C),D("Tue","strength","Lower Hinge · Running Strength",HINGE_C),R("Wed","Run • See Runna"),D("Thu","erg","Hyrox Stations",STATION_C),R("Fri","Run • See Runna"),D("Sat","strength","Upper Push + Pull",UPPER_C),R("Sun","Long Run • See Runna")]},
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_C),D("Tue","strength","Lower Hinge · Running Strength",HINGE_C),R("Wed","Rest Day"),D("Thu","erg","Hyrox Stations",STATION_C),R("Fri","Rest Day"),D("Sat","strength","Upper Push + Pull",UPPER_C),R("Sun","Rest Day")]},
 
   {ph:"phase3",lbl:"Phase 3 - Wk 2",dt:"Aug 24-30",note:"Strength maintenance alongside peak marathon mileage. Trust the programme.",
-    days:[D("Mon","strength","Lower Squat + Power",SQUAT_C),D("Tue","strength","Lower Hinge · Running Strength",HINGE_C),R("Wed","Run • See Runna"),D("Thu","erg","Hyrox Stations",STATION_C),R("Fri","Run • See Runna"),D("Sat","strength","Upper Push + Pull",UPPER_C),R("Sun","Long Run • See Runna")]},
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_C),D("Tue","strength","Lower Hinge · Running Strength",HINGE_C),R("Wed","Rest Day"),D("Thu","erg","Hyrox Stations",STATION_C),R("Fri","Rest Day"),D("Sat","strength","Upper Push + Pull",UPPER_C),R("Sun","Rest Day")]},
 
   {ph:"phase3",lbl:"Phase 3 - Wk 3 · Big Half Taper",dt:"Sep 1-7",note:"B Race: The Big Half 21.1k Sun 6 Sep. Light S&C all week. Long run replaced by race.",
-    days:[D("Mon","strength","Lower Squat - Light",SQUAT_CL),D("Tue","strength","Lower Hinge - Light",HINGE_CL),R("Wed","Run • See Runna"),D("Thu","erg","Hyrox Stations - Light",STATION_CL),R("Fri","Run • See Runna"),D("Sat","strength","Upper Push + Pull - Light",UPPER_CL),D("Sun","race","THE BIG HALF 21.1k",[mv("Race","The Big Half","21.1k","","finish time hh:mm:ss","time")])]},
+    days:[D("Mon","strength","Lower Squat - Light",SQUAT_CL),D("Tue","strength","Lower Hinge - Light",HINGE_CL),R("Wed","Rest Day"),D("Thu","erg","Hyrox Stations - Light",STATION_CL),R("Fri","Rest Day"),D("Sat","strength","Upper Push + Pull - Light",UPPER_CL),D("Sun","race","THE BIG HALF 21.1k",[mv("Race","The Big Half","21.1k","","finish time hh:mm:ss","time")])]},
 
   {ph:"phase3",lbl:"Phase 3 - Wk 4 · Post Big Half",dt:"Sep 8-14",note:"Recovery week. Light S&C. Marathon is 6 weeks away. Let legs recover.",
-    days:[D("Mon","strength","Lower Squat - Light",SQUAT_CL),D("Tue","strength","Lower Hinge - Light",HINGE_CL),R("Wed","Run • See Runna"),D("Thu","erg","Hyrox Stations - Light",STATION_CL),R("Fri","Run • See Runna"),D("Sat","strength","Upper Push + Pull - Light",UPPER_CL),R("Sun","Long Run • See Runna")]},
+    days:[D("Mon","strength","Lower Squat - Light",SQUAT_CL),D("Tue","strength","Lower Hinge - Light",HINGE_CL),R("Wed","Rest Day"),D("Thu","erg","Hyrox Stations - Light",STATION_CL),R("Fri","Rest Day"),D("Sat","strength","Upper Push + Pull - Light",UPPER_CL),R("Sun","Rest Day")]},
 
   {ph:"phase3",lbl:"Phase 3 - Wk 5",dt:"Sep 15-21",note:"Back to full S&C. Marathon 5 weeks away. Strength maintenance is the priority.",
-    days:[D("Mon","strength","Lower Squat + Power",SQUAT_C),D("Tue","strength","Lower Hinge · Running Strength",HINGE_C),R("Wed","Run • See Runna"),D("Thu","erg","Hyrox Stations",STATION_C),R("Fri","Run • See Runna"),D("Sat","strength","Upper Push + Pull",UPPER_C),R("Sun","Long Run • See Runna")]},
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_C),D("Tue","strength","Lower Hinge · Running Strength",HINGE_C),R("Wed","Rest Day"),D("Thu","erg","Hyrox Stations",STATION_C),R("Fri","Rest Day"),D("Sat","strength","Upper Push + Pull",UPPER_C),R("Sun","Rest Day")]},
 
   {ph:"phase3",lbl:"Phase 3 - Wk 6",dt:"Sep 22-28",note:"Last full strength week before marathon taper. Make every session count.",
-    days:[D("Mon","strength","Lower Squat + Power",SQUAT_C),D("Tue","strength","Lower Hinge · Running Strength",HINGE_C),R("Wed","Run • See Runna"),D("Thu","erg","Hyrox Stations",STATION_C),R("Fri","Run • See Runna"),D("Sat","strength","Upper Push + Pull",UPPER_C),R("Sun","Long Run • See Runna")]},
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_C),D("Tue","strength","Lower Hinge · Running Strength",HINGE_C),R("Wed","Rest Day"),D("Thu","erg","Hyrox Stations",STATION_C),R("Fri","Rest Day"),D("Sat","strength","Upper Push + Pull",UPPER_C),R("Sun","Rest Day")]},
 
   {ph:"phase3",lbl:"Phase 3 - Wk 7 · Pre-Taper",dt:"Sep 29 - Oct 5",note:"Final strength week. Reduce station volume. Keep lift quality high.",
-    days:[D("Mon","strength","Lower Squat + Power",SQUAT_C),D("Tue","strength","Lower Hinge · Running Strength",HINGE_C),R("Wed","Run • See Runna"),D("Thu","erg","Stations - Moderate",STATION_CL),R("Fri","Run • See Runna"),D("Sat","strength","Upper Push + Pull",UPPER_C),R("Sun","Long Run • See Runna")]},
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_C),D("Tue","strength","Lower Hinge · Running Strength",HINGE_C),R("Wed","Rest Day"),D("Thu","erg","Stations - Moderate",STATION_CL),R("Fri","Rest Day"),D("Sat","strength","Upper Push + Pull",UPPER_C),R("Sun","Rest Day")]},
 
   // === MARATHON TAPER ===
   {ph:"taper1",lbl:"Marathon Taper - Wk 1",dt:"Oct 6-12",note:"Taper begins. New lighter block. 3 sets max. No maximal efforts. Protect legs.",
-    days:[D("Mon","strength","Lower Squat - Taper",SQUAT_D),D("Tue","strength","Lower Hinge - Taper",HINGE_D),R("Wed","Run • See Runna"),D("Thu","erg","Hyrox Stations - Taper",STATION_D),R("Fri","Run • See Runna"),D("Sat","strength","Upper Push + Pull - Taper",UPPER_D),R("Sun","Long Run • See Runna")]},
+    days:[D("Mon","strength","Lower Squat - Taper",SQUAT_D),D("Tue","strength","Lower Hinge - Taper",HINGE_D),R("Wed","Rest Day"),D("Thu","erg","Hyrox Stations - Taper",STATION_D),R("Fri","Rest Day"),D("Sat","strength","Upper Push + Pull - Taper",UPPER_D),R("Sun","Rest Day")]},
 
   {ph:"taper1",lbl:"Marathon Taper - Wk 2",dt:"Oct 13-19",note:"Volume down 50%. Light loads only. Legs should feel fresh and springy.",
-    days:[D("Mon","strength","Lower Squat - Light",SQUAT_D2),D("Tue","strength","Lower Hinge - Light",HINGE_D2),R("Wed","Run • See Runna"),D("Thu","erg","Hyrox Stations - Light",STATION_D2),R("Fri","Run • See Runna"),D("Sat","strength","Upper Push + Pull - Light",UPPER_D2),R("Sun","Long Run • See Runna")]},
+    days:[D("Mon","strength","Lower Squat - Light",SQUAT_D2),D("Tue","strength","Lower Hinge - Light",HINGE_D2),R("Wed","Rest Day"),D("Thu","erg","Hyrox Stations - Light",STATION_D2),R("Fri","Rest Day"),D("Sat","strength","Upper Push + Pull - Light",UPPER_D2),R("Sun","Rest Day")]},
 
   {ph:"taper1",lbl:"Dublin Marathon Race Week",dt:"Oct 20-26",note:"Race week. Activation only Mon-Thu. Rest Fri-Sat. Race Sunday.",
-    days:[D("Mon","strength","Lower Activation",SQUAT_RW),D("Tue","strength","Lower Hinge Activation",HINGE_RW),R("Wed","Run • See Runna"),D("Thu","erg","Station Shakeout",STATION_RW),R("Fri","Rest - travel, eat well, hydrate"),R("Sat","Rest - race tomorrow"),D("Sun","race","DUBLIN MARATHON",[mv("Race","Dublin Marathon","42.2k","","finish time hh:mm:ss","time")])]},
+    days:[D("Mon","strength","Lower Activation",SQUAT_RW),D("Tue","strength","Lower Hinge Activation",HINGE_RW),R("Wed","Rest Day"),D("Thu","erg","Station Shakeout",STATION_RW),R("Fri","Rest - travel, eat well, hydrate"),R("Sat","Rest - race tomorrow"),D("Sun","race","DUBLIN MARATHON",[mv("Race","Dublin Marathon","42.2k","","finish time hh:mm:ss","time")])]},
 
   // === RECOVERY ===
   {ph:"recovery",lbl:"Recovery - Wk 1",dt:"Oct 27 - Nov 2",note:"Post-marathon. Walk only. No S&C, no running. Complete rest. You earned it.",
-    days:[R("Mon","Full Rest"),R("Tue","Full Rest"),R("Wed","Full Rest"),R("Thu","Full Rest"),R("Fri","Full Rest"),R("Sat","Easy Walk only"),R("Sun","Rest")]},
+    days:[R("Mon","Rest Day"),R("Tue","Rest Day"),R("Wed","Rest Day"),R("Thu","Rest Day"),R("Fri","Rest Day"),R("Sat","Rest Day"),R("Sun","Rest")]},
 
   {ph:"recovery",lbl:"Recovery - Wk 2",dt:"Nov 3-9",note:"Bodyweight only. Gentle reintroduction. Feel out niggles before Hyrox block.",
-    days:[D("Mon","strength","Lower Squat - BW",SQUAT_REC1),D("Tue","strength","Lower Hinge - BW",HINGE_REC1),R("Wed","Easy Walk or Rest"),R("Thu","Rest"),R("Fri","Rest"),D("Sat","strength","Upper Push + Pull - BW",UPPER_REC1),R("Sun","Easy Walk")]},
+    days:[D("Mon","strength","Lower Squat - BW",SQUAT_REC1),D("Tue","strength","Lower Hinge - BW",HINGE_REC1),R("Wed","Easy Walk or Rest"),R("Thu","Rest"),R("Fri","Rest"),D("Sat","strength","Upper Push + Pull - BW",UPPER_REC1),R("Sun","Rest Day")]},
 
   // === HYROX PEAK ===
   {ph:"phase4",lbl:"Hyrox Peak - Wk 1",dt:"Nov 10-16",note:"Power block. Push press, heavy deadlifts, weighted pull-ups. Stations at race weight. 4 weeks to HYROX.",
-    days:[D("Mon","strength","Lower Squat + Power",SQUAT_E),D("Tue","strength","Lower Hinge - Heavy",HINGE_E),R("Wed","Run • See Runna"),D("Thu","erg","Full Hyrox Stations",STATION_E),R("Fri","Run • See Runna"),D("Sat","strength","Upper Power Push + Pull",UPPER_E),R("Sun","Long Run • See Runna")]},
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_E),D("Tue","strength","Lower Hinge - Heavy",HINGE_E),R("Wed","Rest Day"),D("Thu","erg","Full Hyrox Stations",STATION_E),R("Fri","Rest Day"),D("Sat","strength","Upper Power Push + Pull",UPPER_E),R("Sun","Rest Day")]},
 
   {ph:"phase4",lbl:"Hyrox Peak - Wk 2",dt:"Nov 17-23",note:"Add load this week. All stations at race weight. FC 2x24kg · SB 20kg · WB 6kg. 3 weeks to HYROX.",
-    days:[D("Mon","strength","Lower Squat + Power",SQUAT_E),D("Tue","strength","Lower Hinge - Heavy",HINGE_E),R("Wed","Run • See Runna"),D("Thu","erg","Full Hyrox Stations",STATION_E),R("Fri","Run • See Runna"),D("Sat","strength","Upper Power Push + Pull",UPPER_E),R("Sun","Long Run • See Runna")]},
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_E),D("Tue","strength","Lower Hinge - Heavy",HINGE_E),R("Wed","Rest Day"),D("Thu","erg","Full Hyrox Stations",STATION_E),R("Fri","Rest Day"),D("Sat","strength","Upper Power Push + Pull",UPPER_E),R("Sun","Rest Day")]},
 
   {ph:"phase4",lbl:"Hyrox Peak - Wk 3",dt:"Nov 24-30",note:"Final peak week. Full effort Mon-Thu. Back off Fri-Sat. 1 week to HYROX.",
-    days:[D("Mon","strength","Lower Squat + Power",SQUAT_E),D("Tue","strength","Lower Hinge - Heavy",HINGE_E),R("Wed","Run • See Runna"),D("Thu","erg","Full Hyrox Stations",STATION_E),R("Fri","Run • See Runna"),D("Sat","strength","Upper - Moderate",UPPER_D),R("Sun","Run • See Runna")]},
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_E),D("Tue","strength","Lower Hinge - Heavy",HINGE_E),R("Wed","Rest Day"),D("Thu","erg","Full Hyrox Stations",STATION_E),R("Fri","Rest Day"),D("Sat","strength","Upper - Moderate",UPPER_D),R("Sun","Rest Day")]},
 
   // === HYROX TAPER ===
   {ph:"taper2",lbl:"Hyrox Taper Week",dt:"Dec 1-5",note:"Race week. Activation only Mon-Tue. Station shakeout Thu. Rest Wed, Fri. Race Saturday.",
