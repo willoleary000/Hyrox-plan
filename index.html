@@ -704,15 +704,20 @@ function doSync(){
   if(!url){openRunnaSetup();return;}
   var btn=document.getElementById("runnaSyncBtn");var statusEl=document.getElementById("runnaStatus");
   if(btn)btn.disabled=true;if(statusEl)statusEl.textContent="Syncing...";
-  var proxies=["https://corsproxy.io/?"+encodeURIComponent(url),"https://api.allorigins.win/get?url="+encodeURIComponent(url)];
+  var proxies=[
+    {url:"https://corsproxy.io/?"+encodeURIComponent(url),json:false},
+    {url:"https://api.allorigins.win/get?url="+encodeURIComponent(url),json:true},
+    {url:"https://thingproxy.freeboard.io/fetch/"+url,json:false},
+    {url:"https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(url),json:false}
+  ];
   function tryNext(i){
     if(i>=proxies.length){
       if(btn)btn.disabled=false;if(statusEl)statusEl.textContent="Sync failed - check URL and try again";return;
     }
-    fetch(proxies[i])
-      .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return proxies[i].indexOf("allorigins")>=0?r.json():r.text();})
+    fetch(proxies[i].url)
+      .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return proxies[i].json?r.json():r.text();})
       .then(function(t){
-        var text=typeof t==="object"?t.contents:t;
+        var text=typeof t==="object"?(t.contents||""):t;
         if(!text||text.indexOf("BEGIN:VCALENDAR")<0)throw new Error("not ical");
         var all=parseIcal(text);var planned=all.filter(isPlanned);
         RUNNA_EVENTS=planned;
