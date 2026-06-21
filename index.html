@@ -69,6 +69,8 @@ input[type=number]{-moz-appearance:textfield}
 .rbadge{font-size:.6rem;background:#ef4444;color:#fff;border-radius:999px;padding:2px 8px;font-weight:700;flex-shrink:0;margin-top:2px}
 .wchev{font-size:.6rem;color:rgba(255,255,255,.4);margin-left:4px;flex-shrink:0}
 .wcard.collapsed .wchev{transform:rotate(-90deg)}
+.wcard.past{opacity:.35;filter:grayscale(.5)}
+.wcard.current-week{border-width:2px}
 .days{padding:10px;display:flex;flex-direction:column;gap:7px;background:#111111}
 .dcard{border-radius:10px;border:1px solid;overflow:hidden}
 .dcard.alldone{border-color:#14b8a6 !important;background:#0d1f1c !important}
@@ -222,6 +224,7 @@ input[type=number]{-moz-appearance:textfield}
 .runna-setup-sub{font-size:.75rem;color:#71717a;margin-bottom:16px;line-height:1.6}
 .runna-setup-input{width:100%;border:1px solid #2a2a2a;border-radius:10px;padding:10px 12px;font-size:.8rem;color:#e4e4e7;background:#1a1a1a;margin-bottom:12px}
 .runna-setup-input:focus{outline:none;border-color:#f59e0b}
+textarea.runna-setup-input{resize:none;font-size:.72rem;line-height:1.4}
 .runna-setup-btns{display:flex;gap:8px}
 .runna-setup-cancel{flex:1;padding:12px;border-radius:10px;border:1px solid #2a2a2a;background:#1a1a1a;color:#a1a1aa;font-size:.875rem;cursor:pointer}
 .runna-setup-save{flex:2;padding:12px;border-radius:10px;background:#f59e0b;color:#000;font-size:.875rem;font-weight:700;border:none;cursor:pointer}
@@ -233,12 +236,12 @@ input[type=number]{-moz-appearance:textfield}
 <!-- Runna Setup Modal -->
 <div class="runna-setup-overlay" id="runnaSetupOverlay" style="display:none">
   <div class="runna-setup-modal">
-    <div class="runna-setup-title">&#127939; Connect Runna Calendar</div>
-    <div class="runna-setup-sub">Paste your Runna iCal URL below. In the Runna app go to Profile &rarr; Settings &rarr; Calendar &rarr; Copy iCal link.</div>
-    <input class="runna-setup-input" id="runnaUrlInput" type="url" placeholder="https://cal.runna.com/..."/>
+    <div class="runna-setup-title">&#127939; Import Runna Calendar</div>
+    <div class="runna-setup-sub">1. Open your Runna iCal URL in Safari: <strong style="color:#fde68a">cal.runna.com/20b5653689c52dddbf577b3acf9a80bc.ics</strong><br><br>2. Select all the text (tap &amp; hold &rarr; Select All)<br><br>3. Copy it and paste below:</div>
+    <textarea class="runna-setup-input" id="runnaIcalPaste" rows="4" placeholder="Paste iCal content here (BEGIN:VCALENDAR...)"></textarea>
     <div class="runna-setup-btns">
       <button class="runna-setup-cancel" onclick="closeRunnaSetup()">Cancel</button>
-      <button class="runna-setup-save" onclick="saveAndSync()">Save &amp; Sync</button>
+      <button class="runna-setup-save" onclick="importIcalPaste()">Import</button>
     </div>
   </div>
 </div>
@@ -307,7 +310,7 @@ input[type=number]{-moz-appearance:textfield}
   <span class="runna-bar-label">&#127939; Runna</span>
   <span class="runna-bar-status" id="runnaStatus">Tap Sync to connect your plan</span>
   <button class="runna-bar-setup" onclick="openRunnaSetup()">&#9881;</button>
-  <button class="runna-bar-btn" id="runnaSyncBtn" onclick="doSync()">Sync</button>
+  <button class="runna-bar-btn" id="runnaSyncBtn" onclick="openRunnaSetup()">Import</button>
 </div>
 
 <div class="sect">
@@ -478,7 +481,14 @@ function buildDay(day,wi,di,week){
 function buildWeek(week,wi){
   var hasRace=week.days.some(function(d){return d.type==="race";});
   var wid="wk-"+wi;
-  var html='<div class="wcard ph-'+esc(week.ph)+'" id="'+wid+'" data-phase="'+esc(week.ph)+'">';
+  // Detect past / current week
+  var today=new Date();today.setHours(0,0,0,0);
+  var range=typeof parseWeekDates==="function"?parseWeekDates(week.dt):null;
+  var isPast=range&&range.end<today;
+  var isCurrent=range&&range.start<=today&&today<=range.end;
+  var extraClass=isPast?" past":isCurrent?" current-week":"";
+  var collapsed=isCurrent?"":" collapsed";
+  var html='<div class="wcard ph-'+esc(week.ph)+collapsed+extraClass+'" id="'+wid+'" data-phase="'+esc(week.ph)+'">';
   html+='<div class="whdr" onclick="toggleWeek(\''+wid+'\')">';
   html+='<div class="wtop"><div><div class="wlbl">'+esc(week.lbl)+'</div><div class="wdt">'+esc(week.dt)+'</div></div>';
   html+='<div style="display:flex;align-items:center;gap:6px">'+(hasRace?'<span class="rbadge">RACE</span>':"")+' <span class="wchev">\u25bc</span></div></div>';
@@ -578,8 +588,166 @@ var PHASES=[
 ];
 </script>
 <script>
-var weeks=[];
+function mv(sc,nm,st,tgt,un,tr){return{sc:sc,nm:nm,st:st||"",tgt:tgt||"",un:un||"",tr:tr||null};}
+function R(day,t){return{day:day,type:"rest",t:t,mvs:[]};}
+function D(day,type,t,mvs){return{day:day,type:type,t:t,mvs:mvs};}
+function s(nm,sets){return mv("Strength",nm,sets,"","kg","weight");}
+function bw(nm,sets){return mv("Strength",nm,sets,"","",null);}
+function cond(nm,sets){return mv("Conditioning",nm,sets,"","",null);}
+function er(nm,sets){return mv("Erg",nm,sets,"","/500m","pace");}
+function sta(nm,sets,kg){return mv("Stations",nm,sets,""+kg,"kg per hand","weight");}
+function stk(nm,sets,kg){return mv("Stations",nm,sets,""+kg,"kg","weight");}
+function run(t){return mv("Run",t,"See Runna plan","","",null);}
+
+// === BLOCK A: BASE (Jun 22 - Jul 19) ===
+// Mon: Lower Squat + Power
+var SQUAT_A=[s("Back Squat","4x8"),s("Bulgarian Split Squat","3x8/side"),bw("Box Jump","3x5"),s("Step Up","3x10/side"),s("Goblet Squat","3x12"),bw("Lateral Band Walk","3x15/side")];
+// Tue: Lower Hinge / Running Strength
+var HINGE_A=[s("Romanian Deadlift","4x8"),s("Barbell Hip Thrust","4x10"),s("Single Leg RDL","3x8/side"),s("KB Swing","3x20"),bw("Nordic Hamstring Curl","3x8"),bw("Calf Raise","3x25")];
+// Thu: Easy Run + Hyrox Stations
+var STATION_A=[run("Easy Run"),er("Ski Erg","3x500m"),er("Row Erg","3x500m"),sta("Farmers Carry","3x50m",20),stk("Wall Balls","3x15",6),cond("Burpee Broad Jumps","3x10m")];
+// Sat: Upper Push + Pull (best 6)
+var UPPER_A=[s("BB Bench Press","4x8"),s("Bent Over BB Row","4x8"),s("DB Shoulder Press","3x10"),s("Cable Lat Pulldown","3x10"),s("Face Pull","3x15"),bw("Dead Bug","3x10/side")];
+
+// Light versions for race weeks
+var SQUAT_AL=[s("Back Squat","3x6"),s("Bulgarian Split Squat","2x8/side"),bw("Box Jump","2x5"),s("Goblet Squat","2x12"),bw("Lateral Band Walk","2x15/side"),bw("Ankle Hops","2x20")];
+var HINGE_AL=[s("Romanian Deadlift","3x8"),s("Barbell Hip Thrust","3x10"),s("Single Leg RDL","2x8/side"),s("KB Swing","2x15"),bw("Calf Raise","2x20"),bw("Glute Bridge","2x15")];
+var STATION_AL=[run("Easy Run"),er("Ski Erg","2x500m"),er("Row Erg","2x500m"),sta("Farmers Carry","2x50m",18),stk("Wall Balls","2x15",6),cond("Burpee Broad Jumps","2x10m")];
+var UPPER_AL=[s("BB Bench Press","3x8"),s("Bent Over BB Row","3x8"),s("DB Shoulder Press","2x10"),s("Cable Lat Pulldown","2x10"),s("Face Pull","2x15"),bw("Dead Bug","2x10/side")];
+
+// === BLOCK B: BUILD (Jul 20 - Aug 16) ===
+var SQUAT_B=[s("Front Squat","4x6"),s("Barbell Step Up","3x8/side"),bw("Depth Jump","3x5"),s("Lateral Lunge","3x10/side"),s("KB Front Squat","3x12"),bw("Single Leg Calf Raise","3x15/side")];
+var HINGE_B=[s("Trap Bar Deadlift","4x6"),s("Barbell Hip Thrust","4x8"),s("Single Leg KB Deadlift","3x10/side"),s("KB Swing","4x15"),bw("Explosive Step Up","3x8/side"),bw("Ankle Hops","3x20")];
+var STATION_B=[run("Easy Run"),er("Ski Erg","4x500m"),er("Row Erg","4x500m"),sta("Farmers Carry","4x50m",22),stk("Sandbag Lunges","3x20m",20),cond("Burpee Broad Jumps","4x10m")];
+var UPPER_B=[s("Incline BB Press","4x8"),s("Pendlay Row","4x6"),s("Arnold Press","3x10"),s("Seated Cable Row","3x12"),s("Rear Delt DB Fly","3x15"),bw("Pallof Press","3x12/side")];
+
+// === BLOCK C: MARATHON STRENGTH (Aug 17 - Oct 5) ===
+var SQUAT_C=[s("Landmine Squat","4x10"),s("Rear Foot Elevated Split Squat","3x8/side"),bw("Broad Jump","3x5"),s("Skater Squat","3x8/side"),stk("Slam Ball Squat","3x12",10),bw("Box Step Down","3x10/side")];
+var HINGE_C=[s("Conventional Deadlift","4x5"),s("Hip Thrust with Pause","4x10"),s("Landmine RDL","3x10/side"),s("KB Swing","4x15"),bw("Reverse Hyper","3x15"),bw("Ankle Hops","3x20")];
+var STATION_C=[run("Easy Run"),er("Ski Erg","3x750m"),er("Row Erg","3x750m"),sta("Farmers Carry","4x50m",22),stk("Sandbag Lunges","4x20m",20),cond("Burpee Broad Jumps","3x15m")];
+var UPPER_C=[s("Floor Press","4x8"),s("Single Arm Landmine Row","4x10/side"),s("Z Press","3x8"),s("Neutral Grip Pulldown","3x10"),s("Face Pull","3x15"),bw("Hollow Body Hold","3x30s")];
+var SQUAT_CL=[s("Landmine Squat","2x10"),s("Rear Foot Elevated Split Squat","2x8/side"),bw("Broad Jump","2x5"),s("Skater Squat","2x8/side"),stk("Slam Ball Squat","2x12",10),bw("Box Step Down","2x10/side")];
+var HINGE_CL=[s("Conventional Deadlift","2x5"),s("Hip Thrust with Pause","2x10"),s("Landmine RDL","2x10/side"),s("KB Swing","2x15"),bw("Reverse Hyper","2x12"),bw("Ankle Hops","2x20")];
+var STATION_CL=[run("Easy Run"),er("Ski Erg","2x500m"),er("Row Erg","2x500m"),sta("Farmers Carry","2x50m",20),stk("Wall Balls","2x15",6),cond("Burpee Broad Jumps","2x10m")];
+var UPPER_CL=[s("Floor Press","2x8"),s("Single Arm Landmine Row","2x10/side"),s("Z Press","2x8"),s("Neutral Grip Pulldown","2x10"),s("Face Pull","2x15"),bw("Hollow Body Hold","2x30s")];
+
+// === MARATHON TAPER (Oct 6-25) ===
+var SQUAT_D=[s("Back Squat","3x8"),s("Bulgarian Split Squat","2x10/side"),bw("Box Jump","2x5"),s("Step Up","2x12/side"),s("Goblet Squat","2x15"),bw("Lateral Band Walk","2x20/side")];
+var HINGE_D=[s("Romanian Deadlift","3x10"),s("Hip Thrust","3x12"),s("Single Leg RDL","2x10/side"),s("KB Swing","2x15"),s("Good Morning","2x12"),bw("Calf Raise","2x25")];
+var STATION_D=[run("Easy Run"),er("Ski Erg","2x500m"),er("Row Erg","2x500m"),sta("Farmers Carry","2x50m",20),stk("Wall Balls","2x15",6),cond("Burpee Broad Jumps","1x20m")];
+var UPPER_D=[s("DB Bench Press","3x10"),s("Bent Over BB Row","3x10"),s("DB Shoulder Press","3x10"),s("Cable Lat Pulldown","3x12"),s("Face Pull","2x15"),bw("Side Plank","3x30s/side")];
+var SQUAT_D2=[s("Back Squat","2x6"),s("Step Up","2x10/side"),bw("Box Jump","2x4"),s("Goblet Squat","2x12"),bw("Lateral Band Walk","2x15/side"),bw("Ankle Hops","2x15")];
+var HINGE_D2=[s("Romanian Deadlift","2x10"),s("Hip Thrust","2x12"),s("Single Leg RDL","2x8/side"),s("KB Swing","2x12"),bw("Calf Raise","2x20"),bw("Glute Bridge","2x15")];
+var STATION_D2=[run("Easy Run"),er("Ski Erg","2x300m"),er("Row Erg","2x300m"),sta("Farmers Carry","2x30m",18),stk("Wall Balls","2x10",6),cond("Burpee Broad Jumps","1x10m")];
+var UPPER_D2=[s("DB Bench Press","2x10"),s("DB Row","2x12/side"),s("DB Shoulder Press","2x10"),s("Face Pull","2x15"),bw("Band Pull Apart","2x20"),bw("Dead Bug","2x8/side")];
+var SQUAT_RW=[s("DB Squat","2x8"),bw("Box Jump","2x3"),s("Step Up","1x10/side"),bw("Calf Raise","2x15"),bw("Lateral Band Walk","1x15/side"),bw("Hip Flexor Stretch","2x30s/side")];
+var HINGE_RW=[s("Romanian Deadlift","2x8"),s("Hip Thrust","2x10"),bw("Glute Bridge","2x15"),bw("Calf Raise","2x20"),bw("Ankle Hops","2x15"),bw("Hip Flexor Stretch","2x30s/side")];
+var STATION_RW=[run("Easy Run - very easy"),er("Ski Erg","1x300m"),er("Row Erg","1x300m"),sta("Farmers Carry","1x30m",16),stk("Wall Balls","1x10",6),bw("Plank","2x20s")];
+var UPPER_RW=[s("DB Bench Press","2x8"),s("DB Row","2x10/side"),s("DB Shoulder Press","2x8"),s("Face Pull","2x12"),bw("Band Pull Apart","2x15"),bw("Dead Bug","2x8/side")];
+
+// === RECOVERY (Oct 27 - Nov 8) ===
+var SQUAT_REC=[bw("Goblet Squat","3x12"),bw("Step Up - BW","3x10/side"),bw("Lateral Lunge","2x10/side"),bw("Box Step Down","2x10/side"),bw("Calf Raise","3x20"),bw("Broad Jump","2x4")];
+var HINGE_REC=[bw("Glute Bridge","3x15"),bw("Single Leg RDL - BW","3x12/side"),bw("Calf Raise","3x20"),bw("Hip Flexor Lunge","3x10/side"),bw("Ankle Hop","2x20"),bw("Cat-Cow","2x10")];
+var STATION_REC=[run("Easy Run"),er("Ski Erg","2x500m"),er("Row Erg","2x500m"),sta("Farmers Carry","2x50m",18),stk("Wall Balls","2x15",6),cond("Burpee Broad Jumps","2x10m")];
+var UPPER_REC=[s("DB Bench Press","3x10"),s("Bent Over BB Row","3x10"),s("DB Shoulder Press","3x10"),s("Cable Lat Pulldown","3x12"),s("Face Pull","3x15"),bw("Dead Bug","3x10/side")];
+var SQUAT_REC1=[bw("Goblet Squat","2x12"),bw("Step Up - BW","2x10/side"),bw("Lateral Lunge","2x10/side"),bw("Calf Raise","2x20"),bw("Broad Jump","2x3"),bw("Hip Flexor Stretch","2x30s/side")];
+var HINGE_REC1=[bw("Glute Bridge","2x15"),bw("Single Leg RDL - BW","2x12/side"),bw("Hip Flexor Lunge","2x10/side"),bw("Ankle Hop","2x20"),bw("Cat-Cow","2x10"),bw("Thoracic Rotation","2x10/side")];
+var UPPER_REC1=[bw("Press Up","3x10"),bw("Band Pull Apart","3x20"),s("DB Shoulder Press","2x12"),s("Face Pull","3x15"),bw("Dead Hang","3x20s"),bw("Dead Bug","2x10/side")];
+
+// === BLOCK E: HYROX PEAK (Nov 9-27) ===
+var SQUAT_E=[s("Back Squat","4x5"),s("Bulgarian Split Squat","4x6/side"),bw("Box Jump","4x5"),bw("Broad Jump","3x5"),s("Step Up","3x8/side"),cond("Burpee Broad Jumps","2x20m")];
+var HINGE_E=[s("Deadlift","4x5"),s("Barbell Hip Thrust","4x8"),s("Single Leg RDL","3x8/side"),s("KB Swing","4x20"),s("Good Morning","3x10"),bw("Jump Rope","3x1min")];
+var STATION_E=[run("Easy Run"),er("Ski Erg","2x1000m"),er("Row Erg","2x1000m"),sta("Farmers Carry","4x50m",24),stk("Sandbag Lunges","4x25m",20),stk("Wall Balls","4x25",6)];
+var UPPER_E=[s("Push Press","4x6"),s("Weighted Pull-up","4x6"),s("DB Bench Press","3x8"),s("Bent Over BB Row","3x8"),s("Face Pull","3x15"),bw("Wall Walk","3x4")];
+
+// === HYROX TAPER (Nov 30 - Dec 4) ===
+var SQUAT_HT=[bw("Box Jump","2x4"),s("Step Up","1x8/side"),bw("Broad Jump","2x4"),bw("Lateral Band Walk","1x15/side"),bw("Calf Raise","2x15"),bw("Hip Flexor Stretch","2x30s/side")];
+var HINGE_HT=[s("Deadlift","2x4"),s("Hip Thrust","2x8"),s("KB Swing","2x15"),bw("Calf Raise","2x20"),bw("Ankle Hops","2x15"),bw("Glute Bridge","2x15")];
+var STATION_HT=[run("Easy Run - very easy"),er("Ski Erg","1x500m"),er("Row Erg","1x500m"),sta("Farmers Carry","1x50m",24),stk("Wall Balls","1x15",6),cond("Burpee Broad Jumps","1x10m")];
+var UPPER_HT=[s("Push Press","2x6"),s("DB Row","2x10/side"),s("DB Bench Press","2x8"),s("Face Pull","2x15"),bw("Band Pull Apart","2x20"),bw("Dead Bug","2x8/side")];
+
+var weeks=[
+  // === PHASE 1: BASE BUILD ===
+  {ph:"phase1",lbl:"Phase 1 - Wk 1 · Base Build",dt:"Jun 22-27",note:"Mon=Lower Squat, Tue=Lower Hinge, Wed=Easy Run, Thu=Easy Run+Stations, Fri=Tempo, Sat=Upper Push+Pull, Sun=Long Run.",
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_A),D("Tue","strength","Lower Hinge · Running Strength",HINGE_A),D("Wed","run-easy","Easy Run",[run("Easy Run")]),D("Thu","combo","Easy Run + Hyrox Stations",STATION_A),D("Fri","run-quality","Tempo Run",[run("Tempo Run")]),D("Sat","strength","Upper Push + Pull",UPPER_A),D("Sun","long-run","Long Run",[run("Long Run")])]},
+
+  {ph:"phase1",lbl:"Phase 1 - Wk 2 · Brands Hatch 10k",dt:"Jun 29 - Jul 4",note:"B Race: Brands Hatch 10k Fri 3 Jul. Light S&C Mon-Thu. Swap Fri Tempo for race. Rest Saturday.",
+    days:[D("Mon","strength","Lower Squat - Light",SQUAT_AL),D("Tue","strength","Lower Hinge - Light",HINGE_AL),D("Wed","run-easy","Easy Run",[run("Easy Run")]),D("Thu","combo","Easy Run + Stations - Light",STATION_AL),D("Fri","race","BRANDS HATCH 10k",[mv("Race","Brands Hatch 10k","","","finish time","time")]),R("Sat","Rest"),D("Sun","long-run","Long Run",[run("Long Run")])]},
+
+  {ph:"phase1",lbl:"Phase 1 - Wk 3 · Saucony 10k Week",dt:"Jul 6-12",note:"B Race: Saucony London 10k Sun 12 Jul. Light week. Long run replaced by race Sunday.",
+    days:[D("Mon","strength","Lower Squat - Light",SQUAT_AL),D("Tue","strength","Lower Hinge - Light",HINGE_AL),D("Wed","run-easy","Easy Run",[run("Easy Run")]),D("Thu","combo","Easy Run + Stations - Light",STATION_AL),D("Fri","run-quality","Easy Run - no tempo this week",[run("Easy Run - light")]),D("Sat","strength","Upper Push + Pull - Light",UPPER_AL),D("Sun","race","SAUCONY LONDON 10k",[mv("Race","Saucony London 10k","","","finish time","time")])]},
+
+  {ph:"phase1",lbl:"Phase 1 - Wk 4 · Post-Race Recovery",dt:"Jul 13-19",note:"Recovery after back-to-back 10ks. Light S&C, easy running only. Build back into full training.",
+    days:[D("Mon","strength","Lower Squat - Light",SQUAT_AL),D("Tue","strength","Lower Hinge - Light",HINGE_AL),D("Wed","run-easy","Easy Run",[run("Easy Run")]),D("Thu","combo","Easy Run + Stations - Light",STATION_AL),D("Fri","run-quality","Easy Run",[run("Easy Run")]),D("Sat","strength","Upper Push + Pull - Light",UPPER_AL),D("Sun","long-run","Long Run",[run("Long Run")])]},
+
+  // === PHASE 2: BUILD ===
+  {ph:"phase2",lbl:"Phase 2 - Wk 1 · Build",dt:"Jul 20-26",note:"New movement block. Front squat, trap bar deadlift, incline press, pendlay row. Increase loads.",
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_B),D("Tue","strength","Lower Hinge · Running Strength",HINGE_B),D("Wed","run-easy","Easy Run",[run("Easy Run")]),D("Thu","combo","Easy Run + Hyrox Stations",STATION_B),D("Fri","run-quality","Tempo Run",[run("Tempo Run")]),D("Sat","strength","Upper Push + Pull",UPPER_B),D("Sun","long-run","Long Run",[run("Long Run")])]},
+
+  {ph:"phase2",lbl:"Phase 2 - Wk 2",dt:"Jul 27 - Aug 2",note:"Progressive overload week. Add weight on all main lifts. Station carries up to 22kg per hand.",
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_B),D("Tue","strength","Lower Hinge · Running Strength",HINGE_B),D("Wed","run-easy","Easy Run",[run("Easy Run")]),D("Thu","combo","Easy Run + Hyrox Stations",STATION_B),D("Fri","run-quality","Tempo Run",[run("Tempo Run")]),D("Sat","strength","Upper Push + Pull",UPPER_B),D("Sun","long-run","Long Run",[run("Long Run")])]},
+
+  {ph:"phase2",lbl:"Phase 2 - Wk 3",dt:"Aug 3-9",note:"Peak build. Push loads. Sandbag lunges introduced. Station volume at 4 sets.",
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_B),D("Tue","strength","Lower Hinge · Running Strength",HINGE_B),D("Wed","run-easy","Easy Run",[run("Easy Run")]),D("Thu","combo","Easy Run + Hyrox Stations",STATION_B),D("Fri","run-quality","Tempo Run",[run("Tempo Run")]),D("Sat","strength","Upper Push + Pull",UPPER_B),D("Sun","long-run","Long Run",[run("Long Run")])]},
+
+  {ph:"phase2",lbl:"Phase 2 - Wk 4",dt:"Aug 10-16",note:"Maintain intensity. Set personal bests where possible on main lifts.",
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_B),D("Tue","strength","Lower Hinge · Running Strength",HINGE_B),D("Wed","run-easy","Easy Run",[run("Easy Run")]),D("Thu","combo","Easy Run + Hyrox Stations",STATION_B),D("Fri","run-quality","Tempo Run",[run("Tempo Run")]),D("Sat","strength","Upper Push + Pull",UPPER_B),D("Sun","long-run","Long Run",[run("Long Run")])]},
+
+  // === PHASE 3: MARATHON STRENGTH ===
+  {ph:"phase3",lbl:"Phase 3 - Wk 1 · Marathon Strength",dt:"Aug 17-23",note:"New block. Landmine squat, conventional deadlift, floor press. Quality over quantity alongside peak marathon mileage.",
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_C),D("Tue","strength","Lower Hinge · Running Strength",HINGE_C),D("Wed","run-easy","Easy Run",[run("Easy Run")]),D("Thu","combo","Easy Run + Hyrox Stations",STATION_C),D("Fri","run-quality","Tempo Run",[run("Tempo Run")]),D("Sat","strength","Upper Push + Pull",UPPER_C),D("Sun","long-run","Long Run",[run("Long Run")])]},
+
+  {ph:"phase3",lbl:"Phase 3 - Wk 2",dt:"Aug 24-30",note:"Strength maintenance alongside peak marathon mileage. Trust the programme.",
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_C),D("Tue","strength","Lower Hinge · Running Strength",HINGE_C),D("Wed","run-easy","Easy Run",[run("Easy Run")]),D("Thu","combo","Easy Run + Hyrox Stations",STATION_C),D("Fri","run-quality","Tempo Run",[run("Tempo Run")]),D("Sat","strength","Upper Push + Pull",UPPER_C),D("Sun","long-run","Long Run",[run("Long Run")])]},
+
+  {ph:"phase3",lbl:"Phase 3 - Wk 3 · Big Half Taper",dt:"Sep 1-7",note:"B Race: The Big Half 21.1k Sun 6 Sep. Light S&C all week. Long run replaced by race.",
+    days:[D("Mon","strength","Lower Squat - Light",SQUAT_CL),D("Tue","strength","Lower Hinge - Light",HINGE_CL),D("Wed","run-easy","Easy Run",[run("Easy Run")]),D("Thu","combo","Easy Run + Stations - Light",STATION_CL),D("Fri","run-easy","Easy Run - no tempo",[run("Easy Run - light")]),D("Sat","strength","Upper Push + Pull - Light",UPPER_CL),D("Sun","race","THE BIG HALF 21.1k",[mv("Race","The Big Half","21.1k","","finish time hh:mm:ss","time")])]},
+
+  {ph:"phase3",lbl:"Phase 3 - Wk 4 · Post Big Half",dt:"Sep 8-14",note:"Recovery week. Light S&C. Marathon is 6 weeks away. Let legs recover.",
+    days:[D("Mon","strength","Lower Squat - Light",SQUAT_CL),D("Tue","strength","Lower Hinge - Light",HINGE_CL),D("Wed","run-easy","Easy Run",[run("Easy Run")]),D("Thu","combo","Easy Run + Stations - Light",STATION_CL),D("Fri","run-quality","Tempo Run",[run("Tempo Run")]),D("Sat","strength","Upper Push + Pull - Light",UPPER_CL),D("Sun","long-run","Long Run",[run("Long Run")])]},
+
+  {ph:"phase3",lbl:"Phase 3 - Wk 5",dt:"Sep 15-21",note:"Back to full S&C. Marathon 5 weeks away. Strength maintenance is the priority.",
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_C),D("Tue","strength","Lower Hinge · Running Strength",HINGE_C),D("Wed","run-easy","Easy Run",[run("Easy Run")]),D("Thu","combo","Easy Run + Hyrox Stations",STATION_C),D("Fri","run-quality","Tempo Run",[run("Tempo Run")]),D("Sat","strength","Upper Push + Pull",UPPER_C),D("Sun","long-run","Long Run",[run("Long Run")])]},
+
+  {ph:"phase3",lbl:"Phase 3 - Wk 6",dt:"Sep 22-28",note:"Last full strength week before marathon taper. Make every session count.",
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_C),D("Tue","strength","Lower Hinge · Running Strength",HINGE_C),D("Wed","run-easy","Easy Run",[run("Easy Run")]),D("Thu","combo","Easy Run + Hyrox Stations",STATION_C),D("Fri","run-quality","Tempo Run",[run("Tempo Run")]),D("Sat","strength","Upper Push + Pull",UPPER_C),D("Sun","long-run","Long Run",[run("Long Run")])]},
+
+  {ph:"phase3",lbl:"Phase 3 - Wk 7 · Pre-Taper",dt:"Sep 29 - Oct 5",note:"Final strength week. Reduce station volume. Keep lift quality high.",
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_C),D("Tue","strength","Lower Hinge · Running Strength",HINGE_C),D("Wed","run-easy","Easy Run",[run("Easy Run")]),D("Thu","combo","Easy Run + Stations - Moderate",STATION_CL),D("Fri","run-quality","Tempo Run",[run("Tempo Run")]),D("Sat","strength","Upper Push + Pull",UPPER_C),D("Sun","long-run","Long Run",[run("Long Run")])]},
+
+  // === MARATHON TAPER ===
+  {ph:"taper1",lbl:"Marathon Taper - Wk 1",dt:"Oct 6-12",note:"Taper begins. New lighter block. 3 sets max. No maximal efforts. Protect legs.",
+    days:[D("Mon","strength","Lower Squat - Taper",SQUAT_D),D("Tue","strength","Lower Hinge - Taper",HINGE_D),D("Wed","run-easy","Easy Run",[run("Easy Run")]),D("Thu","combo","Easy Run + Stations - Taper",STATION_D),D("Fri","run-quality","Tempo Run - shorter",[run("Tempo Run")]),D("Sat","strength","Upper Push + Pull - Taper",UPPER_D),D("Sun","long-run","Long Run - reduced",[run("Long Run")])]},
+
+  {ph:"taper1",lbl:"Marathon Taper - Wk 2",dt:"Oct 13-19",note:"Volume down 50%. Light loads only. Legs should feel fresh and springy.",
+    days:[D("Mon","strength","Lower Squat - Light",SQUAT_D2),D("Tue","strength","Lower Hinge - Light",HINGE_D2),D("Wed","run-easy","Easy Run",[run("Easy Run")]),D("Thu","combo","Easy Run + Stations - Light",STATION_D2),D("Fri","run-quality","Short Tempo",[run("Tempo Run - short")]),D("Sat","strength","Upper Push + Pull - Light",UPPER_D2),D("Sun","long-run","Easy Long Run - reduced",[run("Long Run - reduced")])]},
+
+  {ph:"taper1",lbl:"Dublin Marathon Race Week",dt:"Oct 20-26",note:"Race week. Activation only Mon-Thu. Rest Fri-Sat. Race Sunday.",
+    days:[D("Mon","strength","Lower Activation",SQUAT_RW),D("Tue","strength","Lower Hinge Activation",HINGE_RW),D("Wed","run-easy","Easy Run",[run("Easy Run - very easy")]),D("Thu","combo","Easy Run + Station Shakeout",STATION_RW),R("Fri","Rest - travel, eat well, hydrate"),R("Sat","Rest - race tomorrow"),D("Sun","race","DUBLIN MARATHON",[mv("Race","Dublin Marathon","42.2k","","finish time hh:mm:ss","time")])]},
+
+  // === RECOVERY ===
+  {ph:"recovery",lbl:"Recovery - Wk 1",dt:"Oct 27 - Nov 2",note:"Post-marathon. Walk only. No S&C, no running. Complete rest. You earned it.",
+    days:[R("Mon","Full Rest"),R("Tue","Full Rest"),R("Wed","Full Rest"),R("Thu","Full Rest"),R("Fri","Full Rest"),R("Sat","Easy Walk only"),R("Sun","Rest")]},
+
+  {ph:"recovery",lbl:"Recovery - Wk 2",dt:"Nov 3-9",note:"Bodyweight only. Gentle reintroduction. Feel out niggles before Hyrox block.",
+    days:[D("Mon","strength","Lower Squat - BW",SQUAT_REC1),D("Tue","strength","Lower Hinge - BW",HINGE_REC1),R("Wed","Easy Walk or Rest"),R("Thu","Rest"),R("Fri","Rest"),D("Sat","strength","Upper Push + Pull - BW",UPPER_REC1),R("Sun","Easy Walk")]},
+
+  // === HYROX PEAK ===
+  {ph:"phase4",lbl:"Hyrox Peak - Wk 1",dt:"Nov 10-16",note:"Power block. Push press, heavy deadlifts, weighted pull-ups. Stations at race weight. 4 weeks to HYROX.",
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_E),D("Tue","strength","Lower Hinge - Heavy",HINGE_E),D("Wed","run-easy","Easy Run",[run("Easy Run")]),D("Thu","combo","Easy Run + Full Hyrox Stations",STATION_E),D("Fri","run-quality","Tempo Run",[run("Tempo Run")]),D("Sat","strength","Upper Power Push + Pull",UPPER_E),D("Sun","long-run","Long Run",[run("Long Run")])]},
+
+  {ph:"phase4",lbl:"Hyrox Peak - Wk 2",dt:"Nov 17-23",note:"Add load this week. All stations at race weight. FC 2x24kg · SB 20kg · WB 6kg. 3 weeks to HYROX.",
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_E),D("Tue","strength","Lower Hinge - Heavy",HINGE_E),D("Wed","run-easy","Easy Run",[run("Easy Run")]),D("Thu","combo","Easy Run + Full Hyrox Stations",STATION_E),D("Fri","run-quality","Tempo Run",[run("Tempo Run")]),D("Sat","strength","Upper Power Push + Pull",UPPER_E),D("Sun","long-run","Long Run",[run("Long Run")])]},
+
+  {ph:"phase4",lbl:"Hyrox Peak - Wk 3",dt:"Nov 24-30",note:"Final peak week. Full effort Mon-Thu. Back off Fri-Sat. 1 week to HYROX.",
+    days:[D("Mon","strength","Lower Squat + Power",SQUAT_E),D("Tue","strength","Lower Hinge - Heavy",HINGE_E),D("Wed","run-easy","Easy Run",[run("Easy Run")]),D("Thu","combo","Easy Run + Full Hyrox Stations",STATION_E),D("Fri","run-easy","Easy Run only",[run("Easy Run - easy effort")]),D("Sat","strength","Upper - Moderate",UPPER_D),D("Sun","run-easy","Easy Run - short",[run("Easy Run - 20-30 min")])]},
+
+  // === HYROX TAPER ===
+  {ph:"taper2",lbl:"Hyrox Taper Week",dt:"Dec 1-5",note:"Race week. Activation only Mon-Tue. Station shakeout Thu. Rest Wed, Fri. Race Saturday.",
+    days:[D("Mon","strength","Lower Activation",SQUAT_HT),D("Tue","strength","Lower Hinge Activation",HINGE_HT),R("Wed","Rest - eat well, hydrate"),D("Thu","combo","Easy Jog + Station Shakeout",STATION_HT),R("Fri","Rest - kit check, race prep"),D("Sat","race","HYROX - Dec 5",[mv("Race","HYROX Men Open","","","finish time","time")]),R("Sun","Rest - recovery begins")]}
+];
 </script>
+
 <script>
 var MONTH_NAMES=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 var DAY_NAMES=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
@@ -692,49 +860,23 @@ function openRunnaSetup(){
   setTimeout(function(){var inp=document.getElementById("runnaUrlInput");if(inp)inp.focus();},100);
 }
 function closeRunnaSetup(){document.getElementById("runnaSetupOverlay").style.display="none";}
-function saveAndSync(){
-  var url=document.getElementById("runnaUrlInput").value.trim();
-  if(!url){alert("Please paste your Runna iCal URL");return;}
-  try{var meta=JSON.parse(localStorage.getItem("runna_meta")||"{}");meta.url=url;localStorage.setItem("runna_meta",JSON.stringify(meta));}catch(e){}
-  closeRunnaSetup();doSync();
+function importIcalPaste(){
+  var text=document.getElementById("runnaIcalPaste").value.trim();
+  if(!text||text.indexOf("BEGIN:VCALENDAR")<0){alert("Please paste valid iCal content starting with BEGIN:VCALENDAR");return;}
+  var all=parseIcal(text);var planned=all.filter(isPlanned);
+  if(!planned.length){alert("No Runna sessions found. Make sure you copied the full iCal content.");return;}
+  RUNNA_EVENTS=planned;
+  try{
+    localStorage.setItem("runna_events",JSON.stringify(planned));
+    var meta=JSON.parse(localStorage.getItem("runna_meta")||"{}");
+    meta.lastSync=new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"2-digit"});
+    localStorage.setItem("runna_meta",JSON.stringify(meta));
+  }catch(e){}
+  closeRunnaSetup();updateRunnaStatus();
+  if(currentTab==="today")buildTodayView();
 }
-function doSync(){
-  var url="";
-  try{var meta=JSON.parse(localStorage.getItem("runna_meta")||"{}");url=meta.url||"";}catch(e){}
-  if(!url){openRunnaSetup();return;}
-  var btn=document.getElementById("runnaSyncBtn");var statusEl=document.getElementById("runnaStatus");
-  if(btn)btn.disabled=true;if(statusEl)statusEl.textContent="Syncing...";
-  var proxies=[
-    {url:"https://corsproxy.io/?"+encodeURIComponent(url),json:false},
-    {url:"https://api.allorigins.win/get?url="+encodeURIComponent(url),json:true},
-    {url:"https://thingproxy.freeboard.io/fetch/"+url,json:false},
-    {url:"https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(url),json:false}
-  ];
-  function tryNext(i){
-    if(i>=proxies.length){
-      if(btn)btn.disabled=false;if(statusEl)statusEl.textContent="Sync failed - check URL and try again";return;
-    }
-    fetch(proxies[i].url)
-      .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return proxies[i].json?r.json():r.text();})
-      .then(function(t){
-        var text=typeof t==="object"?(t.contents||""):t;
-        if(!text||text.indexOf("BEGIN:VCALENDAR")<0)throw new Error("not ical");
-        var all=parseIcal(text);var planned=all.filter(isPlanned);
-        RUNNA_EVENTS=planned;
-        try{
-          localStorage.setItem("runna_events",JSON.stringify(planned));
-          var meta=JSON.parse(localStorage.getItem("runna_meta")||"{}");
-          meta.lastSync=new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"2-digit"});
-          localStorage.setItem("runna_meta",JSON.stringify(meta));
-        }catch(e){}
-        if(btn)btn.disabled=false;
-        updateRunnaStatus();
-        if(currentTab==="today")buildTodayView();
-      })
-      .catch(function(){tryNext(i+1);});
-  }
-  tryNext(0);
-}
+function saveAndSync(){importIcalPaste();}
+function doSync(){openRunnaSetup();}
 
 function buildTodayView(){
   var el=document.getElementById("today-view");
