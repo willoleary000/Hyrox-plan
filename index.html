@@ -236,12 +236,13 @@ textarea.runna-setup-input{resize:none;font-size:.72rem;line-height:1.4}
 <!-- Runna Setup Modal -->
 <div class="runna-setup-overlay" id="runnaSetupOverlay" style="display:none">
   <div class="runna-setup-modal">
-    <div class="runna-setup-title">&#127939; Import Runna Calendar</div>
-    <div class="runna-setup-sub">1. Open your Runna iCal URL in Safari: <strong style="color:#fde68a">cal.runna.com/20b5653689c52dddbf577b3acf9a80bc.ics</strong><br><br>2. Select all the text (tap &amp; hold &rarr; Select All)<br><br>3. Copy it and paste below:</div>
-    <textarea class="runna-setup-input" id="runnaIcalPaste" rows="4" placeholder="Paste iCal content here (BEGIN:VCALENDAR...)"></textarea>
+    <div class="runna-setup-title">&#127939; Connect Runna</div>
+    <div class="runna-setup-sub">Paste your Runna iCal URL below. In the Runna app go to <strong style="color:#fde68a">Profile &rarr; Settings &rarr; Calendar</strong> and copy the iCal link.</div>
+    <input class="runna-setup-input" id="runnaUrlInput" type="url" placeholder="https://cal.runna.com/..."/>
+    <div id="runnaSyncMsg" style="font-size:.72rem;min-height:18px;margin-bottom:8px;color:#71717a"></div>
     <div class="runna-setup-btns">
       <button class="runna-setup-cancel" onclick="closeRunnaSetup()">Cancel</button>
-      <button class="runna-setup-save" onclick="importIcalPaste()">Import</button>
+      <button class="runna-setup-save" id="runnaImportBtn" onclick="importFromUrl()">Sync</button>
     </div>
   </div>
 </div>
@@ -855,27 +856,61 @@ function updateRunnaStatus(){
   }catch(e){}
 }
 function openRunnaSetup(){
-  try{var meta=JSON.parse(localStorage.getItem("runna_meta")||"{}");var inp=document.getElementById("runnaUrlInput");if(inp)inp.value=meta.url||"";}catch(e){}
+  try{
+    var meta=JSON.parse(localStorage.getItem("runna_meta")||"{}");
+    var inp=document.getElementById("runnaUrlInput");
+    if(inp)inp.value=meta.url||"";
+  }catch(e){}
+  var msg=document.getElementById("runnaSyncMsg");
+  if(msg){msg.textContent="";msg.style.color="#71717a";}
   document.getElementById("runnaSetupOverlay").style.display="flex";
   setTimeout(function(){var inp=document.getElementById("runnaUrlInput");if(inp)inp.focus();},100);
 }
 function closeRunnaSetup(){document.getElementById("runnaSetupOverlay").style.display="none";}
-function importIcalPaste(){
-  var text=document.getElementById("runnaIcalPaste").value.trim();
-  if(!text||text.indexOf("BEGIN:VCALENDAR")<0){alert("Please paste valid iCal content starting with BEGIN:VCALENDAR");return;}
-  var all=parseIcal(text);var planned=all.filter(isPlanned);
-  if(!planned.length){alert("No Runna sessions found. Make sure you copied the full iCal content.");return;}
-  RUNNA_EVENTS=planned;
-  try{
-    localStorage.setItem("runna_events",JSON.stringify(planned));
-    var meta=JSON.parse(localStorage.getItem("runna_meta")||"{}");
-    meta.lastSync=new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"2-digit"});
-    localStorage.setItem("runna_meta",JSON.stringify(meta));
-  }catch(e){}
-  closeRunnaSetup();updateRunnaStatus();
-  if(currentTab==="today")buildTodayView();
+function importFromUrl(){
+  var url=document.getElementById("runnaUrlInput").value.trim();
+  if(!url){alert("Please paste your Runna iCal URL");return;}
+  var msg=document.getElementById("runnaSyncMsg");
+  var btn=document.getElementById("runnaImportBtn");
+  if(msg)msg.textContent="Syncing...";
+  if(btn)btn.disabled=true;
+  var proxies=[
+    "https://corsproxy.io/?"+encodeURIComponent(url),
+    "https://api.allorigins.win/get?url="+encodeURIComponent(url)
+  ];
+  function tryNext(i){
+    if(i>=proxies.length){
+      if(msg)msg.style.color="#ef4444",msg.textContent="Could not fetch. Check URL and try again.";
+      if(btn)btn.disabled=false;
+      return;
+    }
+    var isAllOrigins=proxies[i].indexOf("allorigins")>=0;
+    fetch(proxies[i])
+      .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return isAllOrigins?r.json():r.text();})
+      .then(function(t){
+        var text=isAllOrigins?(t.contents||""):t;
+        if(!text||text.indexOf("BEGIN:VCALENDAR")<0)throw new Error("not ical");
+        var all=parseIcal(text);var planned=all.filter(isPlanned);
+        if(!planned.length)throw new Error("no sessions");
+        RUNNA_EVENTS=planned;
+        try{
+          localStorage.setItem("runna_events",JSON.stringify(planned));
+          var meta=JSON.parse(localStorage.getItem("runna_meta")||"{}");
+          meta.url=url;
+          meta.lastSync=new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"2-digit"});
+          localStorage.setItem("runna_meta",JSON.stringify(meta));
+        }catch(e){}
+        if(btn)btn.disabled=false;
+        closeRunnaSetup();
+        updateRunnaStatus();
+        if(currentTab==="today")buildTodayView();
+      })
+      .catch(function(){tryNext(i+1);});
+  }
+  // Also pre-fill URL from saved meta
+  tryNext(0);
 }
-function saveAndSync(){importIcalPaste();}
+function saveAndSync(){importFromUrl();}
 function doSync(){openRunnaSetup();}
 
 function buildTodayView(){
