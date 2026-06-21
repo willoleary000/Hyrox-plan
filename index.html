@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -248,13 +247,11 @@ input[type=number]{-moz-appearance:textfield}
 .ov-chev{font-size:.6rem;color:#3f3f46}
 .ov-no-track{font-size:.65rem;color:#3f3f46;font-style:italic}
 </style>
-
 </head>
 <body>
 <div class="app">
 
 <!-- History Modal -->
-
 <div class="overlay" id="histOverlay" style="display:none" onclick="if(event.target.id=='histOverlay')closeHist()">
   <div class="modal">
     <div class="modal-hdr"><span class="modal-title" id="histTitle">History</span><button class="modal-close" onclick="closeHist()">&#10005;</button></div>
@@ -263,7 +260,6 @@ input[type=number]{-moz-appearance:textfield}
 </div>
 
 <!-- Edit Modal -->
-
 <div class="overlay" id="editOverlay" style="display:none" onclick="if(event.target.id=='editOverlay')closeEdit()">
   <div class="modal">
     <div class="modal-hdr"><span class="modal-title">Edit Exercise</span><button class="modal-close" onclick="closeEdit()">&#10005;</button></div>
@@ -280,7 +276,6 @@ input[type=number]{-moz-appearance:textfield}
 </div>
 
 <!-- Add Modal -->
-
 <div class="overlay" id="addOverlay" style="display:none" onclick="if(event.target.id=='addOverlay')closeAdd()">
   <div class="modal">
     <div class="modal-hdr"><span class="modal-title">Add Exercise</span><button class="modal-close" onclick="closeAdd()">&#10005;</button></div>
@@ -339,9 +334,9 @@ function localDate(str){var p=str.split("-");return new Date(parseInt(p[0]),pars
 function isSameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
 
 // ── State ─────────────────────────────────────────────────────────────────────
-var activePhase=“all”;
+var activePhase="all";
 var racesVisible=false;
-var currentTab=“cal”;
+var currentTab="cal";
 var selectedDate=null;
 var runnaCache=null;
 var runnaFetching=false;
@@ -349,174 +344,174 @@ var runnaFetching=false;
 // ── LocalStorage ──────────────────────────────────────────────────────────────
 function loadState(key){try{var v=localStorage.getItem(key);return v?JSON.parse(v):{c:{},v:{}};}catch(e){return{c:{},v:{}};}}
 function saveState(key,st){try{localStorage.setItem(key,JSON.stringify(st));}catch(e){}}
-function loadCustom(wi,di){try{var v=localStorage.getItem(“hx_custom_w”+wi+“d”+di);return v?JSON.parse(v):[];}catch(e){return[];}}
-function saveCustom(wi,di,arr){try{localStorage.setItem(“hx_custom_w”+wi+“d”+di,JSON.stringify(arr));}catch(e){}}
-function loadOverrides(wi,di){try{var v=localStorage.getItem(“hx_ov_w”+wi+“d”+di);return v?JSON.parse(v):{};}catch(e){return{};}}
-function saveOverrides(wi,di,ov){try{localStorage.setItem(“hx_ov_w”+wi+“d”+di,JSON.stringify(ov));}catch(e){}}
+function loadCustom(wi,di){try{var v=localStorage.getItem("hx_custom_w"+wi+"d"+di);return v?JSON.parse(v):[];}catch(e){return[];}}
+function saveCustom(wi,di,arr){try{localStorage.setItem("hx_custom_w"+wi+"d"+di,JSON.stringify(arr));}catch(e){}}
+function loadOverrides(wi,di){try{var v=localStorage.getItem("hx_ov_w"+wi+"d"+di);return v?JSON.parse(v):{};}catch(e){return{};}}
+function saveOverrides(wi,di,ov){try{localStorage.setItem("hx_ov_w"+wi+"d"+di,JSON.stringify(ov));}catch(e){}}
 
 // ── History ───────────────────────────────────────────────────────────────────
-function histKey(nm){return”hx_hist_”+nm.toLowerCase().replace(/[^a-z0-9]/g,”_”).substring(0,40);}
+function histKey(nm){return"hx_hist_"+nm.toLowerCase().replace(/[^a-z0-9]/g,"_").substring(0,40);}
 function getHistData(nm){try{var v=localStorage.getItem(histKey(nm));return v?JSON.parse(v):[];}catch(e){return[];}}
 function saveToHistory(nm,value,ctx){
-if(!value||!value.trim())return;
-var key=histKey(nm);
-var hist=getHistData(nm);
-var today=new Date().toLocaleDateString(“en-GB”,{day:“2-digit”,month:“short”,year:“2-digit”});
-hist=hist.filter(function(h){return h.date!==today;});
-hist.unshift({date:today,value:value.trim(),ctx:ctx||””});
-hist=hist.slice(0,30);
-try{localStorage.setItem(key,JSON.stringify(hist));}catch(e){}
+  if(!value||!value.trim())return;
+  var key=histKey(nm);
+  var hist=getHistData(nm);
+  var today=new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"2-digit"});
+  hist=hist.filter(function(h){return h.date!==today;});
+  hist.unshift({date:today,value:value.trim(),ctx:ctx||""});
+  hist=hist.slice(0,30);
+  try{localStorage.setItem(key,JSON.stringify(hist));}catch(e){}
 }
-function showHistFromBtn(btn){showHist(btn.getAttribute(“data-nm”)||””);}
+function showHistFromBtn(btn){showHist(btn.getAttribute("data-nm")||"");}
 function showHist(nm){
-var hist=getHistData(nm);
-var html=””;
-if(!hist.length){html=’<div class="hist-empty">No history yet. Enter a value and tap away to save.</div>’;}
-else{hist.forEach(function(h,i){
-html+=’<div class="hist-row"><div><div class="hist-date">’+esc(h.date)+’</div>’+(h.ctx?’<div class="hist-ctx">’+esc(h.ctx)+’</div>’:’’)+’</div>’;
-html+=’<div style="display:flex;align-items:center;gap:8px"><span class="hist-val">’+esc(h.value)+’</span>’;
-html+=’<button class="hist-delete" data-nm="'+esc(nm)+'" data-idx="'+i+'" onclick="clearHistEntry(this)">✕</button></div></div>’;
-});}
-document.getElementById(“histTitle”).textContent=nm;
-document.getElementById(“histContent”).innerHTML=html;
-document.getElementById(“histOverlay”).style.display=“flex”;
+  var hist=getHistData(nm);
+  var html="";
+  if(!hist.length){html='<div class="hist-empty">No history yet. Enter a value and tap away to save.</div>';}
+  else{hist.forEach(function(h,i){
+    html+='<div class="hist-row"><div><div class="hist-date">'+esc(h.date)+'</div>'+(h.ctx?'<div class="hist-ctx">'+esc(h.ctx)+'</div>':'')+'</div>';
+    html+='<div style="display:flex;align-items:center;gap:8px"><span class="hist-val">'+esc(h.value)+'</span>';
+    html+='<button class="hist-delete" data-nm="'+esc(nm)+'" data-idx="'+i+'" onclick="clearHistEntry(this)">&#10005;</button></div></div>';
+  });}
+  document.getElementById("histTitle").textContent=nm;
+  document.getElementById("histContent").innerHTML=html;
+  document.getElementById("histOverlay").style.display="flex";
 }
-function closeHist(){document.getElementById(“histOverlay”).style.display=“none”;}
+function closeHist(){document.getElementById("histOverlay").style.display="none";}
 function clearHistEntry(btn){
-var nm=btn.getAttribute(“data-nm”);
-var idx=parseInt(btn.getAttribute(“data-idx”),10);
-var hist=getHistData(nm);
-hist.splice(idx,1);
-try{localStorage.setItem(histKey(nm),JSON.stringify(hist));}catch(e){}
-showHist(nm);
+  var nm=btn.getAttribute("data-nm");
+  var idx=parseInt(btn.getAttribute("data-idx"),10);
+  var hist=getHistData(nm);
+  hist.splice(idx,1);
+  try{localStorage.setItem(histKey(nm),JSON.stringify(hist));}catch(e){}
+  showHist(nm);
 }
 
 // ── Input handlers ────────────────────────────────────────────────────────────
 function onInput(input){
-var key=input.getAttribute(“data-key”);
-var idx=input.getAttribute(“data-idx”);
-var st=loadState(key);
-if(!st.v)st.v={};
-st.v[idx]=input.value;
-saveState(key,st);
+  var key=input.getAttribute("data-key");
+  var idx=input.getAttribute("data-idx");
+  var st=loadState(key);
+  if(!st.v)st.v={};
+  st.v[idx]=input.value;
+  saveState(key,st);
 }
 function onBlur(input){
-var nm=input.getAttribute(“data-nm”)||””;
-var ctx=input.getAttribute(“data-ctx”)||””;
-var val=input.value;
-var key=input.getAttribute(“data-key”);
-var repsIdx=input.getAttribute(“data-reps-idx”);
-if(!nm||!val||!val.trim())return;
-if(repsIdx){
-var st=loadState(key);
-var repsVal=(st.v&&st.v[repsIdx])||””;
-var combined=val.trim()+“kg”;
-if(repsVal)combined+=” \u00d7 “+repsVal+” reps”;
-saveToHistory(nm,combined,ctx);
-}else{saveToHistory(nm,val.trim(),ctx);}
+  var nm=input.getAttribute("data-nm")||"";
+  var ctx=input.getAttribute("data-ctx")||"";
+  var val=input.value;
+  var key=input.getAttribute("data-key");
+  var repsIdx=input.getAttribute("data-reps-idx");
+  if(!nm||!val||!val.trim())return;
+  if(repsIdx){
+    var st=loadState(key);
+    var repsVal=(st.v&&st.v[repsIdx])||"";
+    var combined=val.trim()+"kg";
+    if(repsVal)combined+=" \u00d7 "+repsVal+" reps";
+    saveToHistory(nm,combined,ctx);
+  }else{saveToHistory(nm,val.trim(),ctx);}
 }
 function onRepsInput(input){
-var key=input.getAttribute(“data-key”);
-var idx=input.getAttribute(“data-idx”);
-var st=loadState(key);
-if(!st.v)st.v={};
-st.v[idx]=input.value;
-saveState(key,st);
+  var key=input.getAttribute("data-key");
+  var idx=input.getAttribute("data-idx");
+  var st=loadState(key);
+  if(!st.v)st.v={};
+  st.v[idx]=input.value;
+  saveState(key,st);
 }
 function onRepsBlur(input){
-var nm=input.getAttribute(“data-nm”)||””;
-var ctx=input.getAttribute(“data-ctx”)||””;
-var repsVal=input.value;
-var key=input.getAttribute(“data-key”);
-var pairedIdx=input.getAttribute(“data-paired-idx”);
-var st=loadState(key);
-var weightVal=(st.v&&st.v[pairedIdx])||””;
-if(nm&&(repsVal||weightVal)){
-var combined=””;
-if(weightVal)combined+=weightVal+“kg”;
-if(weightVal&&repsVal)combined+=” \u00d7 “;
-if(repsVal)combined+=repsVal+” reps”;
-if(combined)saveToHistory(nm,combined,ctx);
-}
+  var nm=input.getAttribute("data-nm")||"";
+  var ctx=input.getAttribute("data-ctx")||"";
+  var repsVal=input.value;
+  var key=input.getAttribute("data-key");
+  var pairedIdx=input.getAttribute("data-paired-idx");
+  var st=loadState(key);
+  var weightVal=(st.v&&st.v[pairedIdx])||"";
+  if(nm&&(repsVal||weightVal)){
+    var combined="";
+    if(weightVal)combined+=weightVal+"kg";
+    if(weightVal&&repsVal)combined+=" \u00d7 ";
+    if(repsVal)combined+=repsVal+" reps";
+    if(combined)saveToHistory(nm,combined,ctx);
+  }
 }
 
 // ── Check handler ─────────────────────────────────────────────────────────────
 function onCheck(btn){
-var key=btn.getAttribute(“data-key”);
-var idx=btn.getAttribute(“data-idx”);
-var nm=btn.getAttribute(“data-nm”)||””;
-var ctx=btn.getAttribute(“data-ctx”)||””;
-var isOn=btn.classList.contains(“on”);
-btn.classList.toggle(“on”,!isOn);
-btn.innerHTML=!isOn?”\u2713”:””;
-var row=btn.parentElement;
-if(row){
-row.classList.toggle(“dn”,!isOn);
-var nmEl=row.querySelector(”.mname”);
-if(nmEl)nmEl.classList.toggle(“x”,!isOn);
-if(!isOn&&nm){var inp=row.querySelector(“input”);if(inp&&inp.value)saveToHistory(nm,inp.value,ctx);}
-}
-var st=loadState(key);
-if(!st.c)st.c={};
-st.c[idx]=!isOn;
-saveState(key,st);
-updateProgress(key);
+  var key=btn.getAttribute("data-key");
+  var idx=btn.getAttribute("data-idx");
+  var nm=btn.getAttribute("data-nm")||"";
+  var ctx=btn.getAttribute("data-ctx")||"";
+  var isOn=btn.classList.contains("on");
+  btn.classList.toggle("on",!isOn);
+  btn.innerHTML=!isOn?"\u2713":"";
+  var row=btn.parentElement;
+  if(row){
+    row.classList.toggle("dn",!isOn);
+    var nmEl=row.querySelector(".mname");
+    if(nmEl)nmEl.classList.toggle("x",!isOn);
+    if(!isOn&&nm){var inp=row.querySelector("input");if(inp&&inp.value)saveToHistory(nm,inp.value,ctx);}
+  }
+  var st=loadState(key);
+  if(!st.c)st.c={};
+  st.c[idx]=!isOn;
+  saveState(key,st);
+  updateProgress(key);
 }
 function updateProgress(key){
-var card=document.querySelector(”.dcard[data-key="”+key+”"]”);
-if(!card)return;
-var total=parseInt(card.getAttribute(“data-total”)||“0”,10);
-if(total===0)return;
-var done=card.querySelectorAll(”.chkbtn.on”).length;
-var prog=document.getElementById(“prog-”+key);
-if(prog){prog.textContent=done+”/”+total;prog.classList.toggle(“dn”,done===total);}
-card.classList.toggle(“alldone”,done===total);
-var rb=card.querySelector(”.resetbtn”);
-if(rb)rb.style.display=done>0?””:“none”;
+  var card=document.querySelector(".dcard[data-key=\""+key+"\"]");
+  if(!card)return;
+  var total=parseInt(card.getAttribute("data-total")||"0",10);
+  if(total===0)return;
+  var done=card.querySelectorAll(".chkbtn.on").length;
+  var prog=document.getElementById("prog-"+key);
+  if(prog){prog.textContent=done+"/"+total;prog.classList.toggle("dn",done===total);}
+  card.classList.toggle("alldone",done===total);
+  var rb=card.querySelector(".resetbtn");
+  if(rb)rb.style.display=done>0?"":"none";
 }
-function onResetBtn(btn){onReset(btn.getAttribute(“data-key”));}
+function onResetBtn(btn){onReset(btn.getAttribute("data-key"));}
 function onReset(key){
-var card=document.querySelector(”.dcard[data-key="”+key+”"]”);
-if(!card)return;
-card.querySelectorAll(”.chkbtn”).forEach(function(b){b.classList.remove(“on”);b.innerHTML=””;});
-card.querySelectorAll(”.mvrow”).forEach(function(r){r.classList.remove(“dn”);var nm=r.querySelector(”.mname”);if(nm)nm.classList.remove(“x”);});
-card.querySelectorAll(“input”).forEach(function(inp){inp.value=””;});
-try{localStorage.removeItem(key);}catch(e){}
-updateProgress(key);
-var rb=card.querySelector(”.resetbtn”);
-if(rb)rb.style.display=“none”;
+  var card=document.querySelector(".dcard[data-key=\""+key+"\"]");
+  if(!card)return;
+  card.querySelectorAll(".chkbtn").forEach(function(b){b.classList.remove("on");b.innerHTML="";});
+  card.querySelectorAll(".mvrow").forEach(function(r){r.classList.remove("dn");var nm=r.querySelector(".mname");if(nm)nm.classList.remove("x");});
+  card.querySelectorAll("input").forEach(function(inp){inp.value="";});
+  try{localStorage.removeItem(key);}catch(e){}
+  updateProgress(key);
+  var rb=card.querySelector(".resetbtn");
+  if(rb)rb.style.display="none";
 }
 
 // ── Input builder ─────────────────────────────────────────────────────────────
 function buildInputHtml(m,idx,key,val,ctx,stv){
-ctx=ctx||””;
-var rIdx=“r_”+idx;
-var rVal=(stv&&stv[rIdx])||””;
-if(m.tr===“weight”){
-return ‘<div class="iwrap">’
-+’<input type=“number” inputmode=“decimal” class=“minput” value=”’+esc(val)+’” placeholder=”’+esc(m.tgt||“0”)+’”’
-+’ data-key=”’+esc(key)+’” data-idx=”’+idx+’” data-reps-idx=”’+rIdx+’” data-nm=”’+esc(m.nm||””)+’” data-ctx=”’+esc(ctx)+’”’
-+’ onchange=“onInput(this)” oninput=“onInput(this)” onblur=“onBlur(this)”>’
-+’<span class="munit">’+esc(m.un||“kg”)+’</span>’
-+’<span class="reps-label">\u00d7</span>’
-+’<input type=“number” inputmode=“decimal” class=“reps-input” value=”’+esc(rVal)+’” placeholder=“reps”’
-+’ data-key=”’+esc(key)+’” data-idx=”’+rIdx+’” data-paired-idx=”’+idx+’”’
-+’ data-nm=”’+esc(m.nm||””)+’” data-ctx=”’+esc(ctx)+’”’
-+’ onchange=“onRepsInput(this)” oninput=“onRepsInput(this)” onblur=“onRepsBlur(this)”>’
-+’<span class="reps-label">reps</span>’
-+’<button class=“hist-btn” data-nm=”’+esc(m.nm||””)+’” onclick=“showHistFromBtn(this)”>📊</button>’
-+’</div>’;
-}
-if(m.tr===“pace”||m.tr===“time”){
-return ‘<div class="iwrap">’
-+’<input type=“text” inputmode=“decimal” class=“minput wide” value=”’+esc(val)+’” placeholder=”’+(m.tr===“pace”?“1:45”:“hh:mm”)+’”’
-+’ data-key=”’+esc(key)+’” data-idx=”’+idx+’” data-nm=”’+esc(m.nm||””)+’” data-ctx=”’+esc(ctx)+’”’
-+’ onchange=“onInput(this)” oninput=“onInput(this)” onblur=“onBlur(this)”>’
-+’<span class="munit">’+esc((m.un||””).split(” “)[0])+’</span>’
-+’<button class=“hist-btn” data-nm=”’+esc(m.nm||””)+’” onclick=“showHistFromBtn(this)”>📊</button>’
-+’</div>’;
-}
-return “”;
+  ctx=ctx||"";
+  var rIdx="r_"+idx;
+  var rVal=(stv&&stv[rIdx])||"";
+  if(m.tr==="weight"){
+    return '<div class="iwrap">'
+      +'<input type="number" inputmode="decimal" class="minput" value="'+esc(val)+'" placeholder="'+esc(m.tgt||"0")+'"'
+      +' data-key="'+esc(key)+'" data-idx="'+idx+'" data-reps-idx="'+rIdx+'" data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'"'
+      +' onchange="onInput(this)" oninput="onInput(this)" onblur="onBlur(this)">'
+      +'<span class="munit">'+esc(m.un||"kg")+'</span>'
+      +'<span class="reps-label">\u00d7</span>'
+      +'<input type="number" inputmode="decimal" class="reps-input" value="'+esc(rVal)+'" placeholder="reps"'
+      +' data-key="'+esc(key)+'" data-idx="'+rIdx+'" data-paired-idx="'+idx+'"'
+      +' data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'"'
+      +' onchange="onRepsInput(this)" oninput="onRepsInput(this)" onblur="onRepsBlur(this)">'
+      +'<span class="reps-label">reps</span>'
+      +'<button class="hist-btn" data-nm="'+esc(m.nm||"")+'" onclick="showHistFromBtn(this)">&#128202;</button>'
+      +'</div>';
+  }
+  if(m.tr==="pace"||m.tr==="time"){
+    return '<div class="iwrap">'
+      +'<input type="text" inputmode="decimal" class="minput wide" value="'+esc(val)+'" placeholder="'+(m.tr==="pace"?"1:45":"hh:mm")+'"'
+      +' data-key="'+esc(key)+'" data-idx="'+idx+'" data-nm="'+esc(m.nm||"")+'" data-ctx="'+esc(ctx)+'"'
+      +' onchange="onInput(this)" oninput="onInput(this)" onblur="onBlur(this)">'
+      +'<span class="munit">'+esc((m.un||"").split(" ")[0])+'</span>'
+      +'<button class="hist-btn" data-nm="'+esc(m.nm||"")+'" onclick="showHistFromBtn(this)">&#128202;</button>'
+      +'</div>';
+  }
+  return "";
 }
 
 // ── Override helpers ──────────────────────────────────────────────────────────
@@ -524,237 +519,236 @@ function applyOverride(m,ov,idx){if(!ov||!ov[idx])return m;return Object.assign(
 
 // ── Section builder ───────────────────────────────────────────────────────────
 function buildSections(mvs,key,st,ctx,wi,di,custom){
-ctx=ctx||””;
-var ov=(wi!==undefined&&di!==undefined)?loadOverrides(wi,di):{};
-var secOrder=[];
-var secMap={};
-(mvs||[]).forEach(function(m,i){
-var m2=applyOverride(m,ov,i);
-var sec=m2.sc;
-if(!secMap[sec]){secMap[sec]=[];secOrder.push(sec);}
-secMap[sec].push({type:“builtin”,m:m2,i:i});
-});
-(custom||[]).forEach(function(m,ci){
-var sec=m.sc||“Custom”;
-if(!secMap[sec]){secMap[sec]=[];secOrder.push(sec);}
-secMap[sec].push({type:“custom”,m:m,ci:ci});
-});
-if(!secOrder.length)return””;
-var html=””;
-secOrder.forEach(function(sec){
-html+=’<div class="sblk"><div class="sbadge sc-'+esc(sec)+'">’+esc(sec)+’</div><div class="sitems">’;
-secMap[sec].forEach(function(x){
-if(x.type===“builtin”){
-var done=!!(st.c&&st.c[String(x.i)]);
-var val=(st.v&&st.v[String(x.i)])||””;
-html+=’<div class=“mvrow’+(done?” dn”:””)+’” data-idx=”’+String(x.i)+’”>’;
-html+=’<button class=“chkbtn’+(done?” on”:””)+’” data-key=”’+esc(key)+’” data-idx=”’+String(x.i)+’”’
-+’ data-nm=”’+esc(x.m.nm)+’” data-ctx=”’+esc(ctx)+’” onclick=“onCheck(this)”>’+(done?”\u2713”:””)+’</button>’;
-html+=’<div class="minfo"><div class=“mname’+(done?” x”:””)+’”>’+esc(x.m.nm)+’</div>’+(x.m.st?’<div class="msets">’+esc(x.m.st)+’</div>’:””)+’</div>’;
-html+=buildInputHtml(x.m,String(x.i),key,val,ctx,st.v);
-if(wi!==undefined)html+=’<button class="edit-btn" data-wi="'+wi+'" data-di="'+di+'" data-idx="'+String(x.i)+'" onclick="openEdit(this)">✎</button>’;
-html+=”</div>”;
-}else{
-var customIdx=“c_”+x.ci;
-var done=!!(st.c&&st.c[customIdx]);
-var val=(st.v&&st.v[customIdx])||””;
-html+=’<div class=“mvrow’+(done?” dn”:””)+’” data-idx=”’+customIdx+’”>’;
-html+=’<button class=“chkbtn’+(done?” on”:””)+’” data-key=”’+esc(key)+’” data-idx=”’+customIdx+’”’
-+’ data-nm=”’+esc(x.m.nm)+’” data-ctx=”’+esc(ctx)+’” onclick=“onCheck(this)”>’+(done?”\u2713”:””)+’</button>’;
-html+=’<div class="minfo"><div class=“mname’+(done?” x”:””)+’”>’+esc(x.m.nm)+’</div>’+(x.m.st?’<div class="msets">’+esc(x.m.st)+’</div>’:””)+’</div>’;
-if(x.m.tr)html+=buildInputHtml(x.m,customIdx,key,val,ctx,st.v);
-if(wi!==undefined)html+=’<button class="edit-btn" data-wi="'+wi+'" data-di="'+di+'" data-idx="'+customIdx+'" onclick="openEdit(this)">✎</button>’;
-html+=’<button data-wi="'+wi+'" data-di="'+di+'" data-ci="'+x.ci+'" onclick="deleteCustomEx(this)" style="font-size:.65rem;color:#ef4444;background:none;border:none;padding:2px 4px;flex-shrink:0;cursor:pointer">✕</button>’;
-html+=”</div>”;
-}
-});
-html+=”</div></div>”;
-});
-return html;
+  ctx=ctx||"";
+  var ov=(wi!==undefined&&di!==undefined)?loadOverrides(wi,di):{};
+  var secOrder=[];
+  var secMap={};
+  (mvs||[]).forEach(function(m,i){
+    var m2=applyOverride(m,ov,i);
+    var sec=m2.sc;
+    if(!secMap[sec]){secMap[sec]=[];secOrder.push(sec);}
+    secMap[sec].push({type:"builtin",m:m2,i:i});
+  });
+  (custom||[]).forEach(function(m,ci){
+    var sec=m.sc||"Custom";
+    if(!secMap[sec]){secMap[sec]=[];secOrder.push(sec);}
+    secMap[sec].push({type:"custom",m:m,ci:ci});
+  });
+  if(!secOrder.length)return"";
+  var html="";
+  secOrder.forEach(function(sec){
+    html+='<div class="sblk"><div class="sbadge sc-'+esc(sec)+'">'+esc(sec)+'</div><div class="sitems">';
+    secMap[sec].forEach(function(x){
+      if(x.type==="builtin"){
+        var done=!!(st.c&&st.c[String(x.i)]);
+        var val=(st.v&&st.v[String(x.i)])||"";
+        html+='<div class="mvrow'+(done?" dn":"")+'" data-idx="'+String(x.i)+'">';
+        html+='<button class="chkbtn'+(done?" on":"")+'" data-key="'+esc(key)+'" data-idx="'+String(x.i)+'"'
+          +' data-nm="'+esc(x.m.nm)+'" data-ctx="'+esc(ctx)+'" onclick="onCheck(this)">'+(done?"\u2713":"")+'</button>';
+        html+='<div class="minfo"><div class="mname'+(done?" x":"")+'">'+esc(x.m.nm)+'</div>'+(x.m.st?'<div class="msets">'+esc(x.m.st)+'</div>':"")+'</div>';
+        html+=buildInputHtml(x.m,String(x.i),key,val,ctx,st.v);
+        if(wi!==undefined)html+='<button class="edit-btn" data-wi="'+wi+'" data-di="'+di+'" data-idx="'+String(x.i)+'" onclick="openEdit(this)">&#9998;</button>';
+        html+="</div>";
+      }else{
+        var customIdx="c_"+x.ci;
+        var done=!!(st.c&&st.c[customIdx]);
+        var val=(st.v&&st.v[customIdx])||"";
+        html+='<div class="mvrow'+(done?" dn":"")+'" data-idx="'+customIdx+'">';
+        html+='<button class="chkbtn'+(done?" on":"")+'" data-key="'+esc(key)+'" data-idx="'+customIdx+'"'
+          +' data-nm="'+esc(x.m.nm)+'" data-ctx="'+esc(ctx)+'" onclick="onCheck(this)">'+(done?"\u2713":"")+'</button>';
+        html+='<div class="minfo"><div class="mname'+(done?" x":"")+'">'+esc(x.m.nm)+'</div>'+(x.m.st?'<div class="msets">'+esc(x.m.st)+'</div>':"")+'</div>';
+        if(x.m.tr)html+=buildInputHtml(x.m,customIdx,key,val,ctx,st.v);
+        if(wi!==undefined)html+='<button class="edit-btn" data-wi="'+wi+'" data-di="'+di+'" data-idx="'+customIdx+'" onclick="openEdit(this)">&#9998;</button>';
+        html+='<button data-wi="'+wi+'" data-di="'+di+'" data-ci="'+x.ci+'" onclick="deleteCustomEx(this)" style="font-size:.65rem;color:#ef4444;background:none;border:none;padding:2px 4px;flex-shrink:0;cursor:pointer">&#10005;</button>';
+        html+="</div>";
+      }
+    });
+    html+="</div></div>";
+  });
+  return html;
 }
 
 // ── Day builder ───────────────────────────────────────────────────────────────
 function buildDay(day,wi,di,week){
-var key=“hx_w”+wi+“d”+di;
-var mvs=day.mvs||[];
-var isRest=day.type===“rest”||mvs.length===0;
-var st=loadState(key);
-var custom=loadCustom(wi,di);
-var total=mvs.length+custom.length;
-var doneCount=0;
-if(!isRest){
-mvs.forEach(function(*,i){if((st.c||{})[String(i)])doneCount++;});
-custom.forEach(function(*,ci){if((st.c||{})[“c_”+ci])doneCount++;});
-}
-var allDone=total>0&&doneCount===total;
-var ctx=week?week.lbl:””;
-var html=’<div class=“dcard dt-’+(day.type||“rest”)+(allDone?” alldone”:””)+’” data-key=”’+key+’” data-total=”’+total+’”>’;
-html+=’<div class="dhdr" onclick="toggleDay(\''+key+'\')">’;
-html+=’<div class="ddot"></div>’;
-html+=’<div class="dtxt"><div class="dlbl">’+esc(day.day)+’</div><div class="dtitle">’+esc(day.t)+’</div></div>’;
-if(!isRest){
-html+=’<div class="dmeta"><span class=“dprog’+(allDone?” dn”:””)+’” id=“prog-’+key+’”>’+doneCount+”/”+total+’</span>’;
-html+=’<span class="dchev" id="chev-'+key+'">\u25bc</span></div>’;
-}
-html+=”</div>”;
-html+=’<div class="dbody" id="db-'+key+'">’;
-html+=buildSections(mvs,key,st,ctx,wi,di,custom);
-html+=’<button class="add-ex-btn" data-wi="'+wi+'" data-di="'+di+'" onclick="openAdd(this)"><span>+</span> Add exercise</button>’;
-if(doneCount>0)html+=’<button class="resetbtn" data-key="'+key+'" onclick="onResetBtn(this)">Reset session</button>’;
-html+=”</div></div>”;
-return html;
+  var key="hx_w"+wi+"d"+di;
+  var mvs=day.mvs||[];
+  var isRest=day.type==="rest"||mvs.length===0;
+  var st=loadState(key);
+  var custom=loadCustom(wi,di);
+  var total=mvs.length+custom.length;
+  var doneCount=0;
+  if(!isRest){
+    mvs.forEach(function(_,i){if((st.c||{})[String(i)])doneCount++;});
+    custom.forEach(function(_,ci){if((st.c||{})["c_"+ci])doneCount++;});
+  }
+  var allDone=total>0&&doneCount===total;
+  var ctx=week?week.lbl:"";
+  var html='<div class="dcard dt-'+(day.type||"rest")+(allDone?" alldone":"")+'" data-key="'+key+'" data-total="'+total+'">';
+  html+='<div class="dhdr" onclick="toggleDay(\''+key+'\')">';
+  html+='<div class="ddot"></div>';
+  html+='<div class="dtxt"><div class="dlbl">'+esc(day.day)+'</div><div class="dtitle">'+esc(day.t)+'</div></div>';
+  if(!isRest){
+    html+='<div class="dmeta"><span class="dprog'+(allDone?" dn":"")+'" id="prog-'+key+'">'+doneCount+"/"+total+'</span>';
+    html+='<span class="dchev" id="chev-'+key+'">\u25bc</span></div>';
+  }
+  html+="</div>";
+  html+='<div class="dbody" id="db-'+key+'">';
+  html+=buildSections(mvs,key,st,ctx,wi,di,custom);
+  html+='<button class="add-ex-btn" data-wi="'+wi+'" data-di="'+di+'" onclick="openAdd(this)"><span>+</span> Add exercise</button>';
+  if(doneCount>0)html+='<button class="resetbtn" data-key="'+key+'" onclick="onResetBtn(this)">Reset session</button>';
+  html+="</div></div>";
+  return html;
 }
 
 function buildWeek(week,wi){
-var hasRace=week.days.some(function(d){return d.type===“race”;});
-var wid=“wk-”+wi;
-var html=’<div class="wcard ph-'+esc(week.ph)+'" id="'+wid+'" data-phase="'+esc(week.ph)+'">’;
-html+=’<div class="whdr" onclick="toggleWeek(\''+wid+'\')">’;
-html+=’<div class="wtop"><div><div class="wlbl">’+esc(week.lbl)+’</div><div class="wdt">’+esc(week.dt)+’</div></div>’;
-html+=’<div style="display:flex;align-items:center;gap:6px">’+(hasRace?’<span class="rbadge">RACE</span>’:””)+’ <span class="wchev">\u25bc</span></div></div>’;
-if(week.note)html+=’<div class="wnote">’+esc(week.note)+’</div>’;
-html+=”</div>”;
-html+=’<div class="days">’;
-week.days.forEach(function(day,di){html+=buildDay(day,wi,di,week);});
-html+=”</div></div>”;
-return html;
+  var hasRace=week.days.some(function(d){return d.type==="race";});
+  var wid="wk-"+wi;
+  var html='<div class="wcard ph-'+esc(week.ph)+'" id="'+wid+'" data-phase="'+esc(week.ph)+'">';
+  html+='<div class="whdr" onclick="toggleWeek(\''+wid+'\')">';
+  html+='<div class="wtop"><div><div class="wlbl">'+esc(week.lbl)+'</div><div class="wdt">'+esc(week.dt)+'</div></div>';
+  html+='<div style="display:flex;align-items:center;gap:6px">'+(hasRace?'<span class="rbadge">RACE</span>':"")+' <span class="wchev">\u25bc</span></div></div>';
+  if(week.note)html+='<div class="wnote">'+esc(week.note)+'</div>';
+  html+="</div>";
+  html+='<div class="days">';
+  week.days.forEach(function(day,di){html+=buildDay(day,wi,di,week);});
+  html+="</div></div>";
+  return html;
 }
 
 // ── Toggle handlers ───────────────────────────────────────────────────────────
-function toggleWeek(wid){var c=document.getElementById(wid);if(c)c.classList.toggle(“collapsed”);}
+function toggleWeek(wid){var c=document.getElementById(wid);if(c)c.classList.toggle("collapsed");}
 function toggleDay(key){
-var body=document.getElementById(“db-”+key);
-var chev=document.getElementById(“chev-”+key);
-if(!body)return;
-var open=body.classList.contains(“open”);
-body.classList.toggle(“open”,!open);
-if(chev)chev.innerHTML=open?”\u25bc”:”\u25b2”;
+  var body=document.getElementById("db-"+key);
+  var chev=document.getElementById("chev-"+key);
+  if(!body)return;
+  var open=body.classList.contains("open");
+  body.classList.toggle("open",!open);
+  if(chev)chev.innerHTML=open?"\u25bc":"\u25b2";
 }
 
 // ── Edit ──────────────────────────────────────────────────────────────────────
 var editingWi=null,editingDi=null,editingIdx=null,editingIsCustom=false;
 function openEdit(btn){
-var wi=parseInt(btn.getAttribute(“data-wi”),10);
-var di=parseInt(btn.getAttribute(“data-di”),10);
-var idx=btn.getAttribute(“data-idx”);
-editingWi=wi;editingDi=di;editingIdx=idx;
-editingIsCustom=String(idx).indexOf(“c_”)===0;
-var ov=loadOverrides(wi,di);
-var week=weeks[wi];var day=week?week.days[di]:null;
-var base=null;
-if(editingIsCustom){var ci=parseInt(String(idx).replace(“c_”,””),10);var cs=loadCustom(wi,di);base=cs[ci]?Object.assign({},cs[ci]):null;}
-else{var i=parseInt(idx,10);base=day&&day.mvs[i]?Object.assign({},day.mvs[i]):null;}
-if(!base)return;
-var cur=ov[idx]?Object.assign({},base,ov[idx]):base;
-document.getElementById(“editName”).value=cur.nm||””;
-document.getElementById(“editSets”).value=cur.st||””;
-document.getElementById(“editTarget”).value=cur.tgt||””;
-document.getElementById(“editTrack”).value=cur.tr||””;
-document.getElementById(“editOverlay”).style.display=“flex”;
-setTimeout(function(){document.getElementById(“editName”).focus();},100);
+  var wi=parseInt(btn.getAttribute("data-wi"),10);
+  var di=parseInt(btn.getAttribute("data-di"),10);
+  var idx=btn.getAttribute("data-idx");
+  editingWi=wi;editingDi=di;editingIdx=idx;
+  editingIsCustom=String(idx).indexOf("c_")===0;
+  var ov=loadOverrides(wi,di);
+  var week=weeks[wi];var day=week?week.days[di]:null;
+  var base=null;
+  if(editingIsCustom){var ci=parseInt(String(idx).replace("c_",""),10);var cs=loadCustom(wi,di);base=cs[ci]?Object.assign({},cs[ci]):null;}
+  else{var i=parseInt(idx,10);base=day&&day.mvs[i]?Object.assign({},day.mvs[i]):null;}
+  if(!base)return;
+  var cur=ov[idx]?Object.assign({},base,ov[idx]):base;
+  document.getElementById("editName").value=cur.nm||"";
+  document.getElementById("editSets").value=cur.st||"";
+  document.getElementById("editTarget").value=cur.tgt||"";
+  document.getElementById("editTrack").value=cur.tr||"";
+  document.getElementById("editOverlay").style.display="flex";
+  setTimeout(function(){document.getElementById("editName").focus();},100);
 }
-function closeEdit(){document.getElementById(“editOverlay”).style.display=“none”;}
+function closeEdit(){document.getElementById("editOverlay").style.display="none";}
 function submitEdit(){
-var nm=document.getElementById(“editName”).value.trim();
-if(!nm){document.getElementById(“editName”).focus();return;}
-var ov=loadOverrides(editingWi,editingDi);
-ov[editingIdx]={nm:nm,st:document.getElementById(“editSets”).value.trim(),tgt:document.getElementById(“editTarget”).value.trim(),tr:document.getElementById(“editTrack”).value||null};
-saveOverrides(editingWi,editingDi,ov);
-if(editingIsCustom){var ci=parseInt(String(editingIdx).replace(“c_”,””),10);var cs=loadCustom(editingWi,editingDi);if(cs[ci]){cs[ci]=Object.assign(cs[ci],ov[editingIdx]);saveCustom(editingWi,editingDi,cs);}}
-closeEdit();
-var ctx=weeks[editingWi]?weeks[editingWi].lbl:””;
-refreshDayBody(editingWi,editingDi,ctx);
-invalidateOverview();
+  var nm=document.getElementById("editName").value.trim();
+  if(!nm){document.getElementById("editName").focus();return;}
+  var ov=loadOverrides(editingWi,editingDi);
+  ov[editingIdx]={nm:nm,st:document.getElementById("editSets").value.trim(),tgt:document.getElementById("editTarget").value.trim(),tr:document.getElementById("editTrack").value||null};
+  saveOverrides(editingWi,editingDi,ov);
+  if(editingIsCustom){var ci=parseInt(String(editingIdx).replace("c_",""),10);var cs=loadCustom(editingWi,editingDi);if(cs[ci]){cs[ci]=Object.assign(cs[ci],ov[editingIdx]);saveCustom(editingWi,editingDi,cs);}}
+  closeEdit();
+  var ctx=weeks[editingWi]?weeks[editingWi].lbl:"";
+  refreshDayBody(editingWi,editingDi,ctx);
+  invalidateOverview();
 }
 
 // ── Add custom ────────────────────────────────────────────────────────────────
 var addingForKey=null,addingForCtx=null;
 function openAdd(btn){
-var wi=parseInt(btn.getAttribute(“data-wi”),10);
-var di=parseInt(btn.getAttribute(“data-di”),10);
-addingForKey=“hx_custom_w”+wi+“d”+di;
-addingForCtx=weeks[wi]?weeks[wi].lbl:””;
-document.getElementById(“addName”).value=””;
-document.getElementById(“addSets”).value=””;
-document.getElementById(“addTrack”).value=””;
-document.getElementById(“addSection”).value=“Strength”;
-document.getElementById(“addOverlay”).style.display=“flex”;
-setTimeout(function(){document.getElementById(“addName”).focus();},100);
+  var wi=parseInt(btn.getAttribute("data-wi"),10);
+  var di=parseInt(btn.getAttribute("data-di"),10);
+  addingForKey="hx_custom_w"+wi+"d"+di;
+  addingForCtx=weeks[wi]?weeks[wi].lbl:"";
+  document.getElementById("addName").value="";
+  document.getElementById("addSets").value="";
+  document.getElementById("addTrack").value="";
+  document.getElementById("addSection").value="Strength";
+  document.getElementById("addOverlay").style.display="flex";
+  setTimeout(function(){document.getElementById("addName").focus();},100);
 }
-function closeAdd(){document.getElementById(“addOverlay”).style.display=“none”;}
+function closeAdd(){document.getElementById("addOverlay").style.display="none";}
 function submitAdd(){
-var nm=document.getElementById(“addName”).value.trim();
-if(!nm){document.getElementById(“addName”).focus();return;}
-var m=addingForKey.match(/hx_custom_w(\d+)d(\d+)/);
-if(!m)return;
-var wi=parseInt(m[1]),di=parseInt(m[2]);
-var arr=loadCustom(wi,di);
-arr.push({nm:nm,st:document.getElementById(“addSets”).value.trim(),tr:document.getElementById(“addTrack”).value||null,sc:document.getElementById(“addSection”).value});
-saveCustom(wi,di,arr);
-closeAdd();
-refreshDayBody(wi,di,addingForCtx);
-invalidateOverview();
+  var nm=document.getElementById("addName").value.trim();
+  if(!nm){document.getElementById("addName").focus();return;}
+  var m=addingForKey.match(/hx_custom_w(\d+)d(\d+)/);
+  if(!m)return;
+  var wi=parseInt(m[1]),di=parseInt(m[2]);
+  var arr=loadCustom(wi,di);
+  arr.push({nm:nm,st:document.getElementById("addSets").value.trim(),tr:document.getElementById("addTrack").value||null,sc:document.getElementById("addSection").value});
+  saveCustom(wi,di,arr);
+  closeAdd();
+  refreshDayBody(wi,di,addingForCtx);
+  invalidateOverview();
 }
 function deleteCustomEx(btn){
-var wi=parseInt(btn.getAttribute(“data-wi”),10);
-var di=parseInt(btn.getAttribute(“data-di”),10);
-var ci=parseInt(btn.getAttribute(“data-ci”),10);
-var ctx=weeks[wi]?weeks[wi].lbl:””;
-var arr=loadCustom(wi,di);
-arr.splice(ci,1);
-saveCustom(wi,di,arr);
-refreshDayBody(wi,di,ctx);
-invalidateOverview();
+  var wi=parseInt(btn.getAttribute("data-wi"),10);
+  var di=parseInt(btn.getAttribute("data-di"),10);
+  var ci=parseInt(btn.getAttribute("data-ci"),10);
+  var ctx=weeks[wi]?weeks[wi].lbl:"";
+  var arr=loadCustom(wi,di);
+  arr.splice(ci,1);
+  saveCustom(wi,di,arr);
+  refreshDayBody(wi,di,ctx);
+  invalidateOverview();
 }
 function refreshDayBody(wi,di,ctx){
-var key=“hx_w”+wi+“d”+di;
-var card=document.querySelector(”.dcard[data-key="”+key+”"]”);
-if(!card)return;
-var body=document.getElementById(“db-”+key);
-if(!body)return;
-var week=weeks[wi];var day=week?week.days[di]:null;if(!day)return;
-var st=loadState(key);
-var custom=loadCustom(wi,di);
-body.innerHTML=buildSections(day.mvs||[],key,st,ctx,wi,di,custom)
-+’<button class="add-ex-btn" data-wi="'+wi+'" data-di="'+di+'" onclick="openAdd(this)"><span>+</span> Add exercise</button>’
-+(Object.keys(st.c||{}).length>0?’<button class="resetbtn" data-key="'+key+'" onclick="onResetBtn(this)">Reset session</button>’:””);
-updateProgress(key);
+  var key="hx_w"+wi+"d"+di;
+  var card=document.querySelector(".dcard[data-key=\""+key+"\"]");
+  if(!card)return;
+  var body=document.getElementById("db-"+key);
+  if(!body)return;
+  var week=weeks[wi];var day=week?week.days[di]:null;if(!day)return;
+  var st=loadState(key);
+  var custom=loadCustom(wi,di);
+  body.innerHTML=buildSections(day.mvs||[],key,st,ctx,wi,di,custom)
+    +'<button class="add-ex-btn" data-wi="'+wi+'" data-di="'+di+'" onclick="openAdd(this)"><span>+</span> Add exercise</button>'
+    +(Object.keys(st.c||{}).length>0?'<button class="resetbtn" data-key="'+key+'" onclick="onResetBtn(this)">Reset session</button>':"");
+  updateProgress(key);
 }
 
 // ── Phase filter ──────────────────────────────────────────────────────────────
 function setPhase(ph){
-activePhase=ph;
-document.querySelectorAll(”.fbtn”).forEach(function(b){b.classList.toggle(“on”,b.getAttribute(“data-id”)===ph);});
-var visible=0;
-document.querySelectorAll(”.wcard”).forEach(function(c){var show=ph===“all”||c.getAttribute(“data-phase”)===ph;c.classList.toggle(“hidden”,!show);if(show)visible++;});
-document.getElementById(“wcount”).textContent=visible+” week”+(visible!==1?“s”:””)+” \u00b7 Progress saves automatically”;
+  activePhase=ph;
+  document.querySelectorAll(".fbtn").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-id")===ph);});
+  var visible=0;
+  document.querySelectorAll(".wcard").forEach(function(c){var show=ph==="all"||c.getAttribute("data-phase")===ph;c.classList.toggle("hidden",!show);if(show)visible++;});
+  document.getElementById("wcount").textContent=visible+" week"+(visible!==1?"s":"")+" \u00b7 Progress saves automatically";
 }
 
 // ── Tab switching ─────────────────────────────────────────────────────────────
 function switchTab(tab){
-currentTab=tab;
-[“cal”,“today”,“ov”].forEach(function(t){document.getElementById(“tab”+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle(“on”,t===tab);});
-var calEls=[“weeks”,“filters”,“wcount”];
-calEls.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display=tab===“cal”?””:“none”;});
-var sectEl=document.querySelector(”.sect”);if(sectEl)sectEl.style.display=tab===“cal”?””:“none”;
-document.getElementById(“today-view”).style.display=tab===“today”?“block”:“none”;
-if(tab===“today”)buildTodayView();
-var ovEl=document.getElementById(“overview”);
-if(tab===“ov”){ovEl.style.display=“block”;ovEl.innerHTML=””;buildOverview();}
-else ovEl.style.display=“none”;
+  currentTab=tab;
+  ["cal","today","ov"].forEach(function(t){document.getElementById("tab"+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle("on",t===tab);});
+  var calEls=["weeks","filters","wcount"];
+  calEls.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display=tab==="cal"?"":"none";});
+  var sectEl=document.querySelector(".sect");if(sectEl)sectEl.style.display=tab==="cal"?"":"none";
+  document.getElementById("today-view").style.display=tab==="today"?"block":"none";
+  if(tab==="today")buildTodayView();
+  var ovEl=document.getElementById("overview");
+  if(tab==="ov"){ovEl.style.display="block";ovEl.innerHTML="";buildOverview();}
+  else ovEl.style.display="none";
 }
-function invalidateOverview(){if(currentTab===“ov”){var el=document.getElementById(“overview”);if(el){el.innerHTML=””;buildOverview();}}}
+function invalidateOverview(){if(currentTab==="ov"){var el=document.getElementById("overview");if(el){el.innerHTML="";buildOverview();}}}
 
 // ── Phases & Weeks data ────────────────────────────────────────────────────────
 var PHASES=[
-{id:“all”,l:“All”,f:“fb-all”},{id:“deload”,l:“Deload”,f:“fb-deload”},
-{id:“phase1”,l:“Phase 1”,f:“fb-phase1”},{id:“phase2”,l:“Phase 2”,f:“fb-phase2”},
-{id:“phase3”,l:“Phase 3”,f:“fb-phase3”},{id:“taper1”,l:“Mara Taper”,f:“fb-taper1”},
-{id:“recovery”,l:“Recovery”,f:“fb-recovery”},{id:“phase4”,l:“Hyrox Peak”,f:“fb-phase4”},
-{id:“taper2”,l:“Hyrox Taper”,f:“fb-taper2”}
+  {id:"all",l:"All",f:"fb-all"},{id:"deload",l:"Deload",f:"fb-deload"},
+  {id:"phase1",l:"Phase 1",f:"fb-phase1"},{id:"phase2",l:"Phase 2",f:"fb-phase2"},
+  {id:"phase3",l:"Phase 3",f:"fb-phase3"},{id:"taper1",l:"Mara Taper",f:"fb-taper1"},
+  {id:"recovery",l:"Recovery",f:"fb-recovery"},{id:"phase4",l:"Hyrox Peak",f:"fb-phase4"},
+  {id:"taper2",l:"Hyrox Taper",f:"fb-taper2"}
 ];
 </script>
-
 <script>
 // ── Movement builders ─────────────────────────────────────────────────────────
 function mv(sc,nm,st,tgt,un,tr){return{sc:sc,nm:nm,st:st||"",tgt:tgt||"",un:un||"",tr:tr||null};}
@@ -860,7 +854,6 @@ var weeks=[
 {ph:"taper2",lbl:"Hyrox Taper + Race Day",dt:"Dec 1-5",note:"4 days to race. Trust the work.",days:[D("Mon","run-easy","Easy Jog",[jog(15)]),D("Tue","strength","Station Shakeout",[SP(152,2),SPL(103,2),FC(24,100),WB(20)]),R("Wed","Rest - pack kit, eat well"),R("Thu","Rest - eat well, hydrate"),R("Fri","Rest - you are ready"),D("Sat","race","HYROX - Dec 5",[raceM("HYROX","Men's Open")]),R("Sun","Rest - you earned it")]}
 ];
 </script>
-
 <script>
 // ── Today Tab ──────────────────────────────────────────────────────────────────
 var MONTH_NAMES=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -1225,7 +1218,6 @@ function initApp(){
 }
 if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",initApp);}else{initApp();}
 </script>
-
 <script>
 if("serviceWorker" in navigator){
   window.addEventListener("load",function(){
@@ -1233,6 +1225,5 @@ if("serviceWorker" in navigator){
   });
 }
 </script>
-
 </body>
 </html>
