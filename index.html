@@ -11,12 +11,14 @@
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e4e4e7;min-height:100vh}
+/* Fill iOS status bar area with header colour */
+body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:#111111;z-index:999}
 button{font-family:inherit;cursor:pointer}
 input,select{font-family:inherit}
 input:focus,select:focus{outline:none}
 input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 input[type=number]{-moz-appearance:textfield}
-.app{min-height:100vh;background:#0a0a0a;padding-bottom:48px}
+.app{min-height:100vh;background:#0a0a0a;padding-bottom:48px;padding-top:env(safe-area-inset-top,0px)}
 .runna-bar{background:#1a1200;border-bottom:1px solid #3d2e00;padding:10px 16px;display:flex;align-items:center;gap:10px}
 .runna-bar-label{font-size:.72rem;color:#f59e0b;font-weight:700;flex-shrink:0}
 .runna-bar-status{flex:1;font-size:.68rem;color:#71717a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -331,10 +333,10 @@ body.light .wt-name{color:#111827}
 .utility-btn:hover{border-color:#14b8a6;color:#14b8a6}
 
 /* Theme toggle */
-.gh-save-status{position:fixed;bottom:70px;right:16px;font-size:.65rem;color:#3f3f46;background:#111111;border:1px solid #1f1f1f;border-radius:8px;padding:4px 10px;z-index:99;pointer-events:none;transition:opacity .5s}
+.gh-save-status{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom,0px));right:16px;font-size:.65rem;color:#3f3f46;background:#111111;border:1px solid #1f1f1f;border-radius:8px;padding:4px 10px;z-index:99;pointer-events:none;transition:opacity .5s}
 .gh-save-status.saving{color:#f59e0b;border-color:#3d2e00}
 .gh-save-status.saved{color:#14b8a6;border-color:#1a3530}
-.theme-toggle{position:fixed;bottom:20px;right:16px;width:44px;height:44px;border-radius:50%;background:#1a1a1a;border:1px solid #2a2a2a;font-size:1.2rem;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.theme-toggle{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));right:16px;width:44px;height:44px;border-radius:50%;background:#1a1a1a;border:1px solid #2a2a2a;font-size:1.2rem;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.4)}
 .suggest-hint{font-size:.7rem;margin-top:3px;color:#52525b}
 .suggest-hint strong{color:#f59e0b}
 .prog-chart-wrap{background:#111111;border-radius:12px;padding:12px;margin-bottom:4px}
@@ -822,6 +824,7 @@ function buildWeek(week,wi){
   if(week.note)html+='<div class="wnote">'+esc(week.note)+'</div>';
   var wc=getWeekCompletion(wi);
   if(wc.total>0){html+='<div class="week-prog-wrap"><div class="week-prog-fill" style="width:'+wc.pct+'%"></div></div><div class="week-prog-pct">'+wc.done+'/'+wc.total+' movements · '+wc.pct+'%</div>';}
+  html+='<button onclick="resetWeekSessions('+wi+',event)" style="font-size:.6rem;color:rgba(255,255,255,.3);background:none;border:none;cursor:pointer;padding:2px 0;margin-top:4px;display:block;text-decoration:underline">Reset all sessions</button>';
   html+="</div><div class=\"days\">";
   week.days.forEach(function(day,di){
     var ov=typeof getPosOverride==="function"?getPosOverride(wi,di):null;
@@ -1718,6 +1721,14 @@ function doSwap(wi,di,targetWi,targetDi){
   showSyncSuccess("Session added to "+weeks[targetWi].days[targetDi].day+" ✔");
 }
 function getExtraSessions(wi,di){return SWAP_MAP["extra_"+wi+"_"+di]||[];}
+function resetWeekSessions(wi,evt){
+  if(evt)evt.stopPropagation();
+  if(!confirm("Reset all sessions for this week? Ticks and weights will be cleared."))return;
+  weeks[wi].days.forEach(function(day,di){
+    try{localStorage.removeItem("hx_w"+wi+"d"+di);}catch(e){}
+  });
+  rebuildCalendar();
+}
 function rebuildCalendar(){
   // Save expanded weeks
   var open={};
