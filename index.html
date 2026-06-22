@@ -237,6 +237,13 @@ input[type=number]{-moz-appearance:textfield}
 .ov-edit-btn{width:26px;height:26px;border-radius:6px;background:#1a1a1a;border:1px solid #2a2a2a;font-size:.8rem;color:#52525b;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
 .ov-chev{font-size:.6rem;color:#3f3f46}
 .ov-no-track{font-size:.65rem;color:#3f3f46;font-style:italic}
+.swap-btn{font-size:.7rem;color:rgba(255,255,255,.4);background:none;border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:2px 6px;cursor:pointer;flex-shrink:0;margin-right:4px}
+.swap-btn:hover{color:#fff;border-color:rgba(255,255,255,.4)}
+.swap-day-btn{width:100%;padding:12px;border-radius:10px;border:1px solid #2a2a2a;background:#1a1a1a;color:#e4e4e7;text-align:left;cursor:pointer;margin-bottom:6px}
+.swap-day-btn:hover{border-color:#14b8a6}
+.wcard.drag-over{border:2px dashed #14b8a6 !important;background:#0a1f1c !important}
+.wcard.dragging{opacity:.4}
+.swapped-badge{font-size:.55rem;background:rgba(20,184,166,.2);color:#14b8a6;border-radius:4px;padding:1px 5px;font-weight:600;margin-left:4px;flex-shrink:0}
 #weights-view{display:none;padding:12px 16px 60px;background:#0a0a0a;min-height:100vh}
 .wt-section{margin-bottom:24px}
 .wt-sec-hdr{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#52525b;padding:14px 0 8px;border-bottom:1px solid #1f1f1f;margin-bottom:8px}
@@ -252,11 +259,15 @@ input[type=number]{-moz-appearance:textfield}
 .mvrow-wrap:last-child{border-bottom:none}
 .mvrow-wrap.alldone{opacity:.5}
 .mvrow-head{display:flex;align-items:center;gap:7px}
-.set-rows{margin:6px 0 2px 31px;display:flex;flex-direction:column;gap:4px}
-.set-row{display:flex;align-items:center;gap:8px}
-.set-row.done .set-label,.set-row.done .set-reps{color:#3f3f46;text-decoration:line-through}
-.set-label{font-size:.72rem;font-weight:600;color:#71717a;min-width:38px}
-.set-reps{font-size:.72rem;color:#52525b;flex:1}
+.set-rows{margin:8px 0 4px 0;display:flex;flex-direction:column;gap:4px}
+.set-row{display:flex;align-items:center;gap:6px;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:8px;padding:6px 8px}
+.set-row.done{opacity:.45}
+.set-label{font-size:.7rem;font-weight:700;color:#a1a1aa;min-width:34px;flex-shrink:0}
+.set-unit{font-size:.6rem;color:#3f3f46;flex-shrink:0}
+.set-w-input{width:46px;text-align:right;font-size:.78rem;border:1px solid #3f3f46;border-radius:6px;padding:3px 5px;background:#1a1a1a;color:#e4e4e7}
+.set-w-input:focus{outline:none;border-color:#14b8a6}
+.set-r-input{width:36px;text-align:right;font-size:.72rem;border:1px solid #3f3f46;border-radius:6px;padding:3px 4px;background:#1a1a1a;color:#a1a1aa}
+.set-r-input:focus{outline:none;border-color:#14b8a6}
 .set-prog{font-size:.6rem;color:#52525b;margin-left:4px;white-space:nowrap}
 .runna-setup-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:950;display:flex;align-items:flex-end}
 .runna-setup-modal{background:#171717;border-radius:20px 20px 0 0;width:100%;padding:24px 16px 44px;border-top:1px solid #3d2e00}
@@ -293,6 +304,16 @@ textarea.runna-setup-input{resize:none;font-size:.72rem;line-height:1.4}
     <div class="modal-hdr"><span class="modal-title" id="prevSessionTitle"></span><button class="modal-close" onclick="closePrevSession()">&#10005;</button></div>
     <div id="prevSessionMeta" style="font-size:.72rem;color:#52525b;margin-bottom:14px"></div>
     <div id="prevSessionContent"></div>
+  </div>
+</div>
+
+<!-- Swap Modal -->
+<div class="overlay" id="swapOverlay" style="display:none" onclick="if(event.target.id==='swapOverlay')closeSwap()">
+  <div class="modal">
+    <div class="modal-hdr"><span class="modal-title" id="swapTitle">Move Session</span><button class="modal-close" onclick="closeSwap()">&#10005;</button></div>
+    <div style="font-size:.8rem;color:#71717a;margin-bottom:16px">Swap with which day this week?</div>
+    <div id="swapContent"></div>
+    <button onclick="resetDayOrder(swapWi)" style="margin-top:16px;font-size:.72rem;color:#3f3f46;background:none;border:none;text-decoration:underline;cursor:pointer">Reset week to original order</button>
   </div>
 </div>
 
@@ -540,8 +561,9 @@ function buildSections(mvs,key,st,ctx,wi,di,custom){
           html+='</div><div class="set-rows">';
           for(var ss=0;ss<parsed.num;ss++){
             var sIdx=idx+"_s"+ss;var sDone=!!(st.c&&st.c[sIdx]);
+            var sw2=(st.v&&st.v[idx+'_s'+ss+'_w'])||'';var sr2=(st.v&&st.v[idx+'_s'+ss+'_r'])||'';
             html+='<div class="set-row'+(sDone?" done":"")+'"><button class="chkbtn'+(sDone?" on":"")+'" data-key="'+esc(key)+'" data-idx="'+sIdx+'" data-mv-idx="'+idx+'" data-sets="'+parsed.num+'" data-nm="'+esc(x.m.nm)+'" data-ctx="'+esc(ctx)+'" onclick="onSetCheck(this)">'+(sDone?"✓":"")+'</button>';
-            html+='<span class="set-label">Set '+(ss+1)+'</span><span class="set-reps">'+esc(parsed.reps)+'</span></div>';
+            html+='<span class="set-label">Set '+(ss+1)+'</span>'+'<input type="number" inputmode="decimal" class="set-w-input" value="'+esc(sw2)+'" placeholder="kg" data-key="'+esc(key)+'" data-idx="'+idx+'_s'+ss+'_w" onchange="onSetValInput(this)" oninput="onSetValInput(this)">'+'<span class="set-unit">kg&times;</span>'+'<input type="number" inputmode="decimal" class="set-r-input" value="'+esc(sr2)+'" placeholder="'+esc(parsed.reps)+'" data-key="'+esc(key)+'" data-idx="'+idx+'_s'+ss+'_r" onchange="onSetValInput(this)" oninput="onSetValInput(this)">'+'<span class="set-unit">reps</span>'+'</div>';
           }
           html+='</div></div>';
         } else {
@@ -584,7 +606,7 @@ function getDayDate(week,dayName){
   }
   return null;
 }
-function buildDay(day,wi,di,week){
+function buildDay(day,wi,di,week,isSwapped,posDay){
   var key="hx_w"+wi+"d"+di;var mvs=day.mvs||[];
   var isRest=day.type==="rest"||mvs.length===0;
   var st=loadState(key);var custom=loadCustom(wi,di);var total=mvs.length+custom.length;
@@ -597,7 +619,8 @@ function buildDay(day,wi,di,week){
   html+='<div class="dhdr" onclick="toggleDay(\''+key+'\')">';
   var dayDateStr="";
   if(dayDate){var mn=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];dayDateStr=" "+dayDate.getDate()+" "+mn[dayDate.getMonth()];}
-  html+='<div class="ddot"></div><div class="dtxt"><div class="dlbl">'+esc(day.day)+dayDateStr+'</div><div class="dtitle">'+esc(day.t)+(runnaEvs.length?' <span style="font-size:.58rem;background:#f59e0b;color:#000;border-radius:5px;padding:1px 5px;font-weight:700;vertical-align:middle">&#127939; Runna</span>':'')+'</div></div>';
+  var posLabel=posDay||day.day;
+  html+='<div class="ddot"></div><div class="dtxt"><div class="dlbl">'+esc(posLabel)+dayDateStr+(isSwapped?' <span class="swapped-badge">&#8644;</span>':'')+'</div><div class="dtitle">'+esc(day.t)+(runnaEvs.length?' <span style="font-size:.58rem;background:#f59e0b;color:#000;border-radius:5px;padding:1px 5px;font-weight:700;vertical-align:middle">&#127939; Runna</span>':'')+'</div></div>';
   if(!isRest){html+='<div class="dmeta"><span class="dprog'+(allDone?" dn":"")+'" id="prog-'+key+'">'+doneCount+"/"+total+'</span><span class="dchev" id="chev-'+key+'">\u25bc</span></div>';}
   html+="</div>";
   html+='<div class="dbody" id="db-'+key+'">';
@@ -618,6 +641,7 @@ function buildDay(day,wi,di,week){
 function buildWeek(week,wi){
   var hasRace=week.days.some(function(d){return d.type==="race";});
   var wid="wk-"+wi;
+  // dayOrder removed - using per-position overrides now
   // Detect past / current week
   var today=new Date();today.setHours(0,0,0,0);
   var range=typeof parseWeekDates==="function"?parseWeekDates(week.dt):null;
@@ -1438,6 +1462,115 @@ function buildWeightsView(){
   SEC_ORDER.forEach(renderSec);
   Object.keys(secMap).forEach(function(sec){if(SEC_ORDER.indexOf(sec)<0)renderSec(sec);});
   el.innerHTML=html;
+}
+// ── Day Swap System (cross-week) ──────────────────────────────────────────
+var swapWi=null,swapDi=null,swapPickingWeek=false;
+function posKey(wi,di){return "hx_pos_w"+wi+"d"+di;}
+function getPosOverride(wi,di){
+  try{var v=localStorage.getItem(posKey(wi,di));return v?JSON.parse(v):null;}catch(e){return null;}
+}
+function setPosOverride(wi,di,srcWi,srcDi){
+  try{
+    if(srcWi===wi&&srcDi===di)localStorage.removeItem(posKey(wi,di));
+    else localStorage.setItem(posKey(wi,di),JSON.stringify({srcWi:srcWi,srcDi:srcDi}));
+  }catch(e){}
+}
+function resetPos(wi,di){try{localStorage.removeItem(posKey(wi,di));}catch(e){}}
+function resetWeek(wi){for(var d=0;d<7;d++)resetPos(wi,d);closeSwap();refreshCalendarRunna();}
+function getEffectiveSrc(wi,di){
+  var ov=getPosOverride(wi,di);
+  return ov||{srcWi:wi,srcDi:di};
+}
+function openSwap(wi,di,evt){
+  if(evt)evt.stopPropagation();
+  swapWi=wi;swapDi=di;swapPickingWeek=false;
+  renderSwapModal();
+  document.getElementById("swapOverlay").style.display="flex";
+}
+function renderSwapModal(){
+  var wi=swapWi,di=swapDi;
+  var src=getEffectiveSrc(wi,di);
+  var day=weeks[src.srcWi].days[src.srcDi];
+  document.getElementById("swapTitle").textContent="Move: "+day.t;
+  var week=weeks[wi];
+  var html='<div style="font-size:.72rem;font-weight:700;color:#52525b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">This week</div>';
+  week.days.forEach(function(d,targetDi){
+    if(targetDi===di)return;
+    var tSrc=getEffectiveSrc(wi,targetDi);
+    var tDay=weeks[tSrc.srcWi].days[tSrc.srcDi];
+    html+='<button class="swap-day-btn" onclick="doSwap('+wi+','+di+','+wi+','+targetDi+')">';
+    html+='<div style="font-size:.62rem;color:#52525b;font-weight:700;margin-bottom:2px">'+esc(d.day)+'</div>';
+    html+='<div style="font-size:.82rem;color:#e4e4e7">'+esc(tDay.t)+'</div></button>';
+  });
+  html+='<div style="font-size:.72rem;font-weight:700;color:#52525b;text-transform:uppercase;letter-spacing:.08em;margin:14px 0 8px">Other weeks</div>';
+  var otherWeekHtml='<div style="max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:4px">';
+  weeks.forEach(function(w,targetWi){
+    if(targetWi===wi)return;
+    var isPast=w.ph==="deload"&&targetWi<wi;
+    otherWeekHtml+='<div style="margin-bottom:4px"><div style="font-size:.65rem;color:#52525b;padding:4px 0">'+esc(w.lbl)+'</div>';
+    w.days.forEach(function(d,targetDi){
+      if(d.type==="rest"&&(!d.mvs||!d.mvs.length))return;
+      var tSrc=getEffectiveSrc(targetWi,targetDi);
+      var tDay=weeks[tSrc.srcWi].days[tSrc.srcDi];
+      otherWeekHtml+='<button class="swap-day-btn" onclick="doSwap('+wi+','+di+','+targetWi+','+targetDi+')" style="padding:8px 12px">';
+      otherWeekHtml+='<div style="font-size:.62rem;color:#52525b;font-weight:700;display:flex;gap:6px"><span>'+esc(d.day)+'</span><span>'+esc(w.dt)+'</span></div>';
+      otherWeekHtml+='<div style="font-size:.78rem;color:#e4e4e7;margin-top:2px">'+esc(tDay.t)+'</div></button>';
+    });
+    otherWeekHtml+='</div>';
+  });
+  otherWeekHtml+='</div>';
+  html+=otherWeekHtml;
+  html+='<button onclick="resetWeek('+wi+')" style="margin-top:14px;font-size:.7rem;color:#3f3f46;background:none;border:none;text-decoration:underline;cursor:pointer;padding:0">Reset this week to original order</button>';
+  document.getElementById("swapContent").innerHTML=html;
+}
+function closeSwap(){document.getElementById("swapOverlay").style.display="none";}
+function doSwap(wi,di,targetWi,targetDi){
+  var a=getEffectiveSrc(wi,di);
+  var b=getEffectiveSrc(targetWi,targetDi);
+  setPosOverride(wi,di,b.srcWi,b.srcDi);
+  setPosOverride(targetWi,targetDi,a.srcWi,a.srcDi);
+  closeSwap();refreshCalendarRunna();
+}
+
+// ── Touch drag and drop ────────────────────────────────────────────────────
+var dragWi=null,dragDi=null,dragTimer=null,dragActive=false;
+function onDayTouchStart(evt,wi,di){
+  var card=evt.currentTarget.closest(".dcard");if(!card)return;
+  dragTimer=setTimeout(function(){
+    dragActive=true;dragWi=wi;dragDi=di;
+    card.classList.add("dragging");
+    // Highlight other days as drop targets
+    document.querySelectorAll(".dcard").forEach(function(c){
+      if(c!==card)c.classList.add("drag-target");
+    });
+    if(navigator.vibrate)navigator.vibrate(40);
+  },500);
+}
+function onDayTouchEnd(evt,wi,di){
+  clearTimeout(dragTimer);
+  if(!dragActive){return;}
+  dragActive=false;
+  // Find which card the touch ended over
+  var touch=evt.changedTouches[0];
+  var el=document.elementFromPoint(touch.clientX,touch.clientY);
+  var targetCard=el?el.closest(".dcard"):null;
+  document.querySelectorAll(".dcard").forEach(function(c){c.classList.remove("dragging","drag-target","drag-over");});
+  if(targetCard){
+    var targetWi=parseInt(targetCard.getAttribute("data-wi"),10);
+    var targetDi=parseInt(targetCard.getAttribute("data-di"),10);
+    if(!isNaN(targetWi)&&!isNaN(targetDi)&&!(targetWi===dragWi&&targetDi===dragDi)){
+      doSwap(dragWi,dragDi,targetWi,targetDi);
+    }
+  }
+  dragWi=null;dragDi=null;
+}
+function onDayTouchMove(evt){
+  if(!dragActive)return;
+  var touch=evt.touches[0];
+  var el=document.elementFromPoint(touch.clientX,touch.clientY);
+  document.querySelectorAll(".dcard.drag-over").forEach(function(c){c.classList.remove("drag-over");});
+  var targetCard=el?el.closest(".dcard"):null;
+  if(targetCard)targetCard.classList.add("drag-over");
 }
 function initApp(){
   if(initApp._done)return;initApp._done=true;
