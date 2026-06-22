@@ -248,6 +248,7 @@ input[type=number]{-moz-appearance:textfield}
 .last-hint{font-size:.62rem;color:#3f3f46;margin-top:3px;text-align:right}
 .last-hint span{color:#52525b}
 .mvrow-wrap{background:#1a1a1a;border-bottom:1px solid #2a2a2a;padding:8px}
+.mvrow-head{display:flex;align-items:center;gap:7px}
 .mvrow-wrap:last-child{border-bottom:none}
 .mvrow-wrap.alldone{opacity:.5}
 .mvrow-head{display:flex;align-items:center;gap:7px}
@@ -452,7 +453,9 @@ function onCheck(btn){
 function updateProgress(key){
   var card=document.querySelector('.dcard[data-key="'+key+'"]');if(!card)return;
   var total=parseInt(card.getAttribute("data-total")||"0",10);if(!total)return;
-  var done=card.querySelectorAll(".chkbtn.on").length;
+  // Count top-level movement completions (not individual set ticks)
+  var st=loadState(key);
+  var done=Object.keys(st.c||{}).filter(function(k){return st.c[k]&&k.indexOf("_s")<0;}).length;
   var prog=document.getElementById("prog-"+key);if(prog){prog.textContent=done+"/"+total;prog.classList.toggle("dn",done===total);}
   card.classList.toggle("alldone",done===total);
   var rb=card.querySelector(".resetbtn");if(rb)rb.style.display=done>0?"":"none";
@@ -1461,4 +1464,3 @@ if("serviceWorker" in navigator){window.addEventListener("load",function(){navig
 </script>
 </body>
 </html>
-
