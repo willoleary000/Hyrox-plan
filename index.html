@@ -425,7 +425,7 @@ textarea.runna-setup-input{resize:none;font-size:.72rem;line-height:1.4}
 <!-- History Modal -->
 <div class="overlay" id="histOverlay" style="display:none" onclick="if(event.target.id=='histOverlay')closeHist()">
   <div class="modal">
-    <div class="modal-hdr"><span class="modal-title" id="histTitle">History</span><button class="modal-close" onclick="closeHist()">&#10005;</button></div>
+    <div class="modal-hdr"><span class="modal-title" id="histTitle">History</span><div style="display:flex;gap:8px;align-items:center"><button onclick="clearAllHist()" style="font-size:.65rem;color:#ef4444;background:none;border:none;cursor:pointer">Clear all</button><button class="modal-close" onclick="closeHist()">&#10005;</button></div></div>
     <div id="histContent"></div>
   </div>
 </div>
@@ -551,6 +551,32 @@ function showHist(nm){
   document.getElementById("histOverlay").style.display="flex";
 }
 function closeHist(){document.getElementById("histOverlay").style.display="none";}
+function clearAllHist(){
+  var nm=document.getElementById("histTitle").textContent;
+  if(!nm||!confirm("Clear all history for "+nm+"? This will also untick this exercise across all sessions."))return;
+  // Remove history
+  try{localStorage.removeItem(histKey(nm));}catch(e){}
+  // Untick this exercise in all week/day sessions
+  weeks.forEach(function(week,wi){
+    week.days.forEach(function(day,di){
+      var key="hx_w"+wi+"d"+di;
+      var st=loadState(key);
+      var changed=false;
+      (day.mvs||[]).forEach(function(m,idx){
+        if(m.nm===nm&&st.c&&st.c[String(idx)]){
+          delete st.c[String(idx)];
+          // Also clear set ticks
+          Object.keys(st.c||{}).forEach(function(k){if(k.indexOf(idx+"_s")===0)delete st.c[k];});
+          changed=true;
+        }
+      });
+      if(changed)saveState(key,st);
+    });
+  });
+  showHist(nm);
+  if(currentTab==="weights")buildWeightsView();
+  rebuildCalendar();
+}
 function delHist(btn){
   var nm=btn.getAttribute("data-nm");var idx=parseInt(btn.getAttribute("data-idx"),10);
   var hist=getHistData(nm);hist.splice(idx,1);
@@ -2138,4 +2164,3 @@ if("serviceWorker" in navigator){window.addEventListener("load",function(){navig
 </script>
 </body>
 </html>
-
