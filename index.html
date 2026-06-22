@@ -264,6 +264,85 @@ input[type=number]{-moz-appearance:textfield}
 .set-row.done{opacity:.45}
 .set-label{font-size:.7rem;font-weight:700;color:#a1a1aa;min-width:34px;flex-shrink:0}
 .set-unit{font-size:.6rem;color:#3f3f46;flex-shrink:0}
+
+/* Light mode */
+body.light{background:#f0f0f0;color:#111827}
+body.light .hdr{background:#ffffff;border-color:#d1d5db}
+body.light .hdr h1{color:#111827}
+body.light .hdr .sub,.hdr .hint{color:#6b7280}
+body.light .tabs{background:#ffffff;border-color:#d1d5db}
+body.light .tab{color:#9ca3af}
+body.light .tab.on{color:#111827}
+body.light .wcard{background:#f9fafb;border-color:#d1d5db}
+body.light .whdr{filter:brightness(.9)}
+body.light .days{background:#f3f4f6}
+body.light .dcard{background:#ffffff !important;border-color:#d1d5db !important}
+body.light .dlbl,.light .dtitle{color:#374151 !important}
+body.light .dbody{border-color:#e5e7eb}
+body.light .sitems{background:#f9fafb;border-color:#d1d5db}
+body.light .mvrow{border-color:#e5e7eb}
+body.light .mname{color:#111827}
+body.light .msets{color:#9ca3af}
+body.light .minput,.light .reps-input{background:#ffffff;border-color:#d1d5db;color:#111827}
+body.light .chkbtn{background:#f9fafb;border-color:#d1d5db}
+body.light .modal{background:#ffffff}
+body.light .add-field{background:#f9fafb;border-color:#d1d5db;color:#111827}
+body.light .sect{background:#f0f0f0}
+body.light .frow{background:#f0f0f0}
+body.light .fbtn{background:#ffffff;border-color:#d1d5db;color:#6b7280}
+body.light #today-view{background:#f0f0f0}
+body.light .today-mv{background:#ffffff;border-color:#e5e7eb}
+body.light .today-mv-name{color:#111827}
+body.light .today-mv-sets{color:#9ca3af}
+body.light .today-input,.light .today-reps{background:#f9fafb;border-color:#d1d5db;color:#111827}
+body.light .today-chk{background:#f9fafb;border-color:#d1d5db}
+body.light #overview,.light #weights-view{background:#f0f0f0}
+body.light .ov-mv{background:#ffffff;border-color:#e5e7eb}
+body.light .ov-mv-name{color:#111827}
+body.light .ov-input,.light .ov-reps{background:#f9fafb;border-color:#d1d5db;color:#111827}
+body.light .runna-bar{background:#fffbeb;border-color:#fde68a}
+body.light .runna-bar-label{color:#d97706}
+body.light .wt-row{background:#ffffff}
+body.light .wt-name{color:#111827}
+
+/* Week completion bar */
+.week-prog-wrap{height:3px;background:rgba(0,0,0,.2);border-radius:2px;margin-top:8px}
+.week-prog-fill{height:3px;background:#14b8a6;border-radius:2px;transition:width .3s}
+.week-prog-pct{font-size:.6rem;color:rgba(255,255,255,.5);margin-top:3px}
+
+/* Logged indicator */
+.logged-dot{width:6px;height:6px;border-radius:50%;background:#14b8a6;flex-shrink:0;margin-left:2px}
+
+/* Sparkline */
+.sparkline-wrap{display:flex;align-items:center;gap:8px;margin-top:4px}
+.sparkline-trend{font-size:.65rem;font-weight:700}
+.trend-up{color:#14b8a6}.trend-down{color:#ef4444}.trend-flat{color:#71717a}
+
+/* Weekly summary */
+.wk-summary{background:#111111;border:1px solid #1f1f1f;border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;gap:16px}
+.wk-stat{flex:1;text-align:center}
+.wk-stat-val{font-size:1.4rem;font-weight:800;color:#14b8a6}
+.wk-stat-lbl{font-size:.65rem;color:#52525b;margin-top:2px}
+.wk-best{font-size:.72rem;color:#71717a;margin-top:8px;padding-top:8px;border-top:1px solid #1f1f1f}
+
+/* Notification + export buttons */
+.utility-row{display:flex;gap:8px;margin-bottom:16px}
+.utility-btn{flex:1;padding:10px;border-radius:10px;border:1px solid #2a2a2a;background:#1a1a1a;color:#a1a1aa;font-size:.75rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.utility-btn:hover{border-color:#14b8a6;color:#14b8a6}
+
+/* Theme toggle */
+.gh-save-status{position:fixed;bottom:70px;right:16px;font-size:.65rem;color:#3f3f46;background:#111111;border:1px solid #1f1f1f;border-radius:8px;padding:4px 10px;z-index:99;pointer-events:none;transition:opacity .5s}
+.gh-save-status.saving{color:#f59e0b;border-color:#3d2e00}
+.gh-save-status.saved{color:#14b8a6;border-color:#1a3530}
+.theme-toggle{position:fixed;bottom:20px;right:16px;width:44px;height:44px;border-radius:50%;background:#1a1a1a;border:1px solid #2a2a2a;font-size:1.2rem;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.suggest-hint{font-size:.7rem;margin-top:3px;color:#52525b}
+.suggest-hint strong{color:#f59e0b}
+.prog-chart-wrap{background:#111111;border-radius:12px;padding:12px;margin-bottom:4px}
+.prog-hist-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1f1f1f}
+.prog-hist-row:last-child{border-bottom:none}
+.prog-hist-date{font-size:.72rem;color:#52525b}
+.prog-hist-val{font-size:.95rem;font-weight:700;color:#f4f4f5}
+.prog-hist-ctx{font-size:.62rem;color:#3f3f46;margin-top:1px}
 .set-w-input{width:46px;text-align:right;font-size:.78rem;border:1px solid #3f3f46;border-radius:6px;padding:3px 5px;background:#1a1a1a;color:#e4e4e7}
 .set-w-input:focus{outline:none;border-color:#14b8a6}
 .set-r-input{width:36px;text-align:right;font-size:.72rem;border:1px solid #3f3f46;border-radius:6px;padding:3px 4px;background:#1a1a1a;color:#a1a1aa}
@@ -317,6 +396,32 @@ textarea.runna-setup-input{resize:none;font-size:.72rem;line-height:1.4}
   </div>
 </div>
 
+<!-- GitHub Backup Modal -->
+<div class="overlay" id="ghSetupOverlay" style="display:none" onclick="if(event.target.id==='ghSetupOverlay')closeGHSetup()">
+  <div class="modal">
+    <div class="modal-hdr"><span class="modal-title">&#128202; GitHub Backup</span><button class="modal-close" onclick="closeGHSetup()">&#10005;</button></div>
+    <div style="font-size:.75rem;color:#71717a;margin-bottom:16px;line-height:1.6">Your training data will be saved to your GitHub repo as <strong style="color:#f4f4f5">backups/training-data.json</strong>. Generate a token at GitHub → Settings → Developer settings → Personal access tokens → select <strong style="color:#f4f4f5">repo</strong> scope.</div>
+    <label class="add-label">GitHub Token</label>
+    <input id="ghTokenInput" type="password" class="add-field" placeholder="github_pat_..."/>
+    <label class="add-label">Repo (owner/name)</label>
+    <input id="ghRepoInput" type="text" class="add-field" value="willoleary000/Hyrox-plan"/>
+    <div id="ghLastBackup" style="font-size:.68rem;color:#52525b;margin-bottom:12px"></div>
+    <div class="add-btns">
+      <button class="add-cancel-btn" onclick="closeGHSetup()">Cancel</button>
+      <button class="add-save-btn" onclick="saveGHSetup()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Progression Modal -->
+<div class="overlay" id="progOverlay" style="display:none" onclick="if(event.target.id==='progOverlay')closeProg()">
+  <div class="modal">
+    <div class="modal-hdr"><span class="modal-title" id="progTitle"></span><button class="modal-close" onclick="closeProg()">&#10005;</button></div>
+    <div id="progChart" style="margin-bottom:16px"></div>
+    <div id="progHistory"></div>
+  </div>
+</div>
+
 <!-- History Modal -->
 <div class="overlay" id="histOverlay" style="display:none" onclick="if(event.target.id=='histOverlay')closeHist()">
   <div class="modal">
@@ -365,6 +470,12 @@ textarea.runna-setup-input{resize:none;font-size:.72rem;line-height:1.4}
   </div>
 </div>
 
+<!-- Auto-save status -->
+<div class="gh-save-status" id="ghSaveStatus" style="display:none"></div>
+
+<!-- Theme Toggle -->
+<button class="theme-toggle"  id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark">&#127762;</button>
+
 <div class="hdr">
   <h1>Hyrox + Dublin</h1>
   <div class="sub">Men's Open &middot; 6 days/week &middot; Marathon Oct 26 &middot; Hyrox Dec 5</div>
@@ -398,7 +509,7 @@ textarea.runna-setup-input{resize:none;font-size:.72rem;line-height:1.4}
 <div class="frow" id="filters"></div>
 <div class="ctxt" id="wcount"></div>
 <div class="weeks" id="weeks"></div>
-<div id="today-view"></div>
+<div id="today-view" ontouchstart="onTodaySwipeStart(event)" ontouchend="onTodaySwipeEnd(event)"></div>
 <div id="weights-view" style="display:none"></div>
 <div id="overview"></div>
 </div>
@@ -410,7 +521,7 @@ function isSameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()==
 var activePhase="all",racesVisible=false,currentTab="cal",selectedDate=null;
 var RUNNA_EVENTS=[];
 function loadState(k){try{var v=localStorage.getItem(k);return v?JSON.parse(v):{c:{},v:{}};}catch(e){return{c:{},v:{}};}}
-function saveState(k,st){try{localStorage.setItem(k,JSON.stringify(st));}catch(e){}}
+function saveState(k,st){try{localStorage.setItem(k,JSON.stringify(st));markDirty();}catch(e){}}
 function loadCustom(wi,di){try{var v=localStorage.getItem("hx_custom_w"+wi+"d"+di);return v?JSON.parse(v):[];}catch(e){return[];}}
 function saveCustom(wi,di,arr){try{localStorage.setItem("hx_custom_w"+wi+"d"+di,JSON.stringify(arr));}catch(e){}}
 function loadOverrides(wi,di){try{var v=localStorage.getItem("hx_ov_w"+wi+"d"+di);return v?JSON.parse(v):{};}catch(e){return{};}}
@@ -424,7 +535,7 @@ function saveToHistory(nm,value,ctx){
   hist=hist.filter(function(h){return h.date!==today;});
   hist.unshift({date:today,value:value.trim(),ctx:ctx||""});
   hist=hist.slice(0,30);
-  try{localStorage.setItem(key,JSON.stringify(hist));}catch(e){}
+  try{localStorage.setItem(key,JSON.stringify(hist));markDirty();}catch(e){}
 }
 function showHistFromBtn(btn){showHist(btn.getAttribute("data-nm")||"");}
 function showHist(nm){
@@ -620,6 +731,7 @@ function buildDay(day,wi,di,week,isSwapped,posDay){
   var dayDateStr="";
   if(dayDate){var mn=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];dayDateStr=" "+dayDate.getDate()+" "+mn[dayDate.getMonth()];}
   var posLabel=posDay||day.day;
+  var hasLogs=dayHasLogs(day);
   html+='<div class="ddot"></div><div class="dtxt"><div class="dlbl">'+esc(posLabel)+dayDateStr+(isSwapped?' <span class="swapped-badge">&#8644;</span>':'')+'</div><div class="dtitle">'+esc(day.t)+(runnaEvs.length?' <span style="font-size:.58rem;background:#f59e0b;color:#000;border-radius:5px;padding:1px 5px;font-weight:700;vertical-align:middle">&#127939; Runna</span>':'')+'</div></div>';
   html+='<button class="swap-btn" onclick="openSwap('+wi+','+di+',event)" title="Move session">&#8644;</button>';
   if(!isRest){html+='<div class="dmeta"><span class="dprog'+(allDone?" dn":"")+'" id="prog-'+key+'">'+doneCount+"/"+total+'</span><span class="dchev" id="chev-'+key+'">\u25bc</span></div>';}
@@ -634,6 +746,21 @@ function buildDay(day,wi,di,week,isSwapped,posDay){
   }
   if(isRest&&!runnaEvs.length){
     html+='<div style="text-align:center;padding:16px 0;color:#3f3f46;font-size:.8rem">&#128716; Rest Day</div>';
+  }
+  // Render any extra sessions added to this day
+  if(typeof getExtraSessions==="function"){
+    var extras=getExtraSessions(wi,di);
+    extras.forEach(function(e){
+      var eDay=weeks[e.srcWi].days[e.srcDi];
+      var eKey="hx_w"+e.srcWi+"d"+e.srcDi;
+      var eSt=loadState(eKey);
+      var eCustom=loadCustom(e.srcWi,e.srcDi);
+      var ectx=weeks[e.srcWi].lbl;
+      html+='<div style="margin-top:10px;padding-top:8px;border-top:1px dashed #2a2a2a">';
+      html+='<div style="font-size:.62rem;font-weight:700;color:#52525b;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">&#8644; Added: '+esc(eDay.t)+'</div>';
+      html+=buildSections(eDay.mvs||[],eKey,eSt,ectx,e.srcWi,e.srcDi,eCustom);
+      html+='</div>';
+    });
   }
   html+='<button class="add-ex-btn" data-wi="'+wi+'" data-di="'+di+'" onclick="openAdd(this)"><span>+</span> Add exercise</button>';
   if(doneCount>0)html+='<button class="resetbtn" data-key="'+key+'" onclick="onResetBtn(this)">Reset session</button>';
@@ -667,6 +794,8 @@ function buildWeek(week,wi){
   html+='<div class="wtop"><div><div class="wlbl">'+esc(week.lbl)+'</div><div class="wdt">'+esc(week.dt)+'</div></div>';
   html+='<div style="display:flex;align-items:center;gap:6px">'+(hasRace?'<span class="rbadge">RACE</span>':"")+' <span class="wchev">\u25bc</span></div></div>';
   if(week.note)html+='<div class="wnote">'+esc(week.note)+'</div>';
+  var wc=getWeekCompletion(wi);
+  if(wc.total>0){html+='<div class="week-prog-wrap"><div class="week-prog-fill" style="width:'+wc.pct+'%"></div></div><div class="week-prog-pct">'+wc.done+'/'+wc.total+' movements · '+wc.pct+'%</div>';}
   html+="</div><div class=\"days\">";
   week.days.forEach(function(day,di){
     var ov=typeof getPosOverride==="function"?getPosOverride(wi,di):null;
@@ -1183,6 +1312,15 @@ function showPrevSession(nm){
   document.getElementById("prevSessionOverlay").style.display="flex";
 }
 function closePrevSession(){document.getElementById("prevSessionOverlay").style.display="none";}
+var _swipeX=0,_swipeY=0;
+function onTodaySwipeStart(e){_swipeX=e.touches[0].clientX;_swipeY=e.touches[0].clientY;}
+function onTodaySwipeEnd(e){
+  var dx=e.changedTouches[0].clientX-_swipeX;
+  var dy=e.changedTouches[0].clientY-_swipeY;
+  if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.5){
+    if(dx<0)shiftDate(1);else shiftDate(-1);
+  }
+}
 function onSetValInput(inp){
   var key=inp.getAttribute("data-key");var idx=inp.getAttribute("data-idx");
   var st=loadState(key);if(!st.v)st.v={};st.v[idx]=inp.value;saveState(key,st);
@@ -1299,7 +1437,7 @@ function buildTodayView(){
         var hist=m.nm?getHistData(m.nm):[];
         var lastHint=hist.length?'<div style="font-size:.66rem;color:#52525b;margin:2px 0 8px">Last: <span style="color:#14b8a6;font-weight:600">'+esc(hist[0].value)+(hist[0].value.indexOf('kg')<0?' kg':'')+'</span> &middot; '+esc(hist[0].date)+'</div>':"";
         html+='<div class="today-mv'+(allDone?" done-mv":"")+'" id="tdmv-'+idx+'">';
-        html+='<div class="today-mv-info"><div style="display:flex;align-items:center;justify-content:space-between"><div class="today-mv-name'+(allDone?" crossed":"")+'">'+esc(m.nm)+'</div><button style="background:none;border:none;font-size:.9rem;color:#52525b;cursor:pointer;padding:0 4px" onclick="showPrevSession(\''+esc(m.nm)+'\')" title="Last session">&#128203;</button></div>'+lastHint;
+        html+='<div class="today-mv-info"><div style="display:flex;align-items:center;justify-content:space-between"><div class="today-mv-name'+(allDone?" crossed":"")+'">'+esc(m.nm)+'</div><div style="display:flex;gap:6px">'+(m.tr==="weight"?'<button style="background:none;border:none;font-size:.85rem;color:#52525b;cursor:pointer;padding:0 2px" onclick="showProg(\''+esc(m.nm)+'\')" title="Progression">&#128200;</button>':'')+'<button style="background:none;border:none;font-size:.85rem;color:#52525b;cursor:pointer;padding:0 2px" onclick="showPrevSession(\''+esc(m.nm)+'\')" title="Last session">&#128203;</button></div></div>'+lastHint;
         for(var ss=0;ss<setCount;ss++){
           var sIdx=idx+"_s"+ss;var sDone=!!(st.c&&st.c[sIdx]);
           var sw=(st.v&&st.v[idx+"_s"+ss+"_w"])||"";
@@ -1426,7 +1564,6 @@ function buildWeightsView(){
   if(!el)return;
   var SEC_ORDER=["Strength","Stations","Erg","Conditioning","Custom"];
   var secMap={};
-  // Scan all weeks for tracked movements
   weeks.forEach(function(week,wi){
     week.days.forEach(function(day,di){
       (day.mvs||[]).forEach(function(m){
@@ -1443,8 +1580,14 @@ function buildWeightsView(){
       });
     });
   });
-  var html='<div style="padding:8px 0 16px"><div style="font-size:1rem;font-weight:700;color:#f4f4f5;margin-bottom:4px">Last Logged Weights</div><div style="font-size:.72rem;color:#52525b">Tap an exercise in the calendar to update</div></div>';
-  var hasAny=false;
+  var html="";
+  // Weekly summary
+  html+=buildWeeklySummary();
+  // Utility buttons
+  html+='<div class="utility-row"><button class="utility-btn" onclick="exportCSV()">&#128190; Export CSV</button><button class="utility-btn" onclick="requestReminder()">&#128276; Reminder</button></div>';
+  html+='<div class="utility-row"><button class="utility-btn" id="ghBackupBtn" onclick="backupToGitHub()" style="border-color:#2563eb;color:#60a5fa">&#9729;&#65039; Backup to GitHub</button><button class="utility-btn" onclick="restoreFromGitHub()" style="border-color:#7c3aed;color:#a78bfa">&#8617;&#65039; Restore</button><button class="utility-btn" onclick="openGHSetup()" style="border-color:#374151;color:#6b7280">&#9881;&#65039; Setup</button></div>';
+  // Exercise list with sparklines
+  html+='<div style="font-size:.72rem;font-weight:700;color:#52525b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Lift Tracker</div>';
   function renderSec(sec){
     if(!secMap[sec])return;
     var names=Object.keys(secMap[sec]).sort();
@@ -1452,14 +1595,16 @@ function buildWeightsView(){
     html+='<div class="wt-section"><div class="wt-sec-hdr">'+esc(sec)+'</div>';
     names.forEach(function(nm){
       var hist=getHistData(nm);
-      html+='<div class="wt-row"><span class="wt-name">'+esc(nm)+'</span>';
+      html+='<div class="wt-row" style="flex-direction:column;align-items:flex-start;gap:4px">';
+      html+='<div style="display:flex;align-items:center;justify-content:space-between;width:100%">';
+      html+='<span class="wt-name" onclick="showProg(\''+esc(nm)+'\')" style="cursor:pointer">'+esc(nm)+' <span style="font-size:.6rem;color:#3f3f46">&#128200;</span></span>';
       if(hist.length){
-        hasAny=true;
-        html+='<span class="wt-val">'+esc(hist[0].value)+'</span>';
-        html+='<span class="wt-date">'+esc(hist[0].date)+'</span>';
+        html+='<div style="text-align:right"><span class="wt-val">'+esc(hist[0].value)+'</span><span class="wt-date" style="display:block;margin-top:1px">'+esc(hist[0].date)+'</span></div>';
       }else{
         html+='<span class="wt-empty">not logged yet</span>';
       }
+      html+='</div>';
+      if(hist.length>1)html+=buildSparkline(hist);
       html+='</div>';
     });
     html+='</div>';
@@ -1479,7 +1624,9 @@ function setPosOverride(wi,di,srcWi,srcDi){
 }
 function resetPos(wi,di){delete SWAP_MAP[swapKey(wi,di)];}
 function resetWeek(wi){
-  Object.keys(SWAP_MAP).forEach(function(k){if(k.indexOf(wi+"_")===0)delete SWAP_MAP[k];});
+  Object.keys(SWAP_MAP).forEach(function(k){
+    if(k.indexOf(wi+"_")===0||k.indexOf("extra_"+wi+"_")===0)delete SWAP_MAP[k];
+  });
   closeSwap();rebuildCalendar();
 }
 function getEffectiveSrc(wi,di){
@@ -1530,18 +1677,21 @@ function renderSwapModal(){
 function closeSwap(){document.getElementById("swapOverlay").style.display="none";}
 function doSwap(wi,di,targetWi,targetDi){
   wi=parseInt(wi,10);di=parseInt(di,10);targetWi=parseInt(targetWi,10);targetDi=parseInt(targetDi,10);
-  var a=getEffectiveSrc(wi,di);
-  // Target gets the source session
-  setPosOverride(targetWi,targetDi,a.srcWi,a.srcDi);
-  // Source becomes rest (first rest day in source week)
+  var src=getEffectiveSrc(wi,di);
+  // ADD this session to the target day (accumulate)
+  var extraKey="extra_"+targetWi+"_"+targetDi;
+  if(!SWAP_MAP[extraKey])SWAP_MAP[extraKey]=[];
+  SWAP_MAP[extraKey].push({srcWi:src.srcWi,srcDi:src.srcDi});
+  // Source becomes rest
   var restDi=null;
   weeks[wi].days.forEach(function(d,ddi){if(d.type==="rest"&&restDi===null)restDi=ddi;});
   if(restDi!==null)setPosOverride(wi,di,wi,restDi);
   else resetPos(wi,di);
   closeSwap();
   rebuildCalendar();
-  showSyncSuccess("Session moved ✔");
+  showSyncSuccess("Session added to "+weeks[targetWi].days[targetDi].day+" ✔");
 }
+function getExtraSessions(wi,di){return SWAP_MAP["extra_"+wi+"_"+di]||[];}
 function rebuildCalendar(){
   // Save expanded weeks
   var open={};
@@ -1597,9 +1747,366 @@ function onDayTouchMove(evt){
   var targetCard=el?el.closest(".dcard"):null;
   if(targetCard)targetCard.classList.add("drag-over");
 }
+// ── S&C Progression ──────────────────────────────────────────────────────
+function suggestWeight(nm, targetRepsStr){
+  var hist=getHistData(nm);
+  if(!hist.length)return null;
+  var last=hist[0];
+  var m=last.value.match(/^(\d+(?:\.\d+)?)(?:kg)?(?:\s*[x×]\s*(\d+))?/i);
+  if(!m)return null;
+  var lastW=parseFloat(m[1]);
+  var lastR=m[2]?parseInt(m[2]):null;
+  var targetR=targetRepsStr?parseInt(targetRepsStr):null;
+  // If hit target reps (or no reps tracked), suggest +2.5kg
+  if(!lastR||!targetR||lastR>=targetR){
+    return{suggest:(lastW+2.5)+"kg",reason:"You hit target last time"};
+  }
+  return{suggest:lastW+"kg",reason:"Same weight — aim for more reps"};
+}
+function buildFullChart(hist){
+  if(!hist||hist.length<2)return'<div style="color:#52525b;font-size:.8rem;text-align:center;padding:20px">Not enough data yet</div>';
+  var vals=hist.slice(0,20).reverse().map(function(h){
+    var m=h.value.match(/^(\d+(?:\.\d+)?)/);
+    return{v:m?parseFloat(m[1]):null,d:h.date};
+  }).filter(function(p){return p.v!==null;});
+  if(vals.length<2)return'<div style="color:#52525b;font-size:.8rem;text-align:center;padding:20px">Not enough numeric data</div>';
+  var mn=Math.min.apply(null,vals.map(function(p){return p.v;}));
+  var mx=Math.max.apply(null,vals.map(function(p){return p.v;}));
+  var rng=mx-mn||1;
+  var W=280,H=100,pad=20;
+  var pts=vals.map(function(p,i){
+    var x=pad+(i/(vals.length-1))*(W-pad*2);
+    var y=H-pad-((p.v-mn)/rng)*(H-pad*2);
+    return{x:x,y:y,v:p.v,d:p.d};
+  });
+  var polyline=pts.map(function(p){return p.x+","+p.y;}).join(" ");
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="display:block">';
+  // Grid lines
+  for(var i=0;i<3;i++){var gy=pad+(i/2)*(H-pad*2);svg+='<line x1="'+pad+'" y1="'+gy+'" x2="'+(W-pad)+'" y2="'+gy+'" stroke="#2a2a2a" stroke-width="1"/>';}
+  svg+='<polyline points="'+polyline+'" fill="none" stroke="#14b8a6" stroke-width="2.5" stroke-linejoin="round"/>';
+  // Data points
+  pts.forEach(function(p){svg+='<circle cx="'+p.x+'" cy="'+p.y+'" r="4" fill="#14b8a6"/>';});
+  // Min/max labels
+  svg+='<text x="'+(W-pad+4)+'" y="'+(pad+4)+'" fill="#a1a1aa" font-size="9">'+mx+'kg</text>';
+  svg+='<text x="'+(W-pad+4)+'" y="'+(H-pad)+'" fill="#a1a1aa" font-size="9">'+mn+'kg</text>';
+  svg+='</svg>';
+  return'<div class="prog-chart-wrap">'+svg+'</div>';
+}
+function showProg(nm){
+  var hist=getHistData(nm);
+  document.getElementById("progTitle").textContent=nm;
+  document.getElementById("progChart").innerHTML=buildFullChart(hist);
+  var histHtml="";
+  if(!hist.length){histHtml='<div style="color:#52525b;text-align:center;padding:20px;font-size:.8rem">No sessions logged yet</div>';}
+  else{
+    hist.forEach(function(h){
+      histHtml+='<div class="prog-hist-row"><div><div class="prog-hist-date">'+esc(h.date)+'</div>'+(h.ctx?'<div class="prog-hist-ctx">'+esc(h.ctx)+'</div>':'')+'</div><div class="prog-hist-val">'+esc(h.value)+'</div></div>';
+    });
+  }
+  document.getElementById("progHistory").innerHTML=histHtml;
+  document.getElementById("progOverlay").style.display="flex";
+}
+function closeProg(){document.getElementById("progOverlay").style.display="none";}
+
+// ── GitHub Backup ────────────────────────────────────────────────────────
+function ghToken(){try{return localStorage.getItem("hx_gh_token")||"";}catch(e){return "";}}
+function ghRepo(){try{return localStorage.getItem("hx_gh_repo")||"willoleary000/Hyrox-plan";}catch(e){return "willoleary000/Hyrox-plan";}}
+function openGHSetup(){
+  var inp=document.getElementById("ghTokenInput");
+  var repo=document.getElementById("ghRepoInput");
+  if(inp)inp.value=ghToken();
+  if(repo)repo.value=ghRepo();
+  var last=document.getElementById("ghLastBackup");
+  if(last){
+    try{var d=localStorage.getItem("hx_gh_backup_date");last.textContent=d?"Last backup: "+new Date(d).toLocaleString("en-GB"):"No backup yet";}catch(e){}
+  }
+  document.getElementById("ghSetupOverlay").style.display="flex";
+}
+function closeGHSetup(){document.getElementById("ghSetupOverlay").style.display="none";}
+function saveGHSetup(){
+  var t=document.getElementById("ghTokenInput").value.trim();
+  var r=document.getElementById("ghRepoInput").value.trim();
+  try{if(t)localStorage.setItem("hx_gh_token",t);if(r)localStorage.setItem("hx_gh_repo",r);}catch(e){}
+  closeGHSetup();
+}
+function collectAllData(){
+  var data={version:2,timestamp:new Date().toISOString(),items:{}};
+  try{
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      if(k&&(k.indexOf("hx_")===0||k.indexOf("runna_")===0))data.items[k]=localStorage.getItem(k);
+    }
+  }catch(e){}
+  return data;
+}
+function restoreAllData(data){
+  if(!data||!data.items)return 0;
+  var count=0;
+  try{Object.keys(data.items).forEach(function(k){localStorage.setItem(k,data.items[k]);count++;});}catch(e){}
+  return count;
+}
+async function backupToGitHub(){
+  var token=ghToken();if(!token){openGHSetup();return;}
+  var repo=ghRepo();
+  var path="backups/training-data.json";
+  var statusEl=document.getElementById("ghBackupBtn");
+  if(statusEl)statusEl.disabled=true;
+  showSyncSuccess("Backing up…");
+  try{
+    var data=collectAllData();
+    var jsonStr=JSON.stringify(data,null,2);
+    var b64=btoa(unescape(encodeURIComponent(jsonStr)));
+    // Get existing SHA
+    var sha=null;
+    try{
+      var rr=await fetch("https://api.github.com/repos/"+repo+"/contents/"+path,{headers:{"Authorization":"token "+token}});
+      if(rr.ok){var jj=await rr.json();sha=jj.sha;}
+    }catch(e){}
+    var body={message:"Training backup "+new Date().toLocaleDateString("en-GB"),content:b64};
+    if(sha)body.sha=sha;
+    var resp=await fetch("https://api.github.com/repos/"+repo+"/contents/"+path,{
+      method:"PUT",headers:{"Authorization":"token "+token,"Content-Type":"application/json"},
+      body:JSON.stringify(body)
+    });
+    if(resp.ok){
+      try{localStorage.setItem("hx_gh_backup_date",new Date().toISOString());}catch(e){}
+      showSyncSuccess("✔ Backed up to GitHub · "+Object.keys(data.items).length+" items");
+    } else {
+      var err=await resp.json();
+      showSyncSuccess("Backup failed: "+(err.message||resp.status));
+    }
+  }catch(e){showSyncSuccess("Error: "+e.message);}
+  if(statusEl)statusEl.disabled=false;
+}
+async function restoreFromGitHub(){
+  var token=ghToken();if(!token){openGHSetup();return;}
+  var repo=ghRepo();
+  showSyncSuccess("Restoring…");
+  try{
+    var resp=await fetch("https://api.github.com/repos/"+repo+"/contents/backups/training-data.json",{
+      headers:{"Authorization":"token "+token}
+    });
+    if(!resp.ok){showSyncSuccess("No backup found in GitHub");return;}
+    var j=await resp.json();
+    var jsonStr=decodeURIComponent(escape(atob(j.content.replace(/\n/g,""))));
+    var data=JSON.parse(jsonStr);
+    var count=restoreAllData(data);
+    showSyncSuccess("✔ Restored "+count+" items from GitHub");
+    loadRunnaData();updateRunnaStatus();
+    if(currentTab==="weights")buildWeightsView();
+    if(currentTab==="cal")rebuildCalendar();
+  }catch(e){showSyncSuccess("Restore failed: "+e.message);}
+}
+
+// ── Auto-save ─────────────────────────────────────────────────────────────
+var ghDirty=false;
+var ghSaveTimer=null;
+function markDirty(){
+  ghDirty=true;
+  // Debounce: schedule a save in 30s if token is set
+  clearTimeout(ghSaveTimer);
+  if(ghToken()){
+    ghSaveTimer=setTimeout(function(){autoSaveToGitHub();},30000);
+  }
+}
+function showGHStatus(msg,type){
+  var el=document.getElementById("ghSaveStatus");
+  if(!el)return;
+  el.textContent=msg;
+  el.className="gh-save-status "+(type||"");
+  el.style.display="block";
+  if(type==="saved"){
+    setTimeout(function(){el.style.display="none";},4000);
+  }
+}
+async function autoSaveToGitHub(){
+  if(!ghDirty||!ghToken())return;
+  showGHStatus("Saving…","saving");
+  var token=ghToken();var repo=ghRepo();
+  var path="backups/training-data.json";
+  try{
+    var data=collectAllData();
+    var b64=btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2))));
+    var sha=null;
+    try{
+      var rr=await fetch("https://api.github.com/repos/"+repo+"/contents/"+path,{headers:{"Authorization":"token "+token}});
+      if(rr.ok){var jj=await rr.json();sha=jj.sha;}
+    }catch(e){}
+    var body={message:"Auto-backup "+new Date().toLocaleDateString("en-GB"),content:b64};
+    if(sha)body.sha=sha;
+    var resp=await fetch("https://api.github.com/repos/"+repo+"/contents/"+path,{
+      method:"PUT",headers:{"Authorization":"token "+token,"Content-Type":"application/json"},
+      body:JSON.stringify(body)
+    });
+    if(resp.ok){
+      ghDirty=false;
+      try{localStorage.setItem("hx_gh_backup_date",new Date().toISOString());}catch(e){}
+      showGHStatus("Saved to GitHub ✔","saved");
+    } else {
+      showGHStatus("Save failed","");
+    }
+  }catch(e){showGHStatus("","");}
+}
+
+// ── Theme ─────────────────────────────────────────────────────────────────
+function toggleTheme(){
+  var isLight=document.body.classList.toggle("light");
+  document.getElementById("themeToggle").textContent=isLight?"🌙":"🌞";
+  try{localStorage.setItem("hx_theme",isLight?"light":"dark");}catch(e){}
+}
+function loadTheme(){
+  try{
+    var t=localStorage.getItem("hx_theme");
+    if(t==="light"){document.body.classList.add("light");document.getElementById("themeToggle").textContent="🌙";}
+  }catch(e){}
+}
+
+// ── Week completion ────────────────────────────────────────────────────────
+function getWeekCompletion(wi){
+  var total=0,done=0;
+  weeks[wi].days.forEach(function(day,di){
+    if(day.type==="rest"||!day.mvs||!day.mvs.length)return;
+    var st=loadState("hx_w"+wi+"d"+di);
+    day.mvs.forEach(function(m,idx){
+      total++;
+      if(st.c&&st.c[String(idx)])done++;
+    });
+  });
+  return{total:total,done:done,pct:total>0?Math.round((done/total)*100):0};
+}
+
+// ── Logged indicator ──────────────────────────────────────────────────────
+function dayHasLogs(day){
+  if(!day||!day.mvs)return false;
+  return day.mvs.some(function(m){return m.nm&&getHistData(m.nm).length>0;});
+}
+
+// ── Sparkline SVG ──────────────────────────────────────────────────────────
+function buildSparkline(hist){
+  if(!hist||hist.length<2)return"";
+  var vals=hist.slice(0,10).reverse().map(function(h){
+    var m=h.value.match(/^(\d+(?:\.\d+)?)/);return m?parseFloat(m[1]):null;
+  }).filter(function(v){return v!==null;});
+  if(vals.length<2)return"";
+  var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rng=mx-mn||1;
+  var W=80,H=28;
+  var pts=vals.map(function(v,i){
+    return(i/(vals.length-1)*W)+","+(H-((v-mn)/rng)*H*0.9+2);
+  }).join(" ");
+  var last=vals[vals.length-1],prev=vals[vals.length-2];
+  var trend=last>prev?"trend-up":last<prev?"trend-down":"trend-flat";
+  var arrow=last>prev?"↑":last<prev?"↓":"→";
+  return'<div class="sparkline-wrap"><svg width="'+W+'" height="'+H+'" style="overflow:visible"><polyline points="'+pts+'" fill="none" stroke="#14b8a6" stroke-width="1.5" stroke-linejoin="round"/><circle cx="'+(vals.length-1)/(vals.length-1)*W+'" cy="'+(H-((last-mn)/rng)*H*0.9+2)+'" r="3" fill="#14b8a6"/></svg><span class="sparkline-trend '+trend+'">'+arrow+' '+last+'kg</span></div>';
+}
+
+// ── Weekly summary ────────────────────────────────────────────────────────
+function buildWeeklySummary(){
+  // Find current week
+  var today=new Date();today.setHours(0,0,0,0);
+  var cwi=-1;
+  for(var wi=0;wi<weeks.length;wi++){
+    if(typeof parseWeekDates!=="function")break;
+    var r=parseWeekDates(weeks[wi].dt);
+    if(r&&r.start<=today&&today<=r.end){cwi=wi;break;}
+    if(r&&r.start>today&&cwi===-1){cwi=wi;break;}
+  }
+  if(cwi<0)return"";
+  var c=getWeekCompletion(cwi);
+  // Count sets logged
+  var setsLogged=0;
+  weeks[cwi].days.forEach(function(day,di){
+    var st=loadState("hx_w"+cwi+"d"+di);
+    if(!st.v)return;
+    Object.keys(st.v).forEach(function(k){if(k.indexOf("_s")>=0&&k.indexOf("_w")>=0&&st.v[k])setsLogged++;});
+  });
+  // Find heaviest lift this week
+  var heaviest=null,heaviestNm="";
+  weeks[cwi].days.forEach(function(day){
+    (day.mvs||[]).forEach(function(m){
+      if(m.tr!=="weight"||!m.nm)return;
+      var hist=getHistData(m.nm);
+      if(hist.length){
+        var wm=hist[0].value.match(/^(\d+(?:\.\d+)?)/);
+        if(wm){var w=parseFloat(wm[1]);if(!heaviest||w>heaviest){heaviest=w;heaviestNm=m.nm;}}
+      }
+    });
+  });
+  return'<div class="wk-summary">'+
+    '<div class="wk-stat"><div class="wk-stat-val">'+c.done+'/'+c.total+'</div><div class="wk-stat-lbl">Sessions</div></div>'+
+    '<div class="wk-stat"><div class="wk-stat-val">'+c.pct+'%</div><div class="wk-stat-lbl">Complete</div></div>'+
+    '<div class="wk-stat"><div class="wk-stat-val">'+(setsLogged||0)+'</div><div class="wk-stat-lbl">Sets Logged</div></div>'+
+    '</div>'+
+    (heaviest?'<div class="wk-best">&#127942; Heaviest this week: <strong style="color:#f4f4f5">'+esc(heaviestNm)+'</strong> · '+heaviest+'kg</div>':'')+
+    '<div style="height:8px"></div>';
+}
+
+// ── Export CSV ────────────────────────────────────────────────────────────
+function exportCSV(){
+  var rows=["Exercise,Date,Value,Context"];
+  // Scan all exercise history
+  var seen={};
+  weeks.forEach(function(week){
+    week.days.forEach(function(day){
+      (day.mvs||[]).forEach(function(m){
+        if(!m.nm||seen[m.nm])return;
+        seen[m.nm]=true;
+        var hist=getHistData(m.nm);
+        hist.forEach(function(h){
+          rows.push(['"'+m.nm+'"','"'+h.date+'"','"'+h.value+'"','"'+(h.ctx||"")+'"'].join(","));
+        });
+      });
+    });
+  });
+  var blob=new Blob([rows.join("\n")],{type:"text/csv"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");
+  a.href=url;a.download="hyrox_weights_"+new Date().toISOString().slice(0,10)+".csv";
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},100);
+}
+
+// ── Notification reminder ──────────────────────────────────────────────────
+function requestReminder(){
+  if(!("Notification" in window)){alert("Notifications not supported in this browser.");return;}
+  Notification.requestPermission().then(function(perm){
+    if(perm==="granted"){
+      try{localStorage.setItem("hx_notif","1");}catch(e){}
+      showSyncSuccess("Reminders enabled ✔");
+      scheduleReminderCheck();
+    } else {
+      showSyncSuccess("Permission denied");
+    }
+  });
+}
+function scheduleReminderCheck(){
+  var now=new Date();
+  var target=new Date(now);
+  target.setHours(6,0,0,0);
+  if(target<=now)target.setDate(target.getDate()+1);
+  var delay=target-now;
+  setTimeout(function(){
+    try{
+      var lastShown=localStorage.getItem("hx_notif_date");
+      var today=new Date().toDateString();
+      if(lastShown!==today&&Notification.permission==="granted"){
+        new Notification("Hyrox + Dublin",{body:"Today\'s session is ready. Tap to open.",icon:"/icon.svg"});
+        localStorage.setItem("hx_notif_date",today);
+      }
+    }catch(e){}
+    scheduleReminderCheck();
+  },Math.min(delay,86400000));
+}
+function checkAndScheduleReminder(){
+  try{
+    if(localStorage.getItem("hx_notif")==="1"&&Notification.permission==="granted")scheduleReminderCheck();
+  }catch(e){}
+}
+
 function initApp(){
   if(initApp._done)return;initApp._done=true;
+  loadTheme();
   loadRunnaData();updateRunnaStatus();
+  checkAndScheduleReminder();
   var frow=document.getElementById("filters");
   PHASES.forEach(function(p){
     var btn=document.createElement("button");btn.className="fbtn "+p.f+(p.id==="all"?" on":"");
@@ -1609,6 +2116,15 @@ function initApp(){
   var html="";weeks.forEach(function(week,wi){html+=buildWeek(week,wi);});
   document.getElementById("weeks").innerHTML=html||'<div style="padding:40px;text-align:center;color:#52525b">Programme coming soon</div>';
   document.getElementById("wcount").textContent=weeks.length+" weeks \u00b7 Progress saves automatically";
+  // Auto-save when app goes to background
+  document.addEventListener("visibilitychange",function(){
+    if(document.hidden&&ghDirty&&ghToken()){
+      clearTimeout(ghSaveTimer);
+      autoSaveToGitHub();
+    }
+  });
+  // Also auto-save every 5 minutes
+  setInterval(function(){if(ghDirty&&ghToken())autoSaveToGitHub();},300000);
   document.getElementById("raceToggle").onclick=function(){
     racesVisible=!racesVisible;
     document.getElementById("raceList").style.display=racesVisible?"flex":"none";
