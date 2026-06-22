@@ -310,7 +310,7 @@ textarea.runna-setup-input{resize:none;font-size:.72rem;line-height:1.4}
 <!-- Swap Modal -->
 <div class="overlay" id="swapOverlay" style="display:none" onclick="if(event.target.id==='swapOverlay')closeSwap()">
   <div class="modal">
-    <div class="modal-hdr"><span class="modal-title" id="swapTitle">Move Session</span><button class="modal-close" onclick="closeSwap()">&#10005;</button></div>
+    <div class="modal-hdr"><span class="modal-title" id="swapTitle">Move Session To</span><button class="modal-close" onclick="closeSwap()">&#10005;</button></div>
     <div style="font-size:.8rem;color:#71717a;margin-bottom:16px">Swap with which day this week?</div>
     <div id="swapContent"></div>
     <button onclick="resetWeek(swapWi)" style="margin-top:16px;font-size:.72rem;color:#3f3f46;background:none;border:none;text-decoration:underline;cursor:pointer">Reset week to original order</button>
@@ -1150,19 +1150,7 @@ function showSyncSuccess(count){
   document.body.appendChild(el);
   setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},3000);
 }
-function refreshCalendarRunna(){
-  // Remember which weeks are currently expanded
-  var expanded={};
-  document.querySelectorAll(".wcard:not(.collapsed)").forEach(function(c){expanded[c.id]=true;});
-  // Rebuild
-  var html="";weeks.forEach(function(week,wi){html+=buildWeek(week,wi);});
-  document.getElementById("weeks").innerHTML=html;
-  // Restore expanded state
-  Object.keys(expanded).forEach(function(id){
-    var c=document.getElementById(id);
-    if(c)c.classList.remove("collapsed");
-  });
-}
+function refreshCalendarRunna(){rebuildCalendar();}
 
 function prevKey(nm){return"hx_prev_"+nm.toLowerCase().replace(/[^a-z0-9]/g,"_").substring(0,40);}
 function savePrevSession(nm,weekLabel,dateStr,sets){
@@ -1480,23 +1468,22 @@ function buildWeightsView(){
   Object.keys(secMap).forEach(function(sec){if(SEC_ORDER.indexOf(sec)<0)renderSec(sec);});
   el.innerHTML=html;
 }
-// ── Day Swap System (cross-week) ──────────────────────────────────────────
-var swapWi=null,swapDi=null,swapPickingWeek=false;
-function posKey(wi,di){return "hx_pos_w"+wi+"d"+di;}
-function getPosOverride(wi,di){
-  try{var v=localStorage.getItem(posKey(wi,di));return v?JSON.parse(v):null;}catch(e){return null;}
-}
+// ── Day Swap System ────────────────────────────────────────────────────────
+var SWAP_MAP={};  // key: "wi_di" -> {srcWi,srcDi}
+var swapWi=null,swapDi=null;
+function swapKey(wi,di){return wi+"_"+di;}
+function getPosOverride(wi,di){return SWAP_MAP[swapKey(wi,di)]||null;}
 function setPosOverride(wi,di,srcWi,srcDi){
-  try{
-    if(srcWi===wi&&srcDi===di)localStorage.removeItem(posKey(wi,di));
-    else localStorage.setItem(posKey(wi,di),JSON.stringify({srcWi:srcWi,srcDi:srcDi}));
-  }catch(e){}
+  if(srcWi===wi&&srcDi===di){delete SWAP_MAP[swapKey(wi,di)];}
+  else{SWAP_MAP[swapKey(wi,di)]={srcWi:srcWi,srcDi:srcDi};}
 }
-function resetPos(wi,di){try{localStorage.removeItem(posKey(wi,di));}catch(e){}}
-function resetWeek(wi){for(var d=0;d<7;d++)resetPos(wi,d);closeSwap();refreshCalendarRunna();}
+function resetPos(wi,di){delete SWAP_MAP[swapKey(wi,di)];}
+function resetWeek(wi){
+  Object.keys(SWAP_MAP).forEach(function(k){if(k.indexOf(wi+"_")===0)delete SWAP_MAP[k];});
+  closeSwap();rebuildCalendar();
+}
 function getEffectiveSrc(wi,di){
-  var ov=getPosOverride(wi,di);
-  return ov||{srcWi:wi,srcDi:di};
+  return SWAP_MAP[swapKey(wi,di)]||{srcWi:wi,srcDi:di};
 }
 function openSwap(wi,di,evt){
   if(evt)evt.stopPropagation();
@@ -1542,11 +1529,32 @@ function renderSwapModal(){
 }
 function closeSwap(){document.getElementById("swapOverlay").style.display="none";}
 function doSwap(wi,di,targetWi,targetDi){
+  wi=parseInt(wi,10);di=parseInt(di,10);targetWi=parseInt(targetWi,10);targetDi=parseInt(targetDi,10);
   var a=getEffectiveSrc(wi,di);
-  var b=getEffectiveSrc(targetWi,targetDi);
-  setPosOverride(wi,di,b.srcWi,b.srcDi);
+  // Target gets the source session
   setPosOverride(targetWi,targetDi,a.srcWi,a.srcDi);
-  closeSwap();refreshCalendarRunna();
+  // Source becomes rest (first rest day in source week)
+  var restDi=null;
+  weeks[wi].days.forEach(function(d,ddi){if(d.type==="rest"&&restDi===null)restDi=ddi;});
+  if(restDi!==null)setPosOverride(wi,di,wi,restDi);
+  else resetPos(wi,di);
+  closeSwap();
+  rebuildCalendar();
+  showSyncSuccess("Session moved ✔");
+}
+function rebuildCalendar(){
+  // Save expanded weeks
+  var open={};
+  document.querySelectorAll(".wcard:not(.collapsed)").forEach(function(c){open[c.id]=true;});
+  // Rebuild
+  var html="";
+  weeks.forEach(function(week,wi){html+=buildWeek(week,wi);});
+  document.getElementById("weeks").innerHTML=html;
+  // Restore expanded
+  Object.keys(open).forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)el.classList.remove("collapsed");
+  });
 }
 
 // ── Touch drag and drop ────────────────────────────────────────────────────
