@@ -621,7 +621,9 @@ function buildDay(day,wi,di,week,isSwapped,posDay){
   if(dayDate){var mn=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];dayDateStr=" "+dayDate.getDate()+" "+mn[dayDate.getMonth()];}
   var posLabel=posDay||day.day;
   html+='<div class="ddot"></div><div class="dtxt"><div class="dlbl">'+esc(posLabel)+dayDateStr+(isSwapped?' <span class="swapped-badge">&#8644;</span>':'')+'</div><div class="dtitle">'+esc(day.t)+(runnaEvs.length?' <span style="font-size:.58rem;background:#f59e0b;color:#000;border-radius:5px;padding:1px 5px;font-weight:700;vertical-align:middle">&#127939; Runna</span>':'')+'</div></div>';
+  html+='<button class="swap-btn" onclick="openSwap('+wi+','+di+',event)" title="Move session">&#8644;</button>';
   if(!isRest){html+='<div class="dmeta"><span class="dprog'+(allDone?" dn":"")+'" id="prog-'+key+'">'+doneCount+"/"+total+'</span><span class="dchev" id="chev-'+key+'">\u25bc</span></div>';}
+  else{html+='<div class="dmeta"><span class="dchev" id="chev-'+key+'">\u25bc</span></div>';}
   html+="</div>";
   html+='<div class="dbody" id="db-'+key+'">';
   html+=buildSections(mvs,key,st,ctx,wi,di,custom);
@@ -1142,9 +1144,17 @@ function showSyncSuccess(count){
   setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},3000);
 }
 function refreshCalendarRunna(){
-  // Rebuild calendar to show updated Runna sessions
+  // Remember which weeks are currently expanded
+  var expanded={};
+  document.querySelectorAll(".wcard:not(.collapsed)").forEach(function(c){expanded[c.id]=true;});
+  // Rebuild
   var html="";weeks.forEach(function(week,wi){html+=buildWeek(week,wi);});
   document.getElementById("weeks").innerHTML=html;
+  // Restore expanded state
+  Object.keys(expanded).forEach(function(id){
+    var c=document.getElementById(id);
+    if(c)c.classList.remove("collapsed");
+  });
 }
 
 function prevKey(nm){return"hx_prev_"+nm.toLowerCase().replace(/[^a-z0-9]/g,"_").substring(0,40);}
