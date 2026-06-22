@@ -313,7 +313,7 @@ textarea.runna-setup-input{resize:none;font-size:.72rem;line-height:1.4}
     <div class="modal-hdr"><span class="modal-title" id="swapTitle">Move Session</span><button class="modal-close" onclick="closeSwap()">&#10005;</button></div>
     <div style="font-size:.8rem;color:#71717a;margin-bottom:16px">Swap with which day this week?</div>
     <div id="swapContent"></div>
-    <button onclick="resetDayOrder(swapWi)" style="margin-top:16px;font-size:.72rem;color:#3f3f46;background:none;border:none;text-decoration:underline;cursor:pointer">Reset week to original order</button>
+    <button onclick="resetWeek(swapWi)" style="margin-top:16px;font-size:.72rem;color:#3f3f46;background:none;border:none;text-decoration:underline;cursor:pointer">Reset week to original order</button>
   </div>
 </div>
 
@@ -615,8 +615,8 @@ function buildDay(day,wi,di,week,isSwapped,posDay){
   var allDone=total>0&&doneCount===total;var ctx=week?week.lbl:"";
   var dayDate=getDayDate(week,day.day);
   var runnaEvs=(dayDate&&typeof getRunnaForDate==="function")?getRunnaForDate(dayDate):[];
-  var html='<div class="dcard dt-'+(day.type||"rest")+(allDone?" alldone":"")+'" data-key="'+key+'" data-total="'+total+'">';
-  html+='<div class="dhdr" onclick="toggleDay(\''+key+'\')">';
+  var html='<div class="dcard dt-'+(day.type||"rest")+(allDone?" alldone":"")+'" data-key="'+key+'" data-total="'+total+'" data-wi="'+wi+'" data-di="'+di+'">';
+  html+='<div class="dhdr" onclick="toggleDay(\''+key+'\')" ontouchstart="onDayTouchStart(event,'+wi+','+di+')" ontouchend="onDayTouchEnd(event,'+wi+','+di+')" ontouchmove="onDayTouchMove(event)">';
   var dayDateStr="";
   if(dayDate){var mn=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];dayDateStr=" "+dayDate.getDate()+" "+mn[dayDate.getMonth()];}
   var posLabel=posDay||day.day;
@@ -668,7 +668,14 @@ function buildWeek(week,wi){
   html+='<div style="display:flex;align-items:center;gap:6px">'+(hasRace?'<span class="rbadge">RACE</span>':"")+' <span class="wchev">\u25bc</span></div></div>';
   if(week.note)html+='<div class="wnote">'+esc(week.note)+'</div>';
   html+="</div><div class=\"days\">";
-  week.days.forEach(function(day,di){html+=buildDay(day,wi,di,week);});
+  week.days.forEach(function(day,di){
+    var ov=typeof getPosOverride==="function"?getPosOverride(wi,di):null;
+    var srcWi=ov?ov.srcWi:wi;
+    var srcDi=ov?ov.srcDi:di;
+    var srcDay=weeks[srcWi].days[srcDi];
+    var isSwapped=!!(ov);
+    html+=buildDay(srcDay,wi,di,week,isSwapped,day.day);
+  });
   html+="</div></div>";
   return html;
 }
