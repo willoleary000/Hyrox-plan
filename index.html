@@ -370,12 +370,12 @@ body.light .runna-bar-label{color:#d97706}
 <div class="overlay" id="ghSetupOverlay" style="display:none" onclick="if(event.target.id==='ghSetupOverlay')closeGHSetup()">
   <div class="modal">
     <div class="modal-hdr"><span class="modal-title">&#128202; GitHub Backup</span><button class="modal-close" onclick="closeGHSetup()">&#10005;</button></div>
-    <div style="font-size:.75rem;color:#71717a;margin-bottom:16px;line-height:1.6">Your training data will be saved to your GitHub repo as <strong style="color:#f4f4f5">backups/training-data.json</strong>. Generate a token at GitHub &rarr; Settings &rarr; Developer settings &rarr; Personal access tokens &rarr; select <strong style="color:#f4f4f5">repo</strong> scope.</div>
+    <div style="font-size:.75rem;color:#71717a;margin-bottom:16px;line-height:1.6">Your training data is saved as a <strong style="color:#f4f4f5">private GitHub Gist</strong>. Generate a token at GitHub &rarr; Settings &rarr; Developer settings &rarr; Personal access tokens (classic) &rarr; tick <strong style="color:#f4f4f5">gist</strong> scope only. No repo access needed.</div>
     <label class="add-label">GitHub Token</label>
     <input id="ghTokenInput" type="password" class="add-field" placeholder="github_pat_..."/>
-    <label class="add-label">Repo (owner/name)</label>
-    <input id="ghRepoInput" type="text" class="add-field" value="willoleary000/Hyrox-plan"/>
+
     <div id="ghLastBackup" style="font-size:.68rem;color:#52525b;margin-bottom:12px"></div>
+    <button onclick="saveGHSetup();testGHConnection()" style="width:100%;padding:10px;border-radius:10px;border:1px solid #2a2a2a;background:#1a1a1a;color:#a1a1aa;font-size:.8rem;cursor:pointer;margin-bottom:8px">Test Connection</button>
     <div class="add-btns">
       <button class="add-cancel-btn" onclick="closeGHSetup()">Cancel</button>
       <button class="add-save-btn" onclick="saveGHSetup()">Save</button>
@@ -1563,52 +1563,75 @@ function restoreAllData(data){
   try{Object.keys(data.items).forEach(function(k){localStorage.setItem(k,data.items[k]);count++;});}catch(e){}
   return count;
 }
+function ghGistId(){try{return localStorage.getItem("hx_gh_gist_id")||"";}catch(e){return "";}}
+function setGhGistId(id){try{localStorage.setItem("hx_gh_gist_id",id);}catch(e){}}
 async function backupToGitHub(){
-  var token=ghToken();if(!token){openGHSetup();return;}
-  var repo=ghRepo();var path="backups/training-data.json";
+  var token=ghToken();
+  if(!token){showGHStatus("No token — tap ⚙️ Setup","");openGHSetup();return;}
   var statusEl=document.getElementById("ghBackupBtn");if(statusEl)statusEl.disabled=true;
-  showGHStatus("Saving\u2026","saving");
+  showGHStatus("Saving…","saving");
   try{
-    var data=collectAllData();var b64=btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2))));
-    var sha=null;
-    try{var rr=await fetch("https://spectacular-vacherin-b65e34.netlify.app/.netlify/functions/backup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"restore",token:token,repo:repo})});
-      if(rr.ok){var jj=await rr.json();sha=jj.sha;}
-    }catch(e){}
+    var data=collectAllData();
+    var itemCount=Object.keys(data.items||{}).length;
+    var b64=btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2))));
+    var gistId=ghGistId();
+    var body={action:"backup",token:token,content:b64,message:"Training backup "+new Date().toLocaleDateString("en-GB")};
+    if(gistId)body.gistId=gistId;
+    var resp=await fetch("https://spectacular-vacherin-b65e34.netlify.app/.netlify/functions/backup",{
+      method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)
+    });
+    var respText=await resp.text();
+    if(resp.ok){
+      try{
+        var j=JSON.parse(respText);
+        if(j.id)setGhGistId(j.id);
+        localStorage.setItem("hx_gh_backup_date",new Date().toISOString());
+      }catch(e){}
+      showGHStatus("✔ Saved "+itemCount+" items to Gist","saved");
+    } else {
+      var errMsg="HTTP "+resp.status;
+      try{var ej=JSON.parse(respText);errMsg=ej.message||ej.error||errMsg;}catch(e){}
+      showGHStatus("Failed: "+errMsg,"");
+      console.error("Backup failed",resp.status,respText.substring(0,200));
+    }
+  }catch(e){showGHStatus("Network error: "+e.message,"");console.error(e);}
+  if(statusEl)statusEl.disabled=false;
+}
+async function testGHConnection(){
+  var token=ghToken();if(!token){showGHStatus("No token — open Setup","");return;}
+  showGHStatus("Testing…","saving");
+  try{
     var resp=await fetch("https://spectacular-vacherin-b65e34.netlify.app/.netlify/functions/backup",{
       method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({action:"backup",token:token,repo:repo,content:b64,message:"Training backup "+new Date().toLocaleDateString("en-GB")})
+      body:JSON.stringify({action:"restore",token:token})
     });
-    if(resp.ok){try{localStorage.setItem("hx_gh_backup_date",new Date().toISOString());}catch(e){}showGHStatus("\u2714 Saved to GitHub","saved");}
-    else{var err=await resp.json().catch(function(){return{};});showGHStatus("Failed: "+(err.message||resp.status),"");}
-  }catch(e){showGHStatus("Error: "+e.message,"");}
-  if(statusEl)statusEl.disabled=false;
+    if(resp.status===200){var j=await resp.json();if(j.id)setGhGistId(j.id);showGHStatus("✔ Connected — backup found","saved");}
+    else if(resp.status===404){showGHStatus("✔ Connected — no backup yet (will create on first save)","saved");}
+    else if(resp.status===401){showGHStatus("Token invalid or expired","");}
+    else if(resp.status===403){showGHStatus("Token needs gist scope","");}
+    else{var t=await resp.text();showGHStatus("HTTP "+resp.status+": "+t.substring(0,60),"");}
+  }catch(e){showGHStatus("Cannot reach Netlify — check backup.js is deployed","");}
 }
 async function restoreFromGitHub(){
   var token=ghToken();if(!token){openGHSetup();return;}
-  var repo=ghRepo();showGHStatus("Restoring\u2026","saving");
+  var gistId=ghGistId();showGHStatus("Restoring…","saving");
   try{
+    var body={action:"restore",token:token};if(gistId)body.gistId=gistId;
     var resp=await fetch("https://spectacular-vacherin-b65e34.netlify.app/.netlify/functions/backup",{
-      method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({action:"restore",token:token,repo:repo})
+      method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)
     });
-    if(!resp.ok){showGHStatus("No backup found","");return;}
-    var j=await resp.json();if(!j.content){showGHStatus("Empty backup","");return;}
-    var jsonStr=decodeURIComponent(escape(atob(j.content.replace(/\n/g,""))));
-    var data=JSON.parse(jsonStr);var count=restoreAllData(data);
-    showGHStatus("\u2714 Restored "+count+" items","saved");
+    if(!resp.ok){showGHStatus("No backup found — HTTP "+resp.status,"");return;}
+    var j=await resp.json();
+    if(j.id)setGhGistId(j.id);
+    var fileContent=j.files&&j.files["training-data.json"]&&j.files["training-data.json"].content;
+    if(!fileContent){showGHStatus("Backup file empty","");return;}
+    var data=JSON.parse(fileContent);
+    var count=restoreAllData(data);
+    showGHStatus("✔ Restored "+count+" items","saved");
     loadRunnaData();updateRunnaStatus();
-    if(currentTab==="weights")buildWeightsView();if(currentTab==="cal")rebuildCalendar();
+    if(currentTab==="weights")buildWeightsView();
+    if(currentTab==="cal")rebuildCalendar();
   }catch(e){showGHStatus("Restore failed: "+e.message,"");}
-}
-var ghDirty=false,ghSaveTimer=null;
-function markDirty(){
-  ghDirty=true;clearTimeout(ghSaveTimer);
-  if(ghToken()){ghSaveTimer=setTimeout(function(){autoSaveToGitHub();},30000);}
-}
-function showGHStatus(msg,type){
-  var el=document.getElementById("ghSaveStatus");if(!el)return;
-  el.textContent=msg;el.className="gh-save-status "+(type||"");el.style.display="block";
-  if(type==="saved"){setTimeout(function(){el.style.display="none";},4000);}
 }
 async function autoSaveToGitHub(){
   if(!ghDirty||!ghToken())return;
@@ -1739,4 +1762,3 @@ if("serviceWorker" in navigator){window.addEventListener("load",function(){navig
 </script>
 </body>
 </html>
-
