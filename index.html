@@ -1541,16 +1541,16 @@ function closeProg(){document.getElementById("progOverlay").style.display="none"
 function ghToken(){try{return localStorage.getItem("hx_gh_token")||"";}catch(e){return "";}}
 function ghRepo(){try{return localStorage.getItem("hx_gh_repo")||"willoleary000/Hyrox-plan";}catch(e){return "willoleary000/Hyrox-plan";}}
 function openGHSetup(){
-  var inp=document.getElementById("ghTokenInput");var repo=document.getElementById("ghRepoInput");
-  if(inp)inp.value=ghToken();if(repo)repo.value=ghRepo();
+  var inp=document.getElementById("ghTokenInput");
+  if(inp)inp.value=ghToken();
   var last=document.getElementById("ghLastBackup");
   if(last){try{var d=localStorage.getItem("hx_gh_backup_date");last.textContent=d?"Last backup: "+new Date(d).toLocaleString("en-GB"):"No backup yet";}catch(e){}}
   document.getElementById("ghSetupOverlay").style.display="flex";
 }
 function closeGHSetup(){document.getElementById("ghSetupOverlay").style.display="none";}
 function saveGHSetup(){
-  var t=document.getElementById("ghTokenInput").value.trim();var r=document.getElementById("ghRepoInput").value.trim();
-  try{if(t)localStorage.setItem("hx_gh_token",t);if(r)localStorage.setItem("hx_gh_repo",r);}catch(e){}
+  var inp=document.getElementById("ghTokenInput");var t=inp?inp.value.trim():"";
+  try{if(t)localStorage.setItem("hx_gh_token",t);}catch(e){}
   closeGHSetup();
 }
 function collectAllData(){
@@ -1640,7 +1640,7 @@ async function autoSaveToGitHub(){
     var data=collectAllData();var b64=btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2))));
     var resp=await fetch("https://spectacular-vacherin-b65e34.netlify.app/.netlify/functions/backup",{
       method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({action:"backup",token:token,repo:repo,content:b64,message:"Auto-backup "+new Date().toLocaleDateString("en-GB")})
+      body:JSON.stringify({action:"backup",token:token,content:b64,message:"Auto-backup "+new Date().toLocaleDateString("en-GB")})
     });
     if(resp.ok){ghDirty=false;try{localStorage.setItem("hx_gh_backup_date",new Date().toISOString());}catch(e){}showGHStatus("Saved to GitHub \u2714","saved");}
     else{showGHStatus("Save failed","");}
