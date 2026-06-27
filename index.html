@@ -489,7 +489,7 @@ window.onerror=function(msg,src,line){
     <div style="display:flex;gap:8px;margin-bottom:12px">
       <button id="ghBackupBtn" onclick="document.getElementById('err-banner').style.display='none';backupToGitHub()" style="flex:1;padding:10px;border-radius:10px;border:1px solid #2563eb;background:#1a1a1a;color:#60a5fa;font-size:.75rem;font-weight:600;cursor:pointer">&#9729;&#65039; Backup</button>
       <button onclick="document.getElementById('err-banner').style.display='none';restoreFromGitHub()" style="flex:1;padding:10px;border-radius:10px;border:1px solid #7c3aed;background:#1a1a1a;color:#a78bfa;font-size:.75rem;font-weight:600;cursor:pointer">&#8617;&#65039; Restore</button>
-      <button onclick="document.getElementById('err-banner').style.display='none';openGHSetup()" style="flex:1;padding:10px;border-radius:10px;border:1px solid #374151;background:#1a1a1a;color:#6b7280;font-size:.75rem;font-weight:600;cursor:pointer">&#9881;&#65039; Setup</button>
+      <button onclick="alert('Setup tapped — JS working');openGHSetup()" style="flex:1;padding:10px;border-radius:10px;border:1px solid #374151;background:#1a1a1a;color:#6b7280;font-size:.75rem;font-weight:600;cursor:pointer">&#9881;&#65039; Setup</button>
     </div>
   </div>
   <div id="weights-dynamic" style="padding:0 16px 60px"></div>
@@ -1585,6 +1585,7 @@ function restoreAllData(data){
 function ghGistId(){try{return localStorage.getItem("hx_gh_gist_id")||"";}catch(e){return "";}}
 function setGhGistId(id){try{localStorage.setItem("hx_gh_gist_id",id);}catch(e){}}
 async function backupToGitHub(){
+  alert("Backup tapped — token: "+(ghToken()?"SET":"NOT SET"));
   var token=ghToken();
   if(!token){showGHStatus("No token — tap ⚙️ Setup","");openGHSetup();return;}
   var statusEl=document.getElementById("ghBackupBtn");if(statusEl)statusEl.disabled=true;
