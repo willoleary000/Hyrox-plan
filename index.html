@@ -335,6 +335,14 @@ body.light .runna-bar-label{color:#d97706}
 </style>
 </head>
 <body>
+<div id="err-banner" style="display:none;position:fixed;top:0;left:0;right:0;background:#ef4444;color:#fff;font-size:.75rem;padding:8px 12px;z-index:9999;word-break:break-all"></div>
+<script>
+window.onerror=function(msg,src,line){
+  var b=document.getElementById("err-banner");
+  if(b){b.textContent="JS Error: "+msg+" (line "+line+")";b.style.display="block";}
+  return false;
+};
+</script>
 <div class="app">
 
 <div class="runna-setup-overlay" id="runnaSetupOverlay" style="display:none">
@@ -479,9 +487,9 @@ body.light .runna-bar-label{color:#d97706}
       <button onclick="requestReminder()" style="flex:1;padding:10px;border-radius:10px;border:1px solid #2a2a2a;background:#1a1a1a;color:#a1a1aa;font-size:.75rem;font-weight:600;cursor:pointer">&#128276; Reminder</button>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:12px">
-      <button id="ghBackupBtn" onclick="backupToGitHub()" style="flex:1;padding:10px;border-radius:10px;border:1px solid #2563eb;background:#1a1a1a;color:#60a5fa;font-size:.75rem;font-weight:600;cursor:pointer">&#9729;&#65039; Backup</button>
-      <button onclick="restoreFromGitHub()" style="flex:1;padding:10px;border-radius:10px;border:1px solid #7c3aed;background:#1a1a1a;color:#a78bfa;font-size:.75rem;font-weight:600;cursor:pointer">&#8617;&#65039; Restore</button>
-      <button onclick="openGHSetup()" style="flex:1;padding:10px;border-radius:10px;border:1px solid #374151;background:#1a1a1a;color:#6b7280;font-size:.75rem;font-weight:600;cursor:pointer">&#9881;&#65039; Setup</button>
+      <button id="ghBackupBtn" onclick="document.getElementById('err-banner').style.display='none';backupToGitHub()" style="flex:1;padding:10px;border-radius:10px;border:1px solid #2563eb;background:#1a1a1a;color:#60a5fa;font-size:.75rem;font-weight:600;cursor:pointer">&#9729;&#65039; Backup</button>
+      <button onclick="document.getElementById('err-banner').style.display='none';restoreFromGitHub()" style="flex:1;padding:10px;border-radius:10px;border:1px solid #7c3aed;background:#1a1a1a;color:#a78bfa;font-size:.75rem;font-weight:600;cursor:pointer">&#8617;&#65039; Restore</button>
+      <button onclick="document.getElementById('err-banner').style.display='none';openGHSetup()" style="flex:1;padding:10px;border-radius:10px;border:1px solid #374151;background:#1a1a1a;color:#6b7280;font-size:.75rem;font-weight:600;cursor:pointer">&#9881;&#65039; Setup</button>
     </div>
   </div>
   <div id="weights-dynamic" style="padding:0 16px 60px"></div>
