@@ -472,7 +472,20 @@ body.light .runna-bar-label{color:#d97706}
 <div class="ctxt" id="wcount"></div>
 <div class="weeks" id="weeks"></div>
 <div id="today-view" ontouchstart="onTodaySwipeStart(event)" ontouchend="onTodaySwipeEnd(event)"></div>
-<div id="weights-view" style="display:none"></div>
+<div id="weights-view" style="display:none">
+  <div id="weights-static" style="padding:12px 16px 0">
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button onclick="exportCSV()" style="flex:1;padding:10px;border-radius:10px;border:1px solid #2a2a2a;background:#1a1a1a;color:#a1a1aa;font-size:.75rem;font-weight:600;cursor:pointer">&#128190; Export CSV</button>
+      <button onclick="requestReminder()" style="flex:1;padding:10px;border-radius:10px;border:1px solid #2a2a2a;background:#1a1a1a;color:#a1a1aa;font-size:.75rem;font-weight:600;cursor:pointer">&#128276; Reminder</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button id="ghBackupBtn" onclick="backupToGitHub()" style="flex:1;padding:10px;border-radius:10px;border:1px solid #2563eb;background:#1a1a1a;color:#60a5fa;font-size:.75rem;font-weight:600;cursor:pointer">&#9729;&#65039; Backup</button>
+      <button onclick="restoreFromGitHub()" style="flex:1;padding:10px;border-radius:10px;border:1px solid #7c3aed;background:#1a1a1a;color:#a78bfa;font-size:.75rem;font-weight:600;cursor:pointer">&#8617;&#65039; Restore</button>
+      <button onclick="openGHSetup()" style="flex:1;padding:10px;border-radius:10px;border:1px solid #374151;background:#1a1a1a;color:#6b7280;font-size:.75rem;font-weight:600;cursor:pointer">&#9881;&#65039; Setup</button>
+    </div>
+  </div>
+  <div id="weights-dynamic" style="padding:0 16px 60px"></div>
+</div>
 <div id="overview"></div>
 </div>
 <script>
@@ -854,7 +867,7 @@ function switchTab(tab){
   document.getElementById("today-view").style.display=tab==="today"?"block":"none";
   if(tab==="today")buildTodayView();
   var wvEl=document.getElementById("weights-view");
-  if(tab==="weights"){wvEl.style.display="block";buildWeightsView();}else wvEl.style.display="none";
+  if(tab==="weights"){wvEl.style.display="block";buildWeightsView();}else{wvEl.style.display="none";}
   var ovEl=document.getElementById("overview");
   if(tab==="ov"){ovEl.style.display="block";ovEl.innerHTML="";buildOverview();}else ovEl.style.display="none";
 }
@@ -1386,7 +1399,7 @@ function buildOvEntry(nm,e){
   h+="</div></div>";return h;
 }
 function buildWeightsView(){
-  var el=document.getElementById("weights-view");if(!el)return;
+  var el=document.getElementById("weights-dynamic");if(!el)return;
   var SEC_ORDER=["Strength","Stations","Erg","Conditioning","Custom"];var secMap={};
   weeks.forEach(function(week,wi){
     week.days.forEach(function(day,di){
@@ -1395,8 +1408,6 @@ function buildWeightsView(){
     });
   });
   var html=buildWeeklySummary();
-  html+='<div class="utility-row"><button class="utility-btn" onclick="exportCSV()">&#128190; Export CSV</button><button class="utility-btn" onclick="requestReminder()">&#128276; Reminder</button></div>';
-  html+='<div class="utility-row"><button class="utility-btn" id="ghBackupBtn" onclick="backupToGitHub()" style="border-color:#2563eb;color:#60a5fa">&#9729;&#65039; Backup to GitHub</button><button class="utility-btn" onclick="restoreFromGitHub()" style="border-color:#7c3aed;color:#a78bfa">&#8617;&#65039; Restore</button><button class="utility-btn" onclick="openGHSetup()" style="border-color:#374151;color:#6b7280">&#9881;&#65039; Setup</button></div>';
   html+='<div style="font-size:.72rem;font-weight:700;color:#52525b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Lift Tracker</div>';
   function renderSec(sec){
     if(!secMap[sec])return;var names=Object.keys(secMap[sec]).sort();if(!names.length)return;
